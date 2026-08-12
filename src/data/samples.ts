@@ -1,5 +1,6 @@
 import type { Sample } from '@/types';
-import { xmlToJsonString } from '@/lib/isoCodec';
+// Relative import: Pages Functions esbuild does not resolve the `@/` alias.
+import { xmlToJsonString } from '../lib/isoCodec';
 
 /**
  * Payloads are realistic but entirely synthetic: test IBANs, the FR76 reserved

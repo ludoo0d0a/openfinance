@@ -196,7 +196,7 @@ export function PayloadInspector({
                   activeTab === tabKey ? 'bg-white text-ink' : 'bg-ink-raised text-muted-dark hover:text-white',
                 )}
               >
-                {tabKey === 'raw' ? effectiveFormat : tabKey === 'tree' ? t('payload.tree') : t('payload.validate')}
+                {tabKey === 'tree' ? t('payload.tree') : tabKey === 'raw' ? t('payload.raw') : t('payload.validate')}
               </button>
             ))}
           </nav>

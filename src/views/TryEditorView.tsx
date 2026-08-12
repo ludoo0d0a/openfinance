@@ -1,7 +1,21 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { FileCode2, PencilLine, RotateCcw, Zap } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  BadgeCheck,
+  Building2,
+  Clock,
+  Coins,
+  FileCode2,
+  Hash,
+  MessageSquareText,
+  Network,
+  PencilLine,
+  RotateCcw,
+  UserRound,
+  Zap,
+} from 'lucide-react';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { Tag } from '@/components/Chips';
 import {
@@ -32,55 +46,68 @@ type FieldSpec = {
 
 type Section = {
   titleKey: string;
+  icon: LucideIcon;
   fields: FieldSpec[];
+  /** Pack fields into a 2-column grid (e.g. amount + currency). */
+  columns?: 1 | 2;
 };
 
-const SECTIONS: Section[] = [
-  {
-    titleKey: 'try.sectionMoney',
-    fields: [
-      { key: 'amount', labelKey: 'try.fieldAmount', defKey: 'try.defAmount' },
-      { key: 'currency', labelKey: 'try.fieldCurrency', defKey: 'try.defCurrency' },
-    ],
-  },
-  {
-    titleKey: 'try.sectionIds',
-    fields: [
-      { key: 'endToEndId', labelKey: 'try.fieldEndToEndId', defKey: 'try.defEndToEndId' },
-      { key: 'instructionId', labelKey: 'try.fieldInstructionId', defKey: 'try.defInstructionId' },
-      { key: 'txId', labelKey: 'try.fieldTxId', defKey: 'try.defTxId' },
-      { key: 'msgId', labelKey: 'try.fieldMsgId', defKey: 'try.defMsgId' },
-    ],
-  },
-  {
-    titleKey: 'try.sectionDebtor',
-    fields: [
-      { key: 'debtorName', labelKey: 'try.fieldDebtorName', defKey: 'try.defDebtorName' },
-      { key: 'debtorIban', labelKey: 'try.fieldDebtorIban', defKey: 'try.defDebtorIban' },
-      { key: 'debtorBic', labelKey: 'try.fieldDebtorBic', defKey: 'try.defDebtorBic' },
-    ],
-  },
-  {
-    titleKey: 'try.sectionCreditor',
-    fields: [
-      { key: 'creditorName', labelKey: 'try.fieldCreditorName', defKey: 'try.defCreditorName' },
-      { key: 'creditorIban', labelKey: 'try.fieldCreditorIban', defKey: 'try.defCreditorIban' },
-      { key: 'creditorBic', labelKey: 'try.fieldCreditorBic', defKey: 'try.defCreditorBic' },
-    ],
-  },
-  {
-    titleKey: 'try.sectionRemittance',
-    fields: [{ key: 'remittance', labelKey: 'try.fieldRemittance', defKey: 'try.defRemittance' }],
-  },
-  {
-    titleKey: 'try.sectionTiming',
-    fields: [
-      { key: 'settlementDate', labelKey: 'try.fieldSettlementDate', defKey: 'try.defSettlementDate', kind: 'date' },
-      { key: 'createdAt', labelKey: 'try.fieldCreatedAt', defKey: 'try.defCreatedAt', kind: 'datetime' },
-    ],
-  },
-];
+const MONEY_SECTION: Section = {
+  titleKey: 'try.sectionMoney',
+  icon: Coins,
+  columns: 2,
+  fields: [
+    { key: 'amount', labelKey: 'try.fieldAmount', defKey: 'try.defAmount' },
+    { key: 'currency', labelKey: 'try.fieldCurrency', defKey: 'try.defCurrency' },
+  ],
+};
 
+const IDS_SECTION: Section = {
+  titleKey: 'try.sectionIds',
+  icon: Hash,
+  columns: 2,
+  fields: [
+    { key: 'endToEndId', labelKey: 'try.fieldEndToEndId', defKey: 'try.defEndToEndId' },
+    { key: 'instructionId', labelKey: 'try.fieldInstructionId', defKey: 'try.defInstructionId' },
+    { key: 'txId', labelKey: 'try.fieldTxId', defKey: 'try.defTxId' },
+    { key: 'msgId', labelKey: 'try.fieldMsgId', defKey: 'try.defMsgId' },
+  ],
+};
+
+const DEBTOR_SECTION: Section = {
+  titleKey: 'try.sectionDebtor',
+  icon: UserRound,
+  fields: [
+    { key: 'debtorName', labelKey: 'try.fieldDebtorName', defKey: 'try.defDebtorName' },
+    { key: 'debtorIban', labelKey: 'try.fieldDebtorIban', defKey: 'try.defDebtorIban' },
+    { key: 'debtorBic', labelKey: 'try.fieldDebtorBic', defKey: 'try.defDebtorBic' },
+  ],
+};
+
+const CREDITOR_SECTION: Section = {
+  titleKey: 'try.sectionCreditor',
+  icon: Building2,
+  fields: [
+    { key: 'creditorName', labelKey: 'try.fieldCreditorName', defKey: 'try.defCreditorName' },
+    { key: 'creditorIban', labelKey: 'try.fieldCreditorIban', defKey: 'try.defCreditorIban' },
+    { key: 'creditorBic', labelKey: 'try.fieldCreditorBic', defKey: 'try.defCreditorBic' },
+  ],
+};
+
+const REMITTANCE_SECTION: Section = {
+  titleKey: 'try.sectionRemittance',
+  icon: MessageSquareText,
+  fields: [{ key: 'remittance', labelKey: 'try.fieldRemittance', defKey: 'try.defRemittance' }],
+};
+
+const TIMING_SECTION: Section = {
+  titleKey: 'try.sectionTiming',
+  icon: Clock,
+  fields: [
+    { key: 'settlementDate', labelKey: 'try.fieldSettlementDate', defKey: 'try.defSettlementDate', kind: 'date' },
+    { key: 'createdAt', labelKey: 'try.fieldCreatedAt', defKey: 'try.defCreatedAt', kind: 'datetime' },
+  ],
+};
 const DATE_ONLY_PRESETS: { id: DateOnlyPreset; labelKey: string }[] = [
   { id: 'yesterday', labelKey: 'try.dateYesterday' },
   { id: 'today', labelKey: 'try.dateToday' },
@@ -150,8 +177,8 @@ export function TryEditorView() {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[380px_1fr]">
-        <aside className="panel space-y-5 p-4 xl:sticky xl:top-[69px] xl:max-h-[calc(100dvh-85px)] xl:overflow-y-auto">
+      <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(28rem,32rem)_1fr]">
+        <aside className="panel space-y-3 p-3 xl:sticky xl:top-[69px] xl:max-h-[calc(100dvh-85px)] xl:overflow-y-auto">
           <div className="flex items-center justify-between gap-2">
             <h2 className="eyebrow">{t('try.fields')}</h2>
             <button
@@ -164,58 +191,56 @@ export function TryEditorView() {
             </button>
           </div>
 
-          <FormSection title={t('try.sectionClearing')}>
-            <label className="block">
-              <span className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={input.instant}
-                  onChange={(e) => patch('instant', e.target.checked)}
-                  className="accent-[var(--color-signal)]"
-                />
-                <Zap size={14} className="text-ochre" aria-hidden />
-                <span className="font-medium">{t('try.instant')}</span>
-              </span>
-              <FieldDef>{t('try.instantDef')}</FieldDef>
-            </label>
+          <FormSection icon={Network} title={t('try.sectionClearing')}>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={input.instant}
+                    onChange={(e) => patch('instant', e.target.checked)}
+                    className="accent-[var(--color-signal)]"
+                  />
+                  <Zap size={14} className="text-ochre" aria-hidden />
+                  <span className="font-medium">{t('try.instant')}</span>
+                </span>
+                <FieldDef>{t('try.instantDef')}</FieldDef>
+              </label>
 
-            <label className="mt-3 block text-[12px]">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{t('try.clearing')}</span>
-              <select
-                value={input.clrSys}
-                onChange={(e) => patch('clrSys', e.target.value as PacsBuildInput['clrSys'])}
-                className="mt-1 w-full border border-rule bg-surface px-2 py-1.5 font-mono text-[12px]"
-              >
-                {(['TIPS', 'RT1', 'STEP2', 'SIC', 'EUROSIC'] as const).map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <FieldDef>{t('try.clearingDef')}</FieldDef>
-            </label>
+              <label className="block text-[12px]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{t('try.clearing')}</span>
+                <select
+                  value={input.clrSys}
+                  onChange={(e) => patch('clrSys', e.target.value as PacsBuildInput['clrSys'])}
+                  className="mt-0.5 w-full border border-rule bg-surface px-2 py-1 font-mono text-[12px]"
+                >
+                  {(['TIPS', 'RT1', 'STEP2', 'SIC', 'EUROSIC'] as const).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <FieldDef>{t('try.clearingDef')}</FieldDef>
+              </label>
+            </div>
           </FormSection>
 
-          {SECTIONS.map((section) => (
-            <FormSection key={section.titleKey} title={t(section.titleKey)}>
-              <div className="space-y-3">
-                {section.fields.map((field) => (
-                  <FieldRow
-                    key={field.key}
-                    label={t(field.labelKey)}
-                    definition={t(field.defKey)}
-                    value={String(input[field.key])}
-                    onChange={(v) => patch(field.key, v as never)}
-                    kind={field.kind ?? 'text'}
-                    t={t}
-                  />
-                ))}
-              </div>
-            </FormSection>
-          ))}
+          <SectionFields section={MONEY_SECTION} input={input} patch={patch} t={t} />
+          <SectionFields section={IDS_SECTION} input={input} patch={patch} t={t} />
 
-          <fieldset className="border-t border-rule-soft pt-4">
-            <legend className="eyebrow mb-1">{t('try.outcome')}</legend>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-2">
+            <SectionFields section={DEBTOR_SECTION} input={input} patch={patch} t={t} compact />
+            <SectionFields section={CREDITOR_SECTION} input={input} patch={patch} t={t} compact />
+          </div>
+
+          <SectionFields section={REMITTANCE_SECTION} input={input} patch={patch} t={t} />
+          <SectionFields section={TIMING_SECTION} input={input} patch={patch} t={t} />
+
+          <fieldset className="border-t border-rule-soft pt-3">
+            <legend className="eyebrow mb-1 inline-flex items-center gap-1.5">
+              <BadgeCheck size={12} aria-hidden />
+              {t('try.outcome')}
+            </legend>
             <FieldDef className="mb-2">{t('try.outcomeDef')}</FieldDef>
             <div className="flex gap-px">
               <OutcomeTab active={outcome === 'ACSC'} onClick={() => setOutcome('ACSC')}>
@@ -226,12 +251,12 @@ export function TryEditorView() {
               </OutcomeTab>
             </div>
             {outcome === 'RJCT' && (
-              <label className="mt-3 block text-[12px]">
+              <label className="mt-2 block text-[12px]">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{t('try.reason')}</span>
                 <select
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  className="mt-1 w-full border border-rule bg-surface px-2 py-1.5 font-mono text-[12px]"
+                  className="mt-0.5 w-full border border-rule bg-surface px-2 py-1 font-mono text-[12px]"
                 >
                   {['AB05', 'AC01', 'AC03', 'AM04', 'AG01', 'AM02', 'TM01'].map((c) => (
                     <option key={c} value={c}>
@@ -297,17 +322,66 @@ export function TryEditorView() {
   );
 }
 
-function FormSection({ title, children }: { title: string; children: ReactNode }) {
+function SectionFields({
+  section,
+  input,
+  patch,
+  t,
+  compact = false,
+}: {
+  section: Section;
+  input: PacsBuildInput;
+  patch: <K extends FieldKey>(key: K, value: PacsBuildInput[K]) => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+  compact?: boolean;
+}) {
+  const cols = section.columns ?? 1;
   return (
-    <section className="border-t border-rule-soft pt-4 first:border-t-0 first:pt-0">
-      <h3 className="eyebrow mb-3">{title}</h3>
+    <FormSection icon={section.icon} title={t(section.titleKey)}>
+      <div
+        className={cn(
+          cols === 2 ? 'grid grid-cols-2 gap-2' : compact ? 'space-y-2' : 'space-y-2.5',
+        )}
+      >
+        {section.fields.map((field) => (
+          <FieldRow
+            key={field.key}
+            label={t(field.labelKey)}
+            definition={t(field.defKey)}
+            value={String(input[field.key])}
+            onChange={(v) => patch(field.key, v as never)}
+            kind={field.kind ?? 'text'}
+            t={t}
+            compact={compact}
+          />
+        ))}
+      </div>
+    </FormSection>
+  );
+}
+
+function FormSection({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  children: ReactNode;
+}) {
+  return (
+    <section className="border-t border-rule-soft pt-3 first:border-t-0 first:pt-0">
+      <h3 className="eyebrow mb-2 inline-flex items-center gap-1.5">
+        <Icon size={12} aria-hidden />
+        {title}
+      </h3>
       {children}
     </section>
   );
 }
 
 function FieldDef({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn('mt-1 text-[11px] leading-snug text-muted', className)}>{children}</p>;
+  return <p className={cn('mt-0.5 text-[10px] leading-snug text-muted', className)}>{children}</p>;
 }
 
 function FieldRow({
@@ -317,6 +391,7 @@ function FieldRow({
   onChange,
   kind,
   t,
+  compact = false,
 }: {
   label: string;
   definition: string;
@@ -324,9 +399,10 @@ function FieldRow({
   onChange: (value: string) => void;
   kind: 'text' | 'date' | 'datetime';
   t: (key: string, vars?: Record<string, string | number>) => string;
+  compact?: boolean;
 }) {
   return (
-    <label className="block text-[12px]">
+    <label className="block min-w-0 text-[12px]" title={definition}>
       <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{label}</span>
       {kind === 'date' && (
         <PresetRow ariaLabel={t('try.datePresets')}>
@@ -350,9 +426,9 @@ function FieldRow({
         type={kind === 'date' ? 'date' : 'text'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full border border-rule bg-surface px-2 py-1.5 font-mono text-[12px]"
+        className="mt-0.5 w-full border border-rule bg-surface px-2 py-1 font-mono text-[12px]"
       />
-      <FieldDef>{definition}</FieldDef>
+      {!compact && <FieldDef>{definition}</FieldDef>}
     </label>
   );
 }

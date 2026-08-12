@@ -100,7 +100,7 @@ export const THESAURUS: ThesaurusEntry[] = [
       fr:
         'Règlement de l’UE qui fait du virement euro instantané le parcours par défaut : joignabilité, parité tarifaire avec le SCT standard, et Verification of Payee obligatoire avant le départ du virement. Le règlement SCT Inst reste ≤10 secondes de bout en bout.',
     },
-    seeAlso: ['vop', 'sct-inst'],
+    seeAlso: ['vop', 'sct-inst', 'ip'],
     links: [
       { label: 'SCT Inst standard', href: '/standards/sct-inst' },
       { label: 'SCT Inst happy path', href: '/flows/sct-inst-happy-path' },
@@ -233,11 +233,98 @@ export const THESAURUS: ThesaurusEntry[] = [
       fr:
         'Schéma de virement euro instantané : fonds disponibles en ≤10 secondes, 24/7. Compensation via TIPS, RT1 ou équivalent avec Local Instrument INST sur pacs.008. L’IPR l’associe à une VoP obligatoire.',
     },
-    seeAlso: ['vop', 'ipr'],
+    seeAlso: ['vop', 'ipr', 'ip', 'wero'],
     links: [
       { label: 'Standard', href: '/standards/sct-inst' },
       { label: 'Happy path', href: '/flows/sct-inst-happy-path' },
     ],
+  },
+  {
+    id: 'ip',
+    term: 'IP',
+    name: {
+      en: 'Instant Payment',
+      fr: 'Paiement instantané',
+    },
+    aliases: {
+      en: [
+        'Instant Payment',
+        'instant payments',
+        'real-time payment',
+        'RTP',
+        'INST',
+        'SCT Inst',
+        'SIC IP',
+      ],
+      fr: [
+        'paiement instantané',
+        'paiements instantanés',
+        'virement instantané',
+        'temps réel',
+        'INST',
+        'SCT Inst',
+        'SIC IP',
+      ],
+    },
+    category: 'concept',
+    definition: {
+      en:
+        'Umbrella term for credit transfers that settle in seconds, 24/7, with immediate funds availability — not next-batch ACH. In the euro area that is usually SCT Inst (TIPS / RT1); in Switzerland SIC IP for CHF. IPR pushes euro IP as the default path and pairs it with VoP.',
+      fr:
+        'Terme générique pour les virements qui se règlent en secondes, 24/7, avec disponibilité immédiate des fonds — pas le prochain lot ACH. En zone euro, c’est en général le SCT Inst (TIPS / RT1) ; en Suisse, le SIC IP pour le CHF. L’IPR fait de l’IP euro le parcours par défaut et l’associe à la VoP.',
+    },
+    seeAlso: ['sct-inst', 'ipr', 'wero', 'payconiq'],
+    links: [
+      { label: 'SCT Inst', href: '/standards/sct-inst' },
+      { label: 'SIC IP flow', href: '/flows/sic-ip-instant' },
+      { label: 'SCT Inst happy path', href: '/flows/sct-inst-happy-path' },
+    ],
+  },
+  {
+    id: 'wero',
+    term: 'Wero',
+    name: {
+      en: 'Wero (European Payments Initiative)',
+      fr: 'Wero (European Payments Initiative)',
+    },
+    aliases: {
+      en: ['Wero', 'EPI', 'European Payments Initiative', 'EPI wallet'],
+      fr: ['Wero', 'EPI', 'European Payments Initiative', 'portefeuille EPI'],
+    },
+    category: 'scheme',
+    definition: {
+      en:
+        'Pan-European account-to-account retail scheme from the European Payments Initiative (EPI). The wallet UX (proxy alias, merchant intent, status) sits on top; settlement still lands on instant rails such as SCT Inst. Debug both the scheme status and the underlying pacs.002.',
+      fr:
+        'Schéma de paiement retail pan-européen compte-à-compte de l’European Payments Initiative (EPI). L’UX wallet (alias proxy, intent commerçant, statut) est au-dessus ; le règlement reste sur des rails instantanés tels que SCT Inst. Déboguez à la fois le statut schéma et le pacs.002 sous-jacent.',
+    },
+    seeAlso: ['ip', 'sct-inst', 'payconiq'],
+    links: [
+      { label: 'Standard', href: '/standards/wero' },
+      { label: 'Wero A2A flow', href: '/flows/wero-a2a-payment' },
+      { label: 'Sample intent', href: '/samples/wero-payment-create' },
+    ],
+  },
+  {
+    id: 'payconiq',
+    term: 'Payconiq',
+    name: {
+      en: 'Payconiq',
+      fr: 'Payconiq',
+    },
+    aliases: {
+      en: ['Payconiq', 'Payconiq by Bancontact', 'Bancontact Payconiq', 'PQ'],
+      fr: ['Payconiq', 'Payconiq by Bancontact', 'Bancontact Payconiq', 'PQ'],
+    },
+    category: 'scheme',
+    definition: {
+      en:
+        'Benelux mobile / QR account-to-account payment brand (Belgium and Luxembourg; historically also the Netherlands). Often seen as Payconiq by Bancontact. PSU scans or opens a deep link; money moves as an A2A debit/credit rather than card rails. Overlaps the same instant / wallet space as Wero in the EPI story.',
+      fr:
+        'Marque de paiement mobile / QR compte-à-compte du Benelux (Belgique et Luxembourg ; historiquement aussi les Pays-Bas). Souvent présentée comme Payconiq by Bancontact. Le PSU scanne ou ouvre un deep link ; l’argent circule en débit/crédit A2A plutôt que sur des rails carte. Chevauche l’espace instantané / wallet de Wero dans le récit EPI.',
+    },
+    seeAlso: ['wero', 'ip', 'sct-inst'],
+    links: [{ label: 'Interop map', href: '/map' }],
   },
 ];
 

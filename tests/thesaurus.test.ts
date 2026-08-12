@@ -29,4 +29,11 @@ describe('thesaurus', () => {
     const hits = createIndex().search('VoP');
     expect(hits.some((h) => String(h.id) === 'term:vop')).toBe(true);
   });
+
+  it('search finds Instant Payment, Wero and Payconiq', () => {
+    const index = createIndex();
+    expect(index.search('Instant Payment').some((h) => String(h.id) === 'term:ip')).toBe(true);
+    expect(index.search('Wero').some((h) => String(h.id) === 'term:wero')).toBe(true);
+    expect(index.search('Payconiq').some((h) => String(h.id) === 'term:payconiq')).toBe(true);
+  });
 });

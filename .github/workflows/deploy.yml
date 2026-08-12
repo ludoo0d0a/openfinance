@@ -84,4 +84,8 @@ jobs:
 
           catalog=$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/catalog" || true)
           [ "$catalog" = "200" ] || { echo "Catalog function returned $catalog"; exit 1; }
+
+          # Deep-link refresh must serve the SPA shell (not a bare 404).
+          deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
+          [ "$deep" = "200" ] || { echo "SPA deep link returned $deep"; exit 1; }
           echo "Deployment healthy."

@@ -1,4 +1,6 @@
-# Pages serves /index.html for unknown paths only when told to. Without this,
-# refreshing on /flows/clearing-recall 404s.
+# SPA fallback for BrowserRouter deep links (refresh on /flows/…, /messages/…).
+# Rewrite to `/` — not `/index.html`. Wrangler/Cloudflare flag `/* → /index.html`
+# as an infinite loop and silently drop the rule (code 10021).
+# Keep /api/* first so Functions still receive API traffic.
 /api/*  /api/:splat  200
-/*      /index.html  200
+/*      /            200

@@ -277,6 +277,7 @@ export const fr: MessageTree = {
     isoPayload: 'Payload ISO 20022',
     apiPayload: 'Payload API',
     tree: 'arbre',
+    raw: 'raw',
     validate: 'valider',
     filterXml: 'Filtrer les balises, ex. DbtrAgt, TxSts…',
     filterJson: 'Filtrer les clés, ex. DbtrAgt, TxSts…',
