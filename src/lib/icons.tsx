@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+  BookOpen,
   Building2,
   ClipboardList,
   Code2,
@@ -96,6 +97,7 @@ export const UI_ICONS = {
   xml: FileCode2,
   standard: Landmark,
   try: PencilLine,
+  thesaurus: BookOpen,
 } as const;
 
 /**

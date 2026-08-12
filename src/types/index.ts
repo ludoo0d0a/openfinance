@@ -88,6 +88,9 @@ export interface Standard {
 
 export type ActorId = 'psu' | 'tpp' | 'aspsp' | 'sca' | 'csm' | 'beneficiary' | 'rail' | 'scheme';
 
+/** UI language for bilingual catalog overlays (thesaurus, flows, …). */
+export type Locale = 'en' | 'fr';
+
 export interface Actor {
   id: ActorId;
   label: string;

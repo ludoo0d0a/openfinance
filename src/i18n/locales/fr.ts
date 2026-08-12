@@ -14,6 +14,7 @@ export const fr: MessageTree = {
     try: 'Éditeur d’essai',
     map: 'Carte d’interop',
     codes: 'Registre des codes',
+    thesaurus: 'Thésaurus',
     standards: 'Standards',
     flows: 'Flux',
     messages: 'Messages',
@@ -66,6 +67,7 @@ export const fr: MessageTree = {
     code: 'Code',
     sample: 'Exemple',
     endpoint: 'Endpoint',
+    term: 'Terme',
   },
   home: {
     eyebrow: 'Référence Open Finance',
@@ -126,6 +128,19 @@ export const fr: MessageTree = {
     action: 'Que faire',
     count: '{{filtered}} sur {{total}} codes',
     empty: 'Aucun résultat. Les codes sont insensibles à la casse ; essayez un fragment comme « AC » ou « consent ».',
+  },
+  thesaurus: {
+    eyebrow: 'Glossaire',
+    title: 'Thésaurus des paiements',
+    lead:
+      'Définitions courtes des termes qui reviennent en PSD2, SCT Inst et ISO 20022 — à commencer par la Vérification du bénéficiaire (VoP). Basculez la langue pour les intitulés français.',
+    placeholder: 'VoP, MTCH, acmt.023, paiements instantanés…',
+    filterAria: 'Filtrer le thésaurus',
+    all: 'Tous {{count}}',
+    empty: 'Aucun résultat. Essayez VoP, CoP, MTCH ou acmt.',
+    alsoCalled: 'Aussi appelé',
+    seeAlso: 'Voir aussi',
+    explore: 'Explorer dans le catalogue',
   },
   notFound: {
     title: 'Rien à ce chemin',

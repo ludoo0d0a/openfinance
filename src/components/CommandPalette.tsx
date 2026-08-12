@@ -14,6 +14,7 @@ const kindColor: Record<ResultKind, string> = {
   code: 'text-vermillion',
   sample: 'text-ochre',
   endpoint: 'text-muted',
+  term: 'text-ochre',
 };
 
 interface Props {

@@ -3,6 +3,7 @@ import { ISO_MESSAGES } from '../../src/data/iso20022';
 import { FLOWS } from '../../src/data/flows';
 import { CODES } from '../../src/data/codes';
 import { ALL_SAMPLES } from '../../src/data/samples';
+import { THESAURUS } from '../../src/data/thesaurus';
 
 /**
  * The catalog as data, so the same content can back a CLI, a CI check or
@@ -10,7 +11,7 @@ import { ALL_SAMPLES } from '../../src/data/samples';
  *
  *   GET /api/catalog                     summary
  *   GET /api/catalog?section=codes       full code registry
- *   GET /api/catalog?section=codes&family=iso-status-reason
+ *   GET /api/catalog?section=thesaurus   glossary entries
  *   GET /api/catalog?section=samples     samples without payloads
  *   GET /api/catalog?section=samples&id=pacs-008-sct   one sample with payload
  */
@@ -37,6 +38,9 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
       return respond(id ? codes.filter((c) => c.code.toLowerCase() === id.toLowerCase()) : codes, cache);
     }
 
+    case 'thesaurus':
+      return respond(id ? THESAURUS.filter((e) => e.id === id) : THESAURUS, cache);
+
     case 'samples': {
       if (id) return respond(ALL_SAMPLES.filter((s) => s.id === id), cache);
       // Payloads are large; the index omits them.
@@ -55,11 +59,13 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
             flows: FLOWS.length,
             codes: CODES.length,
             samples: ALL_SAMPLES.length,
+            thesaurus: THESAURUS.length,
           },
           standards: STANDARDS.map((s) => ({ id: s.id, name: s.name, region: s.region, version: s.version })),
           flows: FLOWS.map((f) => ({ id: f.id, name: f.name, category: f.category, steps: f.steps.length })),
           messages: ISO_MESSAGES.map((m) => ({ short: m.short, id: m.id, name: m.name })),
-          sections: ['standards', 'messages', 'flows', 'codes', 'samples'],
+          thesaurus: THESAURUS.map((e) => ({ id: e.id, term: e.term, category: e.category })),
+          sections: ['standards', 'messages', 'flows', 'codes', 'samples', 'thesaurus'],
         },
         cache,
       );

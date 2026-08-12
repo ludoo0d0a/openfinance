@@ -4,9 +4,10 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
 import { CODES } from '@/data/codes';
 import { ALL_SAMPLES } from '@/data/samples';
+import { THESAURUS } from '@/data/thesaurus';
 import { extractPayloadTags } from '@/lib/payloadTags';
 
-export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint';
+export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint' | 'term';
 
 export interface IndexedDoc {
   id: string;
@@ -91,7 +92,7 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: c.name,
       body: `${c.description} ${c.action ?? ''}`,
       href: `/codes?q=${encodeURIComponent(c.code)}`,
-      keywords: [c.family, c.fullname, c.http ? String(c.http) : ''].join(' '),
+      keywords: [c.family, c.severity, c.http ? String(c.http) : ''].join(' '),
       tags: '',
     });
   }
@@ -110,6 +111,26 @@ function buildDocuments(): IndexedDoc[] {
       href: `/samples/${s.id}`,
       keywords: [s.messageShort ?? '', s.standardId ?? '', s.format].join(' '),
       tags: payloadTags.join(' '),
+    });
+  }
+
+  for (const e of THESAURUS) {
+    docs.push({
+      id: `term:${e.id}`,
+      kind: 'term',
+      title: e.term,
+      subtitle: e.name.en,
+      body: `${e.definition.en} ${e.definition.fr} ${e.name.fr}`,
+      href: `/thesaurus?id=${encodeURIComponent(e.id)}`,
+      keywords: [
+        e.category,
+        ...e.aliases.en,
+        ...e.aliases.fr,
+        e.name.en,
+        e.name.fr,
+        ...(e.seeAlso ?? []),
+      ].join(' '),
+      tags: '',
     });
   }
 
@@ -145,4 +166,5 @@ export const KIND_LABELS: Record<ResultKind, string> = {
   code: 'Code',
   sample: 'Sample',
   endpoint: 'Endpoint',
+  term: 'Term',
 };

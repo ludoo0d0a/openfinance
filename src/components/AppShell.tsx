@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Search, X } from 'lucide-react';
@@ -15,6 +15,7 @@ export function AppShell() {
   const { locale } = useI18n();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const navTitleId = useId();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -26,27 +27,110 @@ export function AppShell() {
         e.preventDefault();
         setPaletteOpen(true);
       }
+      if (e.key === 'Escape' && navOpen) {
+        setNavOpen(false);
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [navOpen]);
+
+  useEffect(() => {
+    if (!navOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [navOpen]);
 
   const messagesByArea = groupBy(ISO_MESSAGES, (m) => m.area);
   const localizedFlows = localizeFlows(FLOWS, locale);
   const flowsByCategory = groupBy(localizedFlows, (f) => f.category);
 
+  const navBody = (
+    <>
+      <NavSection title={t('nav.start')}>
+        <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/codes" label={t('nav.codes')} icon={<UI_ICONS.codes size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem
+          to="/thesaurus"
+          label={t('nav.thesaurus')}
+          icon={<UI_ICONS.thesaurus size={14} />}
+          onNavigate={() => setNavOpen(false)}
+        />
+      </NavSection>
+
+      <NavSection title={t('nav.standards')}>
+        {STANDARDS.map((s) => (
+          <NavItem
+            key={s.id}
+            to={`/standards/${s.id}`}
+            label={s.name}
+            hint={s.region}
+            icon={<UI_ICONS.standard size={14} />}
+            onNavigate={() => setNavOpen(false)}
+          />
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.flows')}>
+        {Object.entries(flowsByCategory).map(([category, flows]) => (
+          <div key={category} className="mb-2">
+            <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+              {t(`category.${category}`)}
+            </p>
+            {flows.map((f) => (
+              <NavItem
+                key={f.id}
+                to={`/flows/${f.id}`}
+                label={f.name}
+                icon={<UI_ICONS.flow size={14} />}
+                onNavigate={() => setNavOpen(false)}
+              />
+            ))}
+          </div>
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.messages')}>
+        {Object.entries(messagesByArea).map(([area, messages]) => (
+          <div key={area} className="mb-2">
+            <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+              {area} · {t(`area.${area}`)}
+            </p>
+            {messages.map((m) => (
+              <NavItem
+                key={m.short}
+                to={`/messages/${m.short}`}
+                label={m.short}
+                hint={m.name}
+                mono
+                icon={<UI_ICONS.xml size={14} />}
+                onNavigate={() => setNavOpen(false)}
+              />
+            ))}
+          </div>
+        ))}
+      </NavSection>
+    </>
+  );
+
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-rule bg-paper/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-2.5 lg:gap-4 lg:px-6">
           <button
             type="button"
-            onClick={() => setNavOpen((v) => !v)}
+            onClick={() => setNavOpen(true)}
             aria-expanded={navOpen}
+            aria-controls="mobile-nav"
             className="inline-flex items-center gap-1 border border-rule px-2 py-1 font-mono text-[11px] lg:hidden"
           >
-            {navOpen ? <X size={14} aria-hidden /> : <Menu size={14} aria-hidden />}
-            {navOpen ? t('nav.close') : t('nav.menu')}
+            <Menu size={14} aria-hidden />
+            {t('nav.menu')}
           </button>
 
           <NavLink to="/" className="flex items-center gap-2.5">
@@ -76,71 +160,54 @@ export function AppShell() {
       </header>
 
       <div className="lg:grid lg:grid-cols-[248px_1fr]">
+        {/* Desktop sidebar */}
         <nav
           aria-label="Primary"
-          className={cn(
-            'border-b border-rule bg-paper-raised px-4 py-5 lg:sticky lg:top-[53px] lg:h-[calc(100dvh-53px)] lg:overflow-y-auto lg:border-r lg:border-b-0',
-            'scroll-paper',
-            navOpen ? 'block' : 'hidden lg:block',
-          )}
+          className="scroll-paper hidden border-r border-rule bg-paper-raised px-4 py-5 lg:sticky lg:top-[53px] lg:block lg:h-[calc(100dvh-53px)] lg:overflow-y-auto"
         >
-          <NavSection title={t('nav.start')}>
-            <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact />
-            <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} />
-            <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} />
-            <NavItem to="/codes" label={t('nav.codes')} icon={<UI_ICONS.codes size={14} />} />
-          </NavSection>
-
-          <NavSection title={t('nav.standards')}>
-            {STANDARDS.map((s) => (
-              <NavItem
-                key={s.id}
-                to={`/standards/${s.id}`}
-                label={s.name}
-                hint={s.region}
-                icon={<UI_ICONS.standard size={14} />}
-              />
-            ))}
-          </NavSection>
-
-          <NavSection title={t('nav.flows')}>
-            {Object.entries(flowsByCategory).map(([category, flows]) => (
-              <div key={category} className="mb-2">
-                <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                  {t(`category.${category}`)}
-                </p>
-                {flows.map((f) => (
-                  <NavItem key={f.id} to={`/flows/${f.id}`} label={f.name} icon={<UI_ICONS.flow size={14} />} />
-                ))}
-              </div>
-            ))}
-          </NavSection>
-
-          <NavSection title={t('nav.messages')}>
-            {Object.entries(messagesByArea).map(([area, messages]) => (
-              <div key={area} className="mb-2">
-                <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                  {area} · {t(`area.${area}`)}
-                </p>
-                {messages.map((m) => (
-                  <NavItem
-                    key={m.short}
-                    to={`/messages/${m.short}`}
-                    label={m.short}
-                    hint={m.name}
-                    mono
-                    icon={<UI_ICONS.xml size={14} />}
-                  />
-                ))}
-              </div>
-            ))}
-          </NavSection>
+          {navBody}
         </nav>
 
         <main className="min-w-0">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile overlay menu */}
+      {navOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
+            aria-label={t('nav.close')}
+            onClick={() => setNavOpen(false)}
+          />
+          <aside
+            id="mobile-nav"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={navTitleId}
+            className="absolute inset-y-0 left-0 flex w-[min(100%,320px)] flex-col border-r border-ink bg-paper shadow-[8px_0_32px_rgba(13,20,32,0.18)]"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-rule px-4 py-3">
+              <p id={navTitleId} className="font-display text-[15px] font-bold tracking-tight">
+                {t('nav.menu')}
+              </p>
+              <button
+                type="button"
+                onClick={() => setNavOpen(false)}
+                className="inline-flex items-center gap-1 border border-rule px-2 py-1 font-mono text-[11px]"
+              >
+                <X size={14} aria-hidden />
+                {t('nav.close')}
+              </button>
+            </div>
+            <nav aria-label="Primary" className="scroll-paper flex-1 overflow-y-auto px-4 py-5">
+              {navBody}
+            </nav>
+          </aside>
+        </div>
+      )}
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
@@ -163,6 +230,7 @@ function NavItem({
   exact,
   mono,
   icon,
+  onNavigate,
 }: {
   to: string;
   label: string;
@@ -170,11 +238,13 @@ function NavItem({
   exact?: boolean;
   mono?: boolean;
   icon?: ReactNode;
+  onNavigate?: () => void;
 }) {
   return (
     <NavLink
       to={to}
       end={exact}
+      onClick={onNavigate}
       className={({ isActive }) =>
         cn(
           'flex items-start gap-2 border-l-2 py-1 pl-2 pr-1 text-[13px] leading-snug transition-colors',

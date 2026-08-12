@@ -1,4 +1,4 @@
-import type { MessageTree } from './types';
+import type { MessageTree } from '../types';
 
 /** English UI copy — catalog payloads stay in their original language. */
 export const en: MessageTree = {
@@ -14,6 +14,7 @@ export const en: MessageTree = {
     try: 'Try editor',
     map: 'Interop map',
     codes: 'Code registry',
+    thesaurus: 'Thesaurus',
     standards: 'Standards',
     flows: 'Flows',
     messages: 'Messages',
@@ -65,6 +66,7 @@ export const en: MessageTree = {
     code: 'Code',
     sample: 'Sample',
     endpoint: 'Endpoint',
+    term: 'Term',
   },
   home: {
     eyebrow: 'Open Finance reference',
@@ -124,6 +126,19 @@ export const en: MessageTree = {
     action: 'What to do',
     count: '{{filtered}} of {{total}} codes',
     empty: 'Nothing matched. Codes are case-insensitive; try a fragment like "AC" or "consent".',
+  },
+  thesaurus: {
+    eyebrow: 'Glossary',
+    title: 'Payments thesaurus',
+    lead:
+      'Short definitions for the words that keep turning up in PSD2, SCT Inst and ISO 20022 — starting with Verification of Payee (VoP). Switch language for the French naming.',
+    placeholder: 'VoP, MTCH, acmt.023, Instant Payments…',
+    filterAria: 'Filter thesaurus',
+    all: 'All {{count}}',
+    empty: 'Nothing matched. Try VoP, CoP, MTCH or acmt.',
+    alsoCalled: 'Also called',
+    seeAlso: 'See also',
+    explore: 'Explore in the catalog',
   },
   notFound: {
     title: 'Nothing at this path',

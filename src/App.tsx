@@ -8,6 +8,7 @@ import { CodesView } from '@/views/CodesView';
 import { SampleView } from '@/views/SampleView';
 import { MapView } from '@/views/MapView';
 import { TryEditorView } from '@/views/TryEditorView';
+import { ThesaurusView } from '@/views/ThesaurusView';
 import { NotFoundView } from '@/views/NotFoundView';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route index element={<HomeView />} />
         <Route path="map" element={<MapView />} />
         <Route path="try" element={<TryEditorView />} />
+        <Route path="thesaurus" element={<ThesaurusView />} />
         <Route path="standards/:standardId" element={<StandardView />} />
         <Route path="flows/:flowId" element={<FlowView />} />
         <Route path="messages/:short" element={<MessageView />} />
