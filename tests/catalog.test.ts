@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest';
+import { FLOWS, ACTORS } from '../src/data/flows';
+import { ISO_MESSAGES } from '../src/data/iso20022';
+import { SAMPLES } from '../src/data/samples';
+import { STANDARDS } from '../src/data/standards';
+import { CODES } from '../src/data/codes';
+import { DOCUMENTS, createIndex } from '../src/lib/search';
+
+/**
+ * The catalog is hand-maintained, so these guard the cross-references. A broken
+ * link between a flow step and a sample is the kind of thing nobody notices in
+ * review and everybody notices in the UI.
+ */
+describe('referential integrity', () => {
+  it('every flow points at a real standard', () => {
+    for (const flow of FLOWS) {
+      expect(STANDARDS.map((s) => s.id), flow.id).toContain(flow.standardId);
+    }
+  });
+
+  it('every step references a sample that exists', () => {
+    const ids = new Set(SAMPLES.map((s) => s.id));
+    for (const flow of FLOWS) {
+      for (const step of flow.steps) {
+        if (step.sampleId) expect(ids, `${flow.id} step ${step.n}`).toContain(step.sampleId);
+      }
+    }
+  });
+
+  it('every step references a message that exists', () => {
+    const shorts = new Set(ISO_MESSAGES.map((m) => m.short));
+    for (const flow of FLOWS) {
+      for (const step of flow.steps) {
+        if (step.messageShort) expect(shorts, `${flow.id} step ${step.n}`).toContain(step.messageShort);
+      }
+    }
+  });
+
+  it('every actor used by a step is a known actor', () => {
+    for (const flow of FLOWS) {
+      for (const step of flow.steps) {
+        expect(ACTORS[step.from], `${flow.id} step ${step.n} from`).toBeDefined();
+        expect(ACTORS[step.to], `${flow.id} step ${step.n} to`).toBeDefined();
+      }
+    }
+  });
+
+  it('step numbers are sequential from one', () => {
+    for (const flow of FLOWS) {
+      expect(flow.steps.map((s) => s.n), flow.id).toEqual(flow.steps.map((_, i) => i + 1));
+    }
+  });
+
+  it('messages claiming a flow are actually used by it', () => {
+    for (const message of ISO_MESSAGES) {
+      for (const flowId of message.flows) {
+        expect(FLOWS.map((f) => f.id), `${message.short} -> ${flowId}`).toContain(flowId);
+      }
+    }
+  });
+
+  it('samples reference a real message or standard', () => {
+    for (const sample of SAMPLES) {
+      if (sample.messageShort) {
+        expect(ISO_MESSAGES.map((m) => m.short), sample.id).toContain(sample.messageShort);
+      }
+      if (sample.standardId) {
+        expect(STANDARDS.map((s) => s.id), sample.id).toContain(sample.standardId);
+      }
+      expect(sample.messageShort ?? sample.standardId, `${sample.id} belongs to nothing`).toBeDefined();
+    }
+  });
+
+  it('every code referenced by a flow step is in the registry', () => {
+    const known = new Set(CODES.map((c) => c.code.toLowerCase()));
+    const missing: string[] = [];
+    for (const flow of FLOWS) {
+      for (const step of flow.steps) {
+        for (const code of step.codes ?? []) {
+          if (!known.has(code.toLowerCase())) missing.push(`${flow.id} step ${step.n}: ${code}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('code identifiers are unique within a family', () => {
+    const seen = new Set<string>();
+    for (const code of CODES) {
+      const key = `${code.family}:${code.code}`;
+      expect(seen.has(key), `duplicate ${key}`).toBe(false);
+      seen.add(key);
+    }
+  });
+});
+
+describe('search index', () => {
+  const index = createIndex();
+
+  it('indexes every catalog document', () => {
+    expect(DOCUMENTS.length).toBeGreaterThan(80);
+  });
+
+  it('finds a message by its dotted id', () => {
+    const hits = index.search('pacs.008');
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.some((h) => h.id === 'message:pacs.008')).toBe(true);
+  });
+
+  it('finds a reason code by its exact value', () => {
+    expect(index.search('AC01').some((h) => h.id.endsWith(':AC01'))).toBe(true);
+  });
+
+  it('survives dot-heavy OBIE codes', () => {
+    expect(index.search('UK.OBIE.Signature.Invalid').length).toBeGreaterThan(0);
+  });
+
+  it('finds flows by concept rather than exact title', () => {
+    expect(index.search('recall').some((h) => h.id === 'flow:clearing-recall')).toBe(true);
+  });
+});

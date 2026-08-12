@@ -1,0 +1,4 @@
+# Pages serves /index.html for unknown paths only when told to. Without this,
+# refreshing on /flows/clearing-recall 404s.
+/api/*  /api/:splat  200
+/*      /index.html  200

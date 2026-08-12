@@ -1,0 +1,29 @@
+name = "openfinance"
+compatibility_date = "2025-05-01"
+pages_build_output_dir = "dist"
+
+# Pages Functions live in ./functions and deploy automatically with the site.
+#
+# The mock ASPSP keeps consent and payment state in KV when a namespace is
+# bound, and falls back to a per-isolate Map otherwise — good enough for local
+# `wrangler pages dev`, and honest about resetting on a cold start.
+#
+# Create the namespace once, then uncomment both blocks:
+#   npx wrangler kv namespace create PSD2_STATE
+#   npx wrangler kv namespace create PSD2_STATE --preview
+
+[env.production.vars]
+MOCK_ASPSP_NAME = "Banque de Démonstration"
+MOCK_ASPSP_BIC = "DEMOFRPPXXX"
+
+# [[env.production.kv_namespaces]]
+# binding = "PSD2_STATE"
+# id = "<production-namespace-id>"
+
+[env.preview.vars]
+MOCK_ASPSP_NAME = "Banque de Démonstration (preview)"
+MOCK_ASPSP_BIC = "DEMOFRPPXXX"
+
+# [[env.preview.kv_namespaces]]
+# binding = "PSD2_STATE"
+# id = "<preview-namespace-id>"

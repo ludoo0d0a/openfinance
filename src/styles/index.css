@@ -1,0 +1,199 @@
+@import 'tailwindcss';
+
+/*
+  Design direction — "clearing house instrument panel"
+  ----------------------------------------------------
+  The subject is wire-format banking messages, so the palette is not decorative:
+  it maps onto ISO 20022 transaction statuses. Jade is ACSC, ochre is PDNG,
+  vermillion is RJCT, ultramarine is the API layer. When you see a colour in
+  this app it is telling you a status, never setting a mood.
+
+  Chrome is cool paper; data panels are inverted ink. Reading XML happens on
+  dark, navigating happens on light.
+*/
+@theme {
+  --color-paper: #e8ecf2;
+  --color-paper-raised: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-ink: #0d1420;
+  --color-ink-raised: #18202f;
+  --color-ink-line: #2a3444;
+
+  --color-rule: #c8d1de;
+  --color-rule-soft: #dde3ec;
+  --color-muted: #5b6779;
+  --color-muted-dark: #8b98ab;
+
+  --color-signal: #1f4fd8;
+  --color-signal-soft: #dde5fb;
+  --color-jade: #0b8f63;
+  --color-jade-soft: #d5f0e5;
+  --color-ochre: #b26b00;
+  --color-ochre-soft: #f9ecd4;
+  --color-vermillion: #c6362e;
+  --color-vermillion-soft: #fadedb;
+  --color-violet: #5b45d6;
+  --color-violet-soft: #e4dffb;
+
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --radius-panel: 2px;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-rule-soft);
+  }
+
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv05';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  code,
+  pre,
+  kbd {
+    font-family: var(--font-mono);
+    font-feature-settings: 'zero';
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: white;
+  }
+}
+
+@layer components {
+  /* The eyebrow label. Used for section kickers and nothing else. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .eyebrow-dark {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted-dark);
+  }
+
+  /* Panels sit on paper with a single hairline. No shadows anywhere in the
+     chrome — this is an instrument, not a card layout. */
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-panel);
+  }
+
+  .panel-ink {
+    background: var(--color-ink);
+    border: 1px solid var(--color-ink-line);
+    border-radius: var(--radius-panel);
+    color: #dfe5ee;
+  }
+
+  /* Signature: the message identifier plate. Each dot-separated segment of an
+     ISO 20022 id means something different, so each gets its own cell and
+     label. This is the one place the app allows itself to be loud. */
+  .id-plate {
+    display: inline-grid;
+    grid-auto-flow: column;
+    border: 1px solid var(--color-ink);
+    background: var(--color-surface);
+  }
+
+  .id-plate-cell {
+    display: grid;
+    gap: 0.125rem;
+    padding: 0.5rem 0.75rem 0.4375rem;
+    border-right: 1px solid var(--color-rule);
+    text-align: center;
+  }
+
+  .id-plate-cell:last-child {
+    border-right: 0;
+  }
+
+  .id-plate-value {
+    font-family: var(--font-mono);
+    font-size: 1.375rem;
+    line-height: 1;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .id-plate-label {
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .hairline {
+    height: 1px;
+    background: var(--color-rule);
+  }
+
+  /* Scrollbars inside data panels, to keep the dark surfaces coherent. */
+  .scroll-ink {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-line) transparent;
+  }
+
+  .scroll-ink::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scroll-ink::-webkit-scrollbar-thumb {
+    background: var(--color-ink-line);
+    border-radius: 0;
+  }
+
+  .scroll-paper {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule) transparent;
+  }
+}
+
+@layer utilities {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
