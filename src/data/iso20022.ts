@@ -1,5 +1,6 @@
 import type { Iso20022Message, Locale, MessageVersion } from '@/types';
-import { parseMessageId } from '@/lib/messageId';
+// Relative path: Wrangler Pages Functions bundle this file without Vite aliases.
+import { parseMessageId } from '../lib/messageId';
 
 /**
  * ISO 20022 messages that show up in a PSD2 estate.

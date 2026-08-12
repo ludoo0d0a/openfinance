@@ -56,7 +56,9 @@ export const UI_ICONS = {
  * Drawn in a padded viewBox so the glyph sits visually centered in the box.
  */
 export function actorIconDataUri(actor: ActorId): string {
-  const color = encodeURIComponent(ACTOR_ICON[actor].color);
+  // Encode the whole SVG once — do not pre-encode `#` in the stroke or the
+  // browser ends up with stroke="%230…" (invisible icon).
+  const color = ACTOR_ICON[actor].color;
   const paths: Record<ActorId, string> = {
     psu: '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/>',
     tpp: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
