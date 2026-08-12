@@ -10,7 +10,8 @@ import { PayloadInspector } from '@/components/PayloadInspector';
 import { CodeChip, LayerTag, MethodLabel, Tag } from '@/components/Chips';
 import { TryItPanel } from '@/components/TryItPanel';
 import { cn } from '@/lib/cn';
-import { ActorIcon, MessageTypeIcon, UI_ICONS } from '@/lib/icons';
+import { ActorIcon, MessageTypeIcon } from '@/lib/icons';
+import { UI_ICONS } from '@/lib/iconMeta';
 import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 

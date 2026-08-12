@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { ActorId, Flow, FlowStep } from '@/types';
 import { ACTORS } from '@/data/flows';
-import { ACTOR_ICON } from '@/lib/icons';
+import { ACTOR_ICON } from '@/lib/iconMeta';
 import { ACTORS_FR, useI18n } from '@/i18n';
 
 interface Props {

@@ -1,5 +1,7 @@
 # OpenFinance
 
+**Live:** [openfinance.pages.dev](https://openfinance.pages.dev)
+
 Browse PSD2 and Open Finance API standards, Swiss SIC / euroSIC / SIC IP rails, Wero (EPI),
 trace end-to-end payments across the API and clearing layers, inspect ISO 20022 messages, and
 look up status or reason codes.

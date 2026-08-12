@@ -7,7 +7,7 @@ import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { cn } from '@/lib/cn';
-import { UI_ICONS } from '@/lib/icons';
+import { UI_ICONS } from '@/lib/iconMeta';
 import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
 
 export function AppShell() {

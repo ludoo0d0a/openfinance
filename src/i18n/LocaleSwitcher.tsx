@@ -1,4 +1,4 @@
-import { useI18n } from './I18nProvider';
+import { useI18n } from './useI18n';
 import { LOCALES } from './types';
 import { cn } from '@/lib/cn';
 

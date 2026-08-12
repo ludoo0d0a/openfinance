@@ -5,7 +5,7 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { CODES } from '@/data/codes';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { CodeChip, Tag } from '@/components/Chips';
-import { UI_ICONS } from '@/lib/icons';
+import { UI_ICONS } from '@/lib/iconMeta';
 import { localizeFlows, useI18n, useT } from '@/i18n';
 
 /**

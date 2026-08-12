@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape';
 import type { ActorId, Flow, FlowStep } from '@/types';
 import { ACTORS } from '@/data/flows';
-import { ACTOR_ICON, ActorIcon, actorIconDataUri } from '@/lib/icons';
+import { ActorIcon } from '@/lib/icons';
+import { ACTOR_ICON, actorIconDataUri } from '@/lib/iconMeta';
 import { ENTITY_LABEL_FR, useI18n, useT } from '@/i18n';
 
 interface Props {
