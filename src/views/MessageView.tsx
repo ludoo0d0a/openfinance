@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { messageByShort } from '@/data/iso20022';
+import {
+  MESSAGE_MARKET_LABELS,
+  messageByShort,
+  versionById,
+  versionsFor,
+} from '@/data/iso20022';
 import { samplesForMessage } from '@/data/samples';
 import { FLOWS } from '@/data/flows';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { Tag } from '@/components/Chips';
-import { namespaceFor } from '@/lib/messageId';
-import { useT } from '@/i18n';
+import { messageIdFromPayload, namespaceFor, parseMessageId } from '@/lib/messageId';
+import { cn } from '@/lib/cn';
+import { useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 
 const DIRECTION_KEYS: Record<string, string> = {
@@ -18,66 +24,131 @@ const DIRECTION_KEYS: Record<string, string> = {
   'bank-to-csm': 'message.dirBankCsm',
 };
 
+const STATUS_KEYS = {
+  current: 'message.versionCurrent',
+  legacy: 'message.versionLegacy',
+  upcoming: 'message.versionUpcoming',
+} as const;
+
 export function MessageView() {
   const t = useT();
+  const { locale } = useI18n();
   const { short } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tagQuery = searchParams.get('q') ?? '';
+  const versionParam = searchParams.get('v');
+
   const message = short ? messageByShort(short) : undefined;
-  const samples = short
-    ? samplesForMessage(short).filter((s) => !s.id.endsWith('-json'))
-    : [];
+  const versions = message ? versionsFor(message) : [];
+  const selectedVersion =
+    (versionParam && message ? versionById(message, versionParam) : undefined) ??
+    versions.find((v) => v.id === message?.id) ??
+    versions[0];
+
+  const samples = useMemo(() => {
+    if (!short) return [];
+    const all = samplesForMessage(short).filter((s) => !s.id.endsWith('-json'));
+    if (!selectedVersion) return all;
+    const matching = all.filter((s) => messageIdFromPayload(s.content) === selectedVersion.id);
+    return matching.length > 0 ? matching : all;
+  }, [short, selectedVersion]);
+
   const [activeSample, setActiveSample] = useState(0);
   const [edited, setEdited] = useState<string | null>(null);
 
   useEffect(() => {
     setActiveSample(0);
     setEdited(null);
-  }, [short]);
+  }, [short, selectedVersion?.id]);
 
-  if (!message) return <NotFoundView />;
+  if (!message || !selectedVersion) return <NotFoundView />;
 
   const sample = samples[activeSample];
   const flows = FLOWS.filter((f) => message.flows.includes(f.id));
   const isAck = message.short === 'pacs.002';
+  const parts = parseMessageId(selectedVersion.id);
+  const sampleMatchesVersion =
+    !sample || messageIdFromPayload(sample.content) === selectedVersion.id;
+
+  function selectVersion(id: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (id === message!.id) next.delete('v');
+        else next.set('v', id);
+        return next;
+      },
+      { replace: true },
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
       <header className="max-w-3xl">
         <p className="eyebrow">
           {t(`area.${message.area}`)}
-          {isAck && ' · acknowledgement'}
+          {isAck && ` · ${t('message.ackEyebrow')}`}
         </p>
-        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{message.name}</h1>
+        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{selectedVersion.schemaName}</h1>
         <div className="mt-5">
-          <MessageIdPlate id={message.id} />
+          <MessageIdPlate id={selectedVersion.id} />
         </div>
         <p className="mt-5 text-[15px] leading-relaxed text-muted">{message.purpose}</p>
         {isAck && (
-          <p className="mt-3 border-l-2 border-jade pl-3 text-[13px] leading-relaxed">
-            This is the clearing acknowledgement: <code className="font-mono text-[12px]">TxSts</code> carries{' '}
-            <code className="font-mono text-[12px]">ACSC</code> (settled), <code className="font-mono text-[12px]">RJCT</code>{' '}
-            (refused) and friends. Pair it with the original{' '}
-            <Link to="/messages/pacs.008" className="text-signal hover:underline">
-              pacs.008
-            </Link>
-            , or{' '}
-            <Link to="/try" className="text-signal hover:underline">
-              build both in the Try editor
-            </Link>
-            .
-          </p>
+          <p className="mt-3 border-l-2 border-jade pl-3 text-[13px] leading-relaxed">{t('message.ackNote')}</p>
         )}
         {message.short === 'pacs.008' && (
-          <p className="mt-3 border-l-2 border-signal pl-3 text-[13px] leading-relaxed">
-            Build a custom pacs.008 and see the matching{' '}
-            <Link to="/try" className="text-signal hover:underline">
-              pacs.002 acknowledgement in the Try editor
-            </Link>
-            .
-          </p>
+          <p className="mt-3 border-l-2 border-signal pl-3 text-[13px] leading-relaxed">{t('message.build008')}</p>
         )}
       </header>
+
+      {versions.length > 1 && (
+        <section className="mt-8 max-w-4xl">
+          <h2 className="eyebrow mb-1">{t('message.versions')}</h2>
+          <p className="mb-3 max-w-2xl text-[13px] leading-relaxed text-muted">{t('message.versionsLead')}</p>
+          <div className="flex flex-wrap gap-2">
+            {versions.map((v) => {
+              const vp = parseMessageId(v.id);
+              const active = v.id === selectedVersion.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => selectVersion(v.id)}
+                  className={cn(
+                    'min-w-[10.5rem] border px-3 py-2 text-left transition-colors',
+                    active ? 'border-ink bg-ink text-white' : 'border-rule bg-surface hover:border-ink',
+                  )}
+                >
+                  <span className="block font-mono text-[13px] font-medium tnum">{v.id}</span>
+                  <span
+                    className={cn(
+                      'mt-1 block font-mono text-[10px] uppercase tracking-wider',
+                      active ? 'text-white/70' : 'text-muted',
+                    )}
+                  >
+                    {t(STATUS_KEYS[v.status])}
+                    {vp.version ? ` · v${vp.version}` : ''}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="panel mt-3 space-y-2 p-4">
+            <p className="text-[13px] leading-relaxed">{selectedVersion.notes[locale] ?? selectedVersion.notes.en}</p>
+            {selectedVersion.markets.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                  {t('message.markets')}
+                </span>
+                {selectedVersion.markets.map((m) => (
+                  <Tag key={m}>{MESSAGE_MARKET_LABELS[m]?.[locale] ?? MESSAGE_MARKET_LABELS[m]?.en ?? m}</Tag>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[420px_1fr]">
         <div className="space-y-5">
@@ -85,15 +156,24 @@ export function MessageView() {
             <h2 className="eyebrow mb-3">{t('message.facts')}</h2>
             <dl className="space-y-2.5 text-[13px]">
               <Fact term={t('message.root')} value={<code>{message.rootElement}</code>} />
-              <Fact term={t('message.direction')} value={DIRECTION_KEYS[message.direction] ? t(DIRECTION_KEYS[message.direction]) : message.direction} />
+              <Fact
+                term={t('message.direction')}
+                value={DIRECTION_KEYS[message.direction] ? t(DIRECTION_KEYS[message.direction]) : message.direction}
+              />
               <Fact
                 term={t('message.namespace')}
-                value={<code className="break-all text-[11px]">{namespaceFor(message.id)}</code>}
+                value={<code className="break-all text-[11px]">{namespaceFor(selectedVersion.id)}</code>}
               />
+              {parts.valid && (
+                <>
+                  <Fact term={t('message.variant')} value={<code>{parts.variant}</code>} />
+                  <Fact term={t('message.version')} value={<code>{parts.version}</code>} />
+                </>
+              )}
             </dl>
             <div className="mt-4 flex flex-wrap gap-1.5">
-              {message.tags.map((t) => (
-                <Tag key={t}>{t}</Tag>
+              {message.tags.map((tag) => (
+                <Tag key={tag}>{tag}</Tag>
               ))}
             </div>
           </section>
@@ -129,6 +209,11 @@ export function MessageView() {
         <div className="min-w-0">
           {sample ? (
             <>
+              {!sampleMatchesVersion && (
+                <p className="mb-2 border border-ochre bg-ochre/10 px-3 py-2 text-[12px] leading-relaxed text-ink">
+                  {t('message.sampleVersionMismatch', { version: selectedVersion.id })}
+                </p>
+              )}
               {samples.length > 1 && (
                 <div className="mb-2 flex flex-wrap gap-px">
                   {samples.map((s, i) => (
@@ -157,7 +242,7 @@ export function MessageView() {
                   title={sample.label}
                   description={
                     sample.format === 'xml'
-                      ? `${sample.description} Switch XML | JSON in the inspector without leaving this sample.`
+                      ? `${sample.description} ${t('message.xmlJsonHint')}`
                       : sample.description
                   }
                   onContentChange={setEdited}
@@ -173,10 +258,7 @@ export function MessageView() {
               </p>
             </>
           ) : (
-            <div className="panel px-4 py-8 text-sm text-muted">
-              No sample bundled for {message.short} yet. Add one to <code>src/data/samples.ts</code> and it appears here,
-              in search, and in any flow step that references it.
-            </div>
+            <div className="panel px-4 py-8 text-sm text-muted">{t('message.noSample', { short: message.short })}</div>
           )}
         </div>
       </div>

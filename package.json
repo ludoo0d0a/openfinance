@@ -10,9 +10,9 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173",
-    "dev:api": "wrangler pages dev --ip 127.0.0.1 --port 8788 --proxy 5173",
+    "dev:api": "wrangler pages dev dist --ip 127.0.0.1 --port 8788",
     "dev:full": "concurrently -k -n vite,api -c cyan,magenta \"npm run dev\" \"npm run dev:api\"",
-    "start": "npm run dev:full",
+    "start": "npm run build && npm run dev:full",
     "start:ui": "npm run dev",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173",

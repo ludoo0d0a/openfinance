@@ -66,7 +66,15 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: m.name,
       body: m.purpose,
       href: `/messages/${m.short}`,
-      keywords: [m.id, m.rootElement, m.area, m.direction, ...m.tags, ...pathTags].join(' '),
+      keywords: [
+        m.id,
+        m.rootElement,
+        m.area,
+        m.direction,
+        ...m.tags,
+        ...(m.versions ?? []).flatMap((v) => [v.id, ...v.markets]),
+        ...pathTags,
+      ].join(' '),
       tags: [...new Set([m.rootElement, ...pathTags, ...sampleTags])].join(' '),
     });
   }

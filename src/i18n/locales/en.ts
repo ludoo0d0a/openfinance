@@ -170,6 +170,17 @@ export const en: MessageTree = {
     root: 'Root element',
     direction: 'Direction',
     namespace: 'Namespace',
+    variant: 'Variant (flavour)',
+    version: 'Version',
+    versions: 'Schema versions',
+    versionsLead:
+      'SWIFT and ISO publish successive revisions of the same message (e.g. pacs.008.001.08 → .10 → .13). Markets and exchange zones (SEPA, CBPR+, SIC…) mandate one via their usage guideline — the xmlns must match.',
+    markets: 'Markets / rails',
+    versionCurrent: 'current',
+    versionLegacy: 'legacy',
+    versionUpcoming: 'upcoming',
+    sampleVersionMismatch:
+      'Bundled samples still use another xmlns; none match {{version}} yet. Inspect the payload carefully before sending to a bank on this revision.',
     required: 'Elements a validator will insist on',
     requiredHint: 'Not the full XSD — the paths whose absence causes the rejections you actually see in production.',
     appearsIn: 'Appears in',
@@ -181,6 +192,7 @@ export const en: MessageTree = {
     dirBankCustomer: 'Bank → customer',
     dirBankBank: 'Bank → bank',
     dirBankCsm: 'Bank → clearing',
+    ackEyebrow: 'acknowledgement',
     ackNote:
       'This is the clearing acknowledgement: TxSts carries ACSC (settled), RJCT (refused) and friends. Pair it with the original pacs.008, or build both in the Try editor.',
     build008: 'Build a custom pacs.008 and see the matching pacs.002 acknowledgement in the Try editor.',

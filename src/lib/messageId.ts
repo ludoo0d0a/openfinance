@@ -52,3 +52,13 @@ export function messageIdFromNamespace(ns: string): string | null {
   const match = /urn:iso:std:iso:20022:tech:xsd:([a-z]{4}\.\d{3}\.\d{3}\.\d{2})/.exec(ns);
   return match ? match[1] : null;
 }
+
+/** Versioned id embedded in a sample payload (XML xmlns or JSON Document key). */
+export function messageIdFromPayload(content: string): string | null {
+  const fromNs = /urn:iso:std:iso:20022:tech:xsd:([a-z]{4}\.\d{3}\.\d{3}\.\d{2})/.exec(content);
+  if (fromNs) return fromNs[1];
+  const fromJson = /"Document[^"]*@xmlns[^"]*"\s*:\s*"urn:iso:std:iso:20022:tech:xsd:([a-z]{4}\.\d{3}\.\d{3}\.\d{2})"/.exec(
+    content,
+  );
+  return fromJson ? fromJson[1] : null;
+}

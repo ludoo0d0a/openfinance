@@ -1,6 +1,8 @@
-# SPA fallback for BrowserRouter deep links (refresh on /flows/…, /messages/…).
-# Rewrite to `/` — not `/index.html`. Wrangler/Cloudflare flag `/* → /index.html`
-# as an infinite loop and silently drop the rule (code 10021).
-# Keep /api/* first so Functions still receive API traffic.
-/api/*  /api/:splat  200
-/*      /            200
+# SPA fallback for BrowserRouter deep links (refresh on /flows/…).
+# Rewrite to `/` — not `/index.html` (Cloudflare flags that as an infinite loop).
+# `/assets/*` MUST come before the catch-all or JS/CSS are rewritten to HTML
+# (white screen + MIME errors).
+/api/*        /api/:splat     200
+/assets/*     /assets/:splat  200
+/favicon.svg  /favicon.svg    200
+/*            /               200

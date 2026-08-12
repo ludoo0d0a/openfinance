@@ -172,6 +172,17 @@ export const fr: MessageTree = {
     root: 'Élément racine',
     direction: 'Direction',
     namespace: 'Espace de noms',
+    variant: 'Variante (flavour)',
+    version: 'Version',
+    versions: 'Versions de schéma',
+    versionsLead:
+      'SWIFT et l’ISO publient des révisions successives du même message (ex. pacs.008.001.08 → .10 → .13). Les marchés et zones d’échange (SEPA, CBPR+, SIC…) en imposent une via leur guide d’usage — le xmlns doit correspondre.',
+    markets: 'Marchés / rails',
+    versionCurrent: 'courante',
+    versionLegacy: 'héritée',
+    versionUpcoming: 'à venir',
+    sampleVersionMismatch:
+      'Les exemples bundlés utilisent encore un autre xmlns ; aucun ne correspond à {{version}}. Vérifiez le payload avant d’envoyer à une banque sur cette révision.',
     required: 'Éléments qu’un validateur exige',
     requiredHint:
       'Pas le XSD complet — les chemins dont l’absence provoque les rejets que l’on voit vraiment en production.',
@@ -185,6 +196,7 @@ export const fr: MessageTree = {
     dirBankCustomer: 'Banque → client',
     dirBankBank: 'Banque → banque',
     dirBankCsm: 'Banque → compensation',
+    ackEyebrow: 'accusé',
     ackNote:
       'Ceci est l’accusé de compensation : TxSts porte ACSC (réglé), RJCT (refusé), etc. Associez-le au pacs.008 d’origine, ou construisez les deux dans l’éditeur d’essai.',
     build008:

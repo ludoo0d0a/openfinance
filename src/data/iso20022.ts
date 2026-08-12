@@ -1,11 +1,15 @@
-import type { Iso20022Message } from '@/types';
+import type { Iso20022Message, Locale, MessageVersion } from '@/types';
+import { parseMessageId } from '@/lib/messageId';
 
 /**
  * ISO 20022 messages that show up in a PSD2 estate.
  * `requiredPaths` is a pragmatic subset used by /api/validate — enough to catch
  * the mistakes people actually make, not a replacement for the XSD.
- */
-export const ISO_MESSAGES: Iso20022Message[] = [
+ *
+ * `versions` lists SWIFT/ISO successive schema revisions (pacs.008.001.08 → .10 → .13).
+ * Markets (SEPA, CBPR+, SIC…) pick a revision via their usage guidelines — the
+ * business message stays the same; the xmlns does not.
+ */export const ISO_MESSAGES: Iso20022Message[] = [
   // ── pain: customer to bank ──────────────────────────────────────────────
   {
     id: 'pain.001.001.09',
@@ -32,6 +36,28 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     ],
     flows: ['bg-pis-sepa-redirect', 'clearing-sct-happy-path', 'ukob-domestic-payment', 'sic-chf-credit'],
     tags: ['initiation', 'sepa', 'credit transfer', 'bulk', 'pain', 'sic', 'chf'],
+    versions: [
+      {
+        id: 'pain.001.001.09',
+        schemaName: 'CustomerCreditTransferInitiationV09',
+        status: 'current',
+        markets: ['sepa-sct', 'swiss-sps', 'uk-ob'],
+        notes: {
+          en: 'EPC / SPS customer initiation baseline used with modern pain.001 file and API payloads.',
+          fr: 'Référence EPC / SPS pour l’initiation client, utilisée avec les payloads pain.001 fichier et API modernes.',
+        },
+      },
+      {
+        id: 'pain.001.001.03',
+        schemaName: 'CustomerCreditTransferInitiationV03',
+        status: 'legacy',
+        markets: ['sepa-sct'],
+        notes: {
+          en: 'Older SEPA pain.001 still seen in legacy file channels. Do not mix with a bank that only accepts .09.',
+          fr: 'Ancien pain.001 SEPA encore vu sur des canaux fichier historiques. Ne pas mélanger avec une banque qui n’accepte que le .09.',
+        },
+      },
+    ],
   },
   {
     id: 'pain.002.001.10',
@@ -101,7 +127,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     area: 'pacs',
     direction: 'bank-to-bank',
     purpose:
-      'The interbank credit transfer. Everything a PISP initiates eventually becomes one of these. Version 08 is the SEPA 2023+ baseline; TARGET2 and CBPR+ use their own usage guidelines on top.',
+      'The interbank credit transfer. Everything a PISP initiates eventually becomes one of these. SWIFT and ISO publish successive schema versions (…001.08, …001.10, …001.13); each market picks one via its usage guideline (EPC SEPA, CBPR+, SIC…).',
     rootElement: 'FIToFICstmrCdtTrf',
     requiredPaths: [
       'FIToFICstmrCdtTrf/GrpHdr/MsgId',
@@ -128,7 +154,39 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sct-inst-vop',
       'sepa-instant-timeout',
     ],
-    tags: ['interbank', 'sepa', 'sct', 'instant', 'pacs', 'sic', 'eurosic', 'wero', 'sct-inst', 'tips'],
+    tags: ['interbank', 'sepa', 'sct', 'instant', 'pacs', 'sic', 'eurosic', 'wero', 'sct-inst', 'tips', 'cbpr+'],
+    versions: [
+      {
+        id: 'pacs.008.001.08',
+        schemaName: 'FIToFICustomerCreditTransferV08',
+        status: 'current',
+        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1', 'sic', 'eurosic', 'target2'],
+        notes: {
+          en: 'SEPA / SCT Inst / SIC / euroSIC baseline. EPC rulebooks and most TIPS/RT1 traffic still expect this xmlns. Samples in this explorer use .08.',
+          fr: 'Référence SEPA / SCT Inst / SIC / euroSIC. Les rulebooks EPC et la plupart du trafic TIPS/RT1 attendent encore ce xmlns. Les exemples de l’explorateur utilisent le .08.',
+        },
+      },
+      {
+        id: 'pacs.008.001.10',
+        schemaName: 'FIToFICustomerCreditTransferV10',
+        status: 'current',
+        markets: ['cbpr-plus', 'swift-mx'],
+        notes: {
+          en: 'Later ISO maintenance release adopted on some CBPR+ / cross-border MX corridors. Same FIToFICstmrCdtTrf business root; banks reject a mismatched version number in the namespace.',
+          fr: 'Révision ISO ultérieure adoptée sur certains corridors CBPR+ / MX transfrontaliers. Même racine métier FIToFICstmrCdtTrf ; les banques rejettent un numéro de version incorrect dans le namespace.',
+        },
+      },
+      {
+        id: 'pacs.008.001.13',
+        schemaName: 'FIToFICustomerCreditTransferV13',
+        status: 'upcoming',
+        markets: ['cbpr-plus', 'swift-mx'],
+        notes: {
+          en: 'Further ISO / SWIFT catalogue step. Track your market’s migration window — CBPR+ and regional HVPS publish the mandated revision, not the ISO catalogue alone.',
+          fr: 'Étape ultérieure du catalogue ISO / SWIFT. Suivez la fenêtre de migration de votre marché — CBPR+ et les HVPS régionaux publient la révision imposée, pas le catalogue ISO seul.',
+        },
+      },
+    ],
   },
   {
     id: 'pacs.002.001.10',
@@ -137,7 +195,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     area: 'pacs',
     direction: 'bank-to-bank',
     purpose:
-      'The clearing answer. Under SEPA Instant this is the message you are waiting on inside a 10-second window, and TxSts=ACSC is the only thing that means settled.',
+      'The clearing answer. Under SEPA Instant this is the message you are waiting on inside a 10-second window, and TxSts=ACSC is the only thing that means settled. Pair its schema version with the pacs.008 you acknowledged.',
     rootElement: 'FIToFIPmtStsRpt',
     requiredPaths: [
       'FIToFIPmtStsRpt/GrpHdr/MsgId',
@@ -158,7 +216,29 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sct-inst-reject',
       'sct-inst-vop',
     ],
-    tags: ['status', 'acsc', 'rjct', 'instant', 'pacs', 'sic', 'sct-inst', 'ack'],
+    tags: ['status', 'acsc', 'rjct', 'instant', 'pacs', 'sic', 'sct-inst', 'ack', 'cbpr+'],
+    versions: [
+      {
+        id: 'pacs.002.001.10',
+        schemaName: 'FIToFIPaymentStatusReportV10',
+        status: 'current',
+        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1', 'sic', 'eurosic'],
+        notes: {
+          en: 'Status report paired with pacs.008.001.08 on SEPA / SCT Inst / SIC rails. OrgnlMsgNmId must quote the original message’s full versioned id.',
+          fr: 'Rapport de statut associé au pacs.008.001.08 sur les rails SEPA / SCT Inst / SIC. OrgnlMsgNmId doit citer l’id versionné complet du message d’origine.',
+        },
+      },
+      {
+        id: 'pacs.002.001.12',
+        schemaName: 'FIToFIPaymentStatusReportV12',
+        status: 'upcoming',
+        markets: ['cbpr-plus', 'swift-mx'],
+        notes: {
+          en: 'Later revision aligned with newer pacs.008 CBPR+ packages. Keep ack and original transfer on compatible catalogue releases.',
+          fr: 'Révision ultérieure alignée sur les packages pacs.008 CBPR+ plus récents. Gardez l’ack et le virement d’origine sur des releases de catalogue compatibles.',
+        },
+      },
+    ],
   },
   {
     id: 'pacs.004.001.09',
@@ -349,6 +429,50 @@ export const ISO_MESSAGES: Iso20022Message[] = [
 
 export const messageByShort = (short: string) => ISO_MESSAGES.find((m) => m.short === short);
 export const messageById = (id: string) => ISO_MESSAGES.find((m) => m.id === id);
+
+/** Markets / exchange zones that pick an ISO schema revision via usage guidelines. */
+export const MESSAGE_MARKET_LABELS: Record<string, Record<Locale, string>> = {
+  'sepa-sct': { en: 'SEPA SCT', fr: 'SCT SEPA' },
+  'sepa-sct-inst': { en: 'SEPA SCT Inst', fr: 'SCT Inst SEPA' },
+  tips: { en: 'TIPS', fr: 'TIPS' },
+  rt1: { en: 'RT1', fr: 'RT1' },
+  target2: { en: 'TARGET2', fr: 'TARGET2' },
+  'cbpr-plus': { en: 'CBPR+', fr: 'CBPR+' },
+  'swift-mx': { en: 'SWIFT MX', fr: 'SWIFT MX' },
+  sic: { en: 'SIC', fr: 'SIC' },
+  eurosic: { en: 'euroSIC', fr: 'euroSIC' },
+  'swiss-sps': { en: 'Swiss SPS', fr: 'SPS suisse' },
+  'uk-ob': { en: 'UK Open Banking', fr: 'UK Open Banking' },
+};
+
+/**
+ * Declinations for a message. Falls back to a single synthetic entry from `id`
+ * when the catalogue has not listed successive SWIFT/ISO revisions yet.
+ */
+export function versionsFor(message: Iso20022Message): MessageVersion[] {
+  if (message.versions?.length) return message.versions;
+  const parts = parseMessageId(message.id);
+  return [
+    {
+      id: message.id,
+      schemaName: message.name,
+      status: 'current',
+      markets: [],
+      notes: {
+        en: parts.valid
+          ? `Catalogue entry ${message.id} (variant ${parts.variant}, version ${parts.version}).`
+          : `Catalogue entry ${message.id}.`,
+        fr: parts.valid
+          ? `Entrée catalogue ${message.id} (variante ${parts.variant}, version ${parts.version}).`
+          : `Entrée catalogue ${message.id}.`,
+      },
+    },
+  ];
+}
+
+export function versionById(message: Iso20022Message, id: string): MessageVersion | undefined {
+  return versionsFor(message).find((v) => v.id === id);
+}
 
 export const AREA_LABELS: Record<string, string> = {
   pain: 'Payments Initiation',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseMessageId, namespaceFor, messageIdFromNamespace } from '../src/lib/messageId';
+import { parseMessageId, namespaceFor, messageIdFromNamespace, messageIdFromPayload } from '../src/lib/messageId';
 
 describe('parseMessageId', () => {
   it('splits a fully versioned id into four segments', () => {
@@ -35,5 +35,10 @@ describe('parseMessageId', () => {
 
   it('returns null for a namespace that is not ISO 20022', () => {
     expect(messageIdFromNamespace('http://example.com/schema')).toBeNull();
+  });
+
+  it('extracts a versioned id from a sample payload', () => {
+    const xml = `<?xml version="1.0"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10"><FIToFICstmrCdtTrf/></Document>`;
+    expect(messageIdFromPayload(xml)).toBe('pacs.008.001.10');
   });
 });

@@ -78,7 +78,9 @@ npm run serve      # build then serve dist + Functions on :8788
 npm run preview    # Vite preview of dist (no Functions) on :4173
 ```
 
-Open **http://127.0.0.1:8788** for the full stack (UI + `/api/*`). Use **http://127.0.0.1:5173** for UI-only HMR.
+Open **http://127.0.0.1:5173** for HMR (Vite proxies `/api/*` to :8788), or
+**http://127.0.0.1:8788** for the production build served with Functions.
+`npm start` rebuilds `dist/` then runs both.
 
 ```bash
 npm run lint

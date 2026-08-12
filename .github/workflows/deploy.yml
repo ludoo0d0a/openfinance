@@ -69,6 +69,7 @@ jobs:
             --project-name=openfinance
             --branch=${{ github.ref_name }}
             --commit-hash=${{ github.sha }}
+            --commit-dirty=true
 
       - name: Smoke test the deployment
         run: |

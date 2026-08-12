@@ -28,8 +28,29 @@ export interface MessageIdParts {
   raw: string;
 }
 
+/**
+ * One schema revision of a message (SWIFT / ISO successive versions).
+ * Example: pacs.008.001.08 vs pacs.008.001.10 vs pacs.008.001.13 —
+ * same business message, different XSD / usage-guideline baseline per market.
+ */
+export type MessageVersionStatus = 'current' | 'legacy' | 'upcoming';
+
+export interface MessageVersion {
+  /** Fully versioned id used in the Document xmlns */
+  id: string;
+  /** Catalogue / XSD type name when it differs (e.g. FIToFICustomerCreditTransferV10) */
+  schemaName: string;
+  status: MessageVersionStatus;
+  /**
+   * Markets / exchange zones that mandate or commonly run this revision
+   * (SEPA SCT, SCT Inst, CBPR+, SIC, TARGET2, …).
+   */
+  markets: string[];
+  notes: Record<Locale, string>;
+}
+
 export interface Iso20022Message {
-  /** Fully versioned id used in the XML Document namespace */
+  /** Fully versioned id used in the XML Document namespace (canonical / default) */
   id: string;
   /** pacs.008 — the form humans actually say out loud */
   short: string;
@@ -45,6 +66,11 @@ export interface Iso20022Message {
   /** Flow ids this message appears in */
   flows: string[];
   tags: string[];
+  /**
+   * Declinations managed by SWIFT and ISO. When omitted, the single `id` is
+   * treated as the only known revision.
+   */
+  versions?: MessageVersion[];
 }
 
 export interface Endpoint {
