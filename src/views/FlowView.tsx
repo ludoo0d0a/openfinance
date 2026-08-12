@@ -1,23 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { flowById, CATEGORY_LABELS } from '@/data/flows';
+import { flowById } from '@/data/flows';
 import { standardById } from '@/data/standards';
-import { sampleById } from '@/data/samples';
+import { sampleById, samplesForMessage } from '@/data/samples';
 import { FlowCanvas } from '@/components/FlowCanvas';
+import { EntityFlowDiagram } from '@/components/EntityFlowDiagram';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { CodeChip, LayerTag, MethodLabel, Tag } from '@/components/Chips';
 import { TryItPanel } from '@/components/TryItPanel';
+import { cn } from '@/lib/cn';
+import { ActorIcon, MessageTypeIcon, UI_ICONS } from '@/lib/icons';
+import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 
-export function FlowView() {
-  const { flowId } = useParams();
-  const flow = flowId ? flowById(flowId) : undefined;
-  const [selected, setSelected] = useState(1);
+type DiagramMode = 'sequence' | 'entities';
 
-  useEffect(() => setSelected(1), [flowId]);
+export function FlowView() {
+  const t = useT();
+  const { locale } = useI18n();
+  const { flowId } = useParams();
+  const catalogFlow = flowId ? flowById(flowId) : undefined;
+  const flow = catalogFlow ? localizeFlow(catalogFlow, locale) : undefined;
+  const [selected, setSelected] = useState(1);
+  const [diagram, setDiagram] = useState<DiagramMode>('entities');
+
+  useEffect(() => {
+    setSelected(1);
+    setDiagram('entities');
+  }, [flowId]);
 
   const step = useMemo(() => flow?.steps.find((s) => s.n === selected) ?? flow?.steps[0], [flow, selected]);
-  const sample = step?.sampleId ? sampleById(step.sampleId) : undefined;
+  const sample = useMemo(() => {
+    if (!step) return undefined;
+    if (step.sampleId) return sampleById(step.sampleId);
+    if (step.messageShort) return samplesForMessage(step.messageShort)[0];
+    return undefined;
+  }, [step]);
   const standard = flow ? standardById(flow.standardId) : undefined;
 
   if (!flow || !step) return <NotFoundView />;
@@ -26,7 +45,7 @@ export function FlowView() {
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
       <header className="max-w-3xl">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="eyebrow">{CATEGORY_LABELS[flow.category]}</p>
+          <p className="eyebrow">{t(`category.${flow.category}`)}</p>
           {standard && (
             <Link to={`/standards/${standard.id}`} className="font-mono text-[11px] text-signal hover:underline">
               {standard.name}
@@ -37,8 +56,8 @@ export function FlowView() {
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{flow.summary}</p>
         <p className="mt-3 border-l-2 border-ochre pl-3 text-[13px] leading-relaxed">{flow.useCase}</p>
         <div className="mt-4 flex flex-wrap gap-1.5">
-          {flow.tags.map((t) => (
-            <Tag key={t}>{t}</Tag>
+          {flow.tags.map((tag) => (
+            <Tag key={tag}>{tag}</Tag>
           ))}
         </div>
       </header>
@@ -46,11 +65,27 @@ export function FlowView() {
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_460px]">
         <div className="min-w-0 space-y-6">
           <section className="panel p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="eyebrow">Sequence</h2>
-              <p className="font-mono text-[10px] text-muted">Click a step, or tab to it and press enter</p>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="eyebrow">{diagram === 'entities' ? t('flow.txFlow') : t('flow.sequence')}</h2>
+              <div className="flex gap-px" role="tablist" aria-label={t('flow.diagramType')}>
+                <DiagramTab active={diagram === 'entities'} onClick={() => setDiagram('entities')}>
+                  <UI_ICONS.entities size={13} aria-hidden />
+                  {t('flow.entities')}
+                </DiagramTab>
+                <DiagramTab active={diagram === 'sequence'} onClick={() => setDiagram('sequence')}>
+                  <UI_ICONS.sequence size={13} aria-hidden />
+                  {t('flow.sequence')}
+                </DiagramTab>
+              </div>
             </div>
-            <FlowCanvas flow={flow} selectedStep={selected} onSelectStep={setSelected} />
+            {diagram === 'entities' ? (
+              <EntityFlowDiagram flow={flow} selectedStep={selected} onSelectStep={setSelected} />
+            ) : (
+              <>
+                <p className="mb-3 font-mono text-[10px] text-muted">{t('flow.clickStep')}</p>
+                <FlowCanvas flow={flow} selectedStep={selected} onSelectStep={setSelected} />
+              </>
+            )}
           </section>
 
           <section className="panel">
@@ -73,7 +108,7 @@ export function FlowView() {
 
               {step.headers && step.headers.length > 0 && (
                 <div>
-                  <h3 className="eyebrow mb-1.5">Headers that matter</h3>
+                  <h3 className="eyebrow mb-1.5">{t('flow.headers')}</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {step.headers.map((h) => (
                       <code key={h} className="border border-rule bg-surface px-1.5 py-1 text-[11px]">
@@ -86,7 +121,7 @@ export function FlowView() {
 
               {step.codes && step.codes.length > 0 && (
                 <div>
-                  <h3 className="eyebrow mb-1.5">Codes you can see here</h3>
+                  <h3 className="eyebrow mb-1.5">{t('flow.codesHere')}</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {step.codes.map((c) => (
                       <CodeChip key={c} code={c} />
@@ -96,13 +131,22 @@ export function FlowView() {
               )}
 
               {step.messageShort && (
-                <p className="text-sm">
-                  Message:{' '}
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <MessageTypeIcon short={step.messageShort} size={16} />
+                  <span>{t('flow.message')}:</span>
                   <Link to={`/messages/${step.messageShort}`} className="font-mono text-signal hover:underline">
                     {step.messageShort}
                   </Link>
                 </p>
               )}
+
+              <p className="flex flex-wrap items-center gap-2 text-[12px] text-muted">
+                <ActorIcon actor={step.from} size={12} />
+                <span className="font-mono uppercase tracking-wider">{step.from}</span>
+                <span aria-hidden>→</span>
+                <ActorIcon actor={step.to} size={12} />
+                <span className="font-mono uppercase tracking-wider">{step.to}</span>
+              </p>
 
               <nav className="flex gap-2 border-t border-rule-soft pt-4">
                 <button
@@ -111,7 +155,7 @@ export function FlowView() {
                   onClick={() => setSelected(selected - 1)}
                   className="border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest disabled:opacity-35"
                 >
-                  ← Previous
+                  {t('flow.prev')}
                 </button>
                 <button
                   type="button"
@@ -119,7 +163,7 @@ export function FlowView() {
                   onClick={() => setSelected(selected + 1)}
                   className="border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest disabled:opacity-35"
                 >
-                  Next step →
+                  {t('flow.next')}
                 </button>
               </nav>
             </div>
@@ -135,25 +179,61 @@ export function FlowView() {
                 title={sample.label}
                 description={sample.description}
               />
-              <Link to={`/samples/${sample.id}`} className="mt-2 inline-block font-mono text-[11px] text-signal hover:underline">
-                Open this sample on its own page →
-              </Link>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                <Link to={`/samples/${sample.id}`} className="font-mono text-[11px] text-signal hover:underline">
+                  {t('flow.openSample')}
+                </Link>
+                {step.messageShort && (
+                  <Link
+                    to={`/messages/${step.messageShort}`}
+                    className="font-mono text-[11px] text-signal hover:underline"
+                  >
+                    {t('flow.allSamples', { short: step.messageShort })}
+                  </Link>
+                )}
+              </div>
             </div>
           ) : (
             <div className="panel px-4 py-6 text-sm text-muted">
-              <p className="eyebrow mb-2">No payload</p>
-              <p>
-                This step is a redirect, a wait or an out-of-band event — there is no message on the wire to inspect.
-                Steps with a payload are marked with a method or a message id in the diagram.
-              </p>
+              <p className="eyebrow mb-2">{t('flow.noPayload')}</p>
+              <p>{t('flow.noPayloadBody')}</p>
             </div>
           )}
 
           {flow.standardId === 'berlin-group' && step.layer === 'api' && step.method && step.path && (
-            <TryItPanel method={step.method} path={step.path} body={sample?.format === 'json' ? sample.content : undefined} />
+            <TryItPanel
+              method={step.method}
+              path={step.path}
+              body={sample?.format === 'json' ? sample.content : undefined}
+            />
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function DiagramTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest',
+        active ? 'bg-ink text-white' : 'border border-rule bg-surface text-muted hover:border-ink hover:text-ink',
+      )}
+    >
+      {children}
+    </button>
   );
 }

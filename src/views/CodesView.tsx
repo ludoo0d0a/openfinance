@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CODES, FAMILY_LABELS } from '@/data/codes';
+import { CODES } from '@/data/codes';
 import { cn } from '@/lib/cn';
 import type { CodeEntry, CodeFamily } from '@/types';
+import { useT } from '@/i18n';
 
 const severityDot: Record<CodeEntry['severity'], string> = {
   success: 'bg-jade',
@@ -12,13 +13,19 @@ const severityDot: Record<CodeEntry['severity'], string> = {
   info: 'bg-muted',
 };
 
-const FAMILIES = Object.keys(FAMILY_LABELS) as CodeFamily[];
+const FAMILIES = [
+  'iso-tx-status',
+  'iso-status-reason',
+  'bg-error',
+  'stet-error',
+  'ukob-error',
+  'sca-status',
+  'consent-status',
+  'scheme-status',
+] as const satisfies readonly CodeFamily[];
 
-/**
- * One flat searchable table rather than a page per standard. When you have a
- * code in front of you, you rarely know which registry it came from.
- */
 export function CodesView() {
+  const t = useT();
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const family = params.get('family') as CodeFamily | null;
@@ -49,12 +56,9 @@ export function CodesView() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
       <header className="max-w-2xl">
-        <p className="eyebrow">Registry</p>
-        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Every code, and what to do about it</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">
-          ISO 20022 statuses and reason codes alongside the API error codes from each standard. The column that matters
-          is the last one: whether a retry is legitimate, or whether you are about to create a duplicate payment.
-        </p>
+        <p className="eyebrow">{t('codes.eyebrow')}</p>
+        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('codes.title')}</h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('codes.lead')}</p>
       </header>
 
       <div className="mt-7 space-y-3">
@@ -62,32 +66,30 @@ export function CodesView() {
           type="search"
           value={query}
           onChange={(e) => update({ q: e.target.value })}
-          placeholder="AC01, insufficient, signature, consent…"
-          aria-label="Filter codes"
+          placeholder={t('codes.placeholder')}
+          aria-label={t('codes.filterAria')}
           className="w-full border border-rule bg-surface px-3 py-2.5 font-mono text-sm focus:border-ink focus:outline-none"
         />
 
         <div className="flex flex-wrap gap-1.5">
           <FilterButton active={!family} onClick={() => update({ family: null })}>
-            All {CODES.length}
+            {t('codes.all', { count: CODES.length })}
           </FilterButton>
           {FAMILIES.map((f) => (
             <FilterButton key={f} active={family === f} onClick={() => update({ family: f })}>
-              {FAMILY_LABELS[f]}
+              {t(`family.${f}`)}
             </FilterButton>
           ))}
         </div>
       </div>
 
       <p className="mt-4 font-mono text-[11px] text-muted">
-        {filtered.length} of {CODES.length} codes
+        {t('codes.count', { filtered: filtered.length, total: CODES.length })}
       </p>
 
       <ul className="mt-3 panel divide-y divide-rule-soft">
         {filtered.length === 0 && (
-          <li className="px-4 py-10 text-center text-sm text-muted">
-            Nothing matched. Codes are case-insensitive; try a fragment like &quot;AC&quot; or &quot;consent&quot;.
-          </li>
+          <li className="px-4 py-10 text-center text-sm text-muted">{t('codes.empty')}</li>
         )}
         {filtered.map((c) => (
           <li key={`${c.family}-${c.code}`} className="px-4 py-4">
@@ -96,15 +98,13 @@ export function CodesView() {
               <code className="text-[15px] font-medium">{c.code}</code>
               <span className="text-sm font-semibold">{c.name}</span>
               <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-muted">
-                {FAMILY_LABELS[c.family]}
+                {t(`family.${c.family}`)}
                 {c.http && ` · HTTP ${c.http}`}
               </span>
             </div>
             <p className="mt-2 pl-5 text-[13px] leading-relaxed">{c.description}</p>
             {c.action && (
-              <p className="mt-2 ml-5 border-l-2 border-signal pl-3 text-[13px] leading-relaxed text-muted">
-                {c.action}
-              </p>
+              <p className="mt-2 ml-5 border-l-2 border-signal pl-3 text-[13px] leading-relaxed text-muted">{c.action}</p>
             )}
           </li>
         ))}

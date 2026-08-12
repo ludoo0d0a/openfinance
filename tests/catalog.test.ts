@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FLOWS, ACTORS } from '../src/data/flows';
 import { ISO_MESSAGES } from '../src/data/iso20022';
-import { SAMPLES } from '../src/data/samples';
+import { ALL_SAMPLES, SAMPLES, samplesForMessage } from '../src/data/samples';
+import { FLOWS_FR } from '../src/i18n/flowsFr';
 import { STANDARDS } from '../src/data/standards';
 import { CODES } from '../src/data/codes';
 import { DOCUMENTS, createIndex } from '../src/lib/search';
@@ -71,6 +72,33 @@ describe('referential integrity', () => {
     }
   });
 
+  it('every ISO message has at least one sample', () => {
+    const covered = new Set(SAMPLES.filter((s) => s.messageShort).map((s) => s.messageShort));
+    const missing = ISO_MESSAGES.filter((m) => !covered.has(m.short)).map((m) => m.short);
+    expect(missing).toEqual([]);
+  });
+
+  it('every ISO message has both XML and JSON samples', () => {
+    const missing: string[] = [];
+    for (const message of ISO_MESSAGES) {
+      const samples = samplesForMessage(message.short);
+      if (!samples.some((s) => s.format === 'xml')) missing.push(`${message.short}:xml`);
+      if (!samples.some((s) => s.format === 'json')) missing.push(`${message.short}:json`);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('JSON companions round-trip from every ISO XML sample', () => {
+    const companions = ALL_SAMPLES.filter((s) => s.id.endsWith('-json'));
+    expect(companions.length).toBeGreaterThan(0);
+    for (const sample of SAMPLES.filter((s) => s.format === 'xml' && s.messageShort)) {
+      expect(
+        companions.some((c) => c.id === `${sample.id}-json`),
+        `missing JSON for ${sample.id}`,
+      ).toBe(true);
+    }
+  });
+
   it('every code referenced by a flow step is in the registry', () => {
     const known = new Set(CODES.map((c) => c.code.toLowerCase()));
     const missing: string[] = [];
@@ -82,6 +110,21 @@ describe('referential integrity', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it('every flow has a complete French translation', () => {
+    for (const flow of FLOWS) {
+      const tr = FLOWS_FR[flow.id];
+      expect(tr, `missing FR for ${flow.id}`).toBeDefined();
+      expect(tr.name.length).toBeGreaterThan(0);
+      expect(tr.summary.length).toBeGreaterThan(0);
+      expect(tr.useCase.length).toBeGreaterThan(0);
+      for (const step of flow.steps) {
+        expect(tr.steps[step.n], `${flow.id} step ${step.n}`).toBeDefined();
+        expect(tr.steps[step.n].label.length).toBeGreaterThan(0);
+        expect(tr.steps[step.n].detail.length).toBeGreaterThan(0);
+      }
+    }
   });
 
   it('code identifiers are unique within a family', () => {

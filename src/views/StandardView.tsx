@@ -3,15 +3,21 @@ import { standardById } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { samplesForStandard } from '@/data/samples';
 import { MethodLabel, Tag } from '@/components/Chips';
+import { useT, useI18n, localizeFlows } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 
 export function StandardView() {
+  const t = useT();
+  const { locale } = useI18n();
   const { standardId } = useParams();
   const standard = standardId ? standardById(standardId) : undefined;
 
   if (!standard) return <NotFoundView />;
 
-  const flows = FLOWS.filter((f) => f.standardId === standard.id);
+  const flows = localizeFlows(
+    FLOWS.filter((f) => f.standardId === standard.id),
+    locale,
+  );
   const samples = samplesForStandard(standard.id);
 
   return (
@@ -29,7 +35,7 @@ export function StandardView() {
             rel="noreferrer noopener"
             className="font-mono text-[11px] text-signal hover:underline"
           >
-            Publisher docs ↗
+            {t('standard.publisherDocs')}
           </a>
         </div>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">{standard.summary}</p>
@@ -37,14 +43,14 @@ export function StandardView() {
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2">
         <div className="panel p-4">
-          <h2 className="eyebrow mb-3">Security profile</h2>
+          <h2 className="eyebrow mb-3">{t('standard.security')}</h2>
           <dl className="space-y-3 text-[13px]">
             {(
               [
-                ['Client authentication', standard.security.clientAuth],
-                ['Message signing', standard.security.messageSigning],
-                ['Tokens', standard.security.tokens],
-                ['Certificates', standard.security.certificates],
+                [t('standard.clientAuth'), standard.security.clientAuth],
+                [t('standard.messageSigning'), standard.security.messageSigning],
+                [t('standard.tokens'), standard.security.tokens],
+                [t('standard.certificates'), standard.security.certificates],
               ] as const
             ).map(([term, def]) => (
               <div key={term}>
@@ -57,7 +63,7 @@ export function StandardView() {
 
         <div className="space-y-4">
           <div className="panel p-4">
-            <h2 className="eyebrow mb-2">SCA approaches</h2>
+            <h2 className="eyebrow mb-2">{t('standard.sca')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {standard.scaApproaches.map((a) => (
                 <Tag key={a}>{a}</Tag>
@@ -66,7 +72,7 @@ export function StandardView() {
           </div>
 
           <div className="panel border-ochre p-4">
-            <h2 className="eyebrow mb-2 text-ochre">What bites integrators</h2>
+            <h2 className="eyebrow mb-2 text-ochre">{t('standard.gotchas')}</h2>
             <ul className="space-y-2 text-[13px] leading-relaxed">
               {standard.gotchas.map((g, i) => (
                 <li key={i} className="border-l-2 border-ochre pl-3">
@@ -79,7 +85,7 @@ export function StandardView() {
       </section>
 
       <section className="mt-10">
-        <h2 className="eyebrow mb-3">APIs and endpoints</h2>
+        <h2 className="eyebrow mb-3">{t('standard.apisEndpoints')}</h2>
         <div className="space-y-5">
           {standard.apis.map((api) => (
             <div key={api.id} id={api.id} className="panel scroll-mt-20">
@@ -108,13 +114,13 @@ export function StandardView() {
 
       {flows.length > 0 && (
         <section className="mt-10">
-          <h2 className="eyebrow mb-3">Flows using this standard</h2>
+          <h2 className="eyebrow mb-3">{t('standard.flowsUsing')}</h2>
           <ul className="panel divide-y divide-rule-soft">
             {flows.map((f) => (
               <li key={f.id}>
                 <Link to={`/flows/${f.id}`} className="block px-4 py-2.5 hover:bg-paper-raised">
                   <span className="text-sm font-medium">{f.name}</span>
-                  <span className="ml-2 font-mono text-[10px] text-muted">{f.steps.length} steps</span>
+                  <span className="ml-2 font-mono text-[10px] text-muted">{t('standard.steps', { count: f.steps.length })}</span>
                 </Link>
               </li>
             ))}
@@ -124,7 +130,7 @@ export function StandardView() {
 
       {samples.length > 0 && (
         <section className="mt-10">
-          <h2 className="eyebrow mb-3">Sample payloads</h2>
+          <h2 className="eyebrow mb-3">{t('standard.samplePayloads')}</h2>
           <ul className="panel divide-y divide-rule-soft">
             {samples.map((s) => (
               <li key={s.id}>

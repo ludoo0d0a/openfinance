@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { Menu, Search, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { STANDARDS } from '@/data/standards';
-import { FLOWS, CATEGORY_LABELS } from '@/data/flows';
-import { ISO_MESSAGES, AREA_LABELS } from '@/data/iso20022';
+import { FLOWS } from '@/data/flows';
+import { ISO_MESSAGES } from '@/data/iso20022';
 import { cn } from '@/lib/cn';
+import { UI_ICONS } from '@/lib/icons';
+import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
 
 export function AppShell() {
+  const t = useT();
+  const { locale } = useI18n();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
@@ -27,36 +32,46 @@ export function AppShell() {
   }, []);
 
   const messagesByArea = groupBy(ISO_MESSAGES, (m) => m.area);
-  const flowsByCategory = groupBy(FLOWS, (f) => f.category);
+  const localizedFlows = localizeFlows(FLOWS, locale);
+  const flowsByCategory = groupBy(localizedFlows, (f) => f.category);
 
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-rule bg-paper/95 backdrop-blur">
-        <div className="flex items-center gap-4 px-4 py-2.5 lg:px-6">
+        <div className="flex items-center gap-3 px-4 py-2.5 lg:gap-4 lg:px-6">
           <button
             type="button"
             onClick={() => setNavOpen((v) => !v)}
             aria-expanded={navOpen}
-            className="border border-rule px-2 py-1 font-mono text-[11px] lg:hidden"
+            className="inline-flex items-center gap-1 border border-rule px-2 py-1 font-mono text-[11px] lg:hidden"
           >
-            {navOpen ? 'Close' : 'Menu'}
+            {navOpen ? <X size={14} aria-hidden /> : <Menu size={14} aria-hidden />}
+            {navOpen ? t('nav.close') : t('nav.menu')}
           </button>
 
-          <NavLink to="/" className="flex items-baseline gap-2.5">
+          <NavLink to="/" className="flex items-center gap-2.5">
+            <span className="inline-flex h-7 w-7 items-center justify-center border border-ink bg-ink text-white">
+              <UI_ICONS.overview size={15} aria-hidden />
+            </span>
             <span className="font-display text-[17px] font-bold tracking-tight">OpenFinance</span>
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-muted sm:inline">
-              PSD2 / SIC / Wero / ISO 20022
+              {t('brand.tagline')}
             </span>
           </NavLink>
 
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
-            className="ml-auto flex items-center gap-3 border border-rule bg-surface px-3 py-1.5 text-left text-xs text-muted hover:border-ink sm:min-w-[280px]"
+            className="ml-auto flex min-w-0 items-center gap-3 border border-rule bg-surface px-3 py-1.5 text-left text-xs text-muted hover:border-ink sm:min-w-[240px]"
           >
-            <span className="font-mono">Search everything</span>
-            <kbd className="ml-auto hidden border border-rule px-1.5 py-0.5 font-mono text-[10px] sm:inline">⌘K</kbd>
+            <Search size={14} aria-hidden />
+            <span className="truncate font-mono">{t('nav.search')}</span>
+            <kbd className="ml-auto hidden shrink-0 border border-rule px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+              ⌘K
+            </kbd>
           </button>
+
+          <LocaleSwitcher className="shrink-0" />
         </div>
       </header>
 
@@ -69,39 +84,53 @@ export function AppShell() {
             navOpen ? 'block' : 'hidden lg:block',
           )}
         >
-          <NavSection title="Start">
-            <NavItem to="/" label="Overview" exact />
-            <NavItem to="/map" label="Interop map" />
-            <NavItem to="/codes" label="Code registry" />
+          <NavSection title={t('nav.start')}>
+            <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact />
+            <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} />
+            <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} />
+            <NavItem to="/codes" label={t('nav.codes')} icon={<UI_ICONS.codes size={14} />} />
           </NavSection>
 
-          <NavSection title="Standards">
+          <NavSection title={t('nav.standards')}>
             {STANDARDS.map((s) => (
-              <NavItem key={s.id} to={`/standards/${s.id}`} label={s.name} hint={s.region} />
+              <NavItem
+                key={s.id}
+                to={`/standards/${s.id}`}
+                label={s.name}
+                hint={s.region}
+                icon={<UI_ICONS.standard size={14} />}
+              />
             ))}
           </NavSection>
 
-          <NavSection title="Flows">
+          <NavSection title={t('nav.flows')}>
             {Object.entries(flowsByCategory).map(([category, flows]) => (
               <div key={category} className="mb-2">
                 <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                  {CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS]}
+                  {t(`category.${category}`)}
                 </p>
                 {flows.map((f) => (
-                  <NavItem key={f.id} to={`/flows/${f.id}`} label={f.name} />
+                  <NavItem key={f.id} to={`/flows/${f.id}`} label={f.name} icon={<UI_ICONS.flow size={14} />} />
                 ))}
               </div>
             ))}
           </NavSection>
 
-          <NavSection title="Messages">
+          <NavSection title={t('nav.messages')}>
             {Object.entries(messagesByArea).map(([area, messages]) => (
               <div key={area} className="mb-2">
                 <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                  {area} · {AREA_LABELS[area]}
+                  {area} · {t(`area.${area}`)}
                 </p>
                 {messages.map((m) => (
-                  <NavItem key={m.short} to={`/messages/${m.short}`} label={m.short} hint={m.name} mono />
+                  <NavItem
+                    key={m.short}
+                    to={`/messages/${m.short}`}
+                    label={m.short}
+                    hint={m.name}
+                    mono
+                    icon={<UI_ICONS.xml size={14} />}
+                  />
                 ))}
               </div>
             ))}
@@ -133,12 +162,14 @@ function NavItem({
   hint,
   exact,
   mono,
+  icon,
 }: {
   to: string;
   label: string;
   hint?: string;
   exact?: boolean;
   mono?: boolean;
+  icon?: ReactNode;
 }) {
   return (
     <NavLink
@@ -146,13 +177,18 @@ function NavItem({
       end={exact}
       className={({ isActive }) =>
         cn(
-          'block border-l-2 py-1 pl-2 pr-1 text-[13px] leading-snug transition-colors',
-          isActive ? 'border-signal bg-signal-soft font-medium text-ink' : 'border-transparent text-muted hover:border-rule hover:text-ink',
+          'flex items-start gap-2 border-l-2 py-1 pl-2 pr-1 text-[13px] leading-snug transition-colors',
+          isActive
+            ? 'border-signal bg-signal-soft font-medium text-ink'
+            : 'border-transparent text-muted hover:border-rule hover:text-ink',
         )
       }
     >
-      <span className={mono ? 'font-mono text-xs' : ''}>{label}</span>
-      {hint && <span className="block truncate text-[11px] text-muted">{hint}</span>}
+      {icon && <span className="mt-0.5 shrink-0 opacity-80">{icon}</span>}
+      <span className="min-w-0">
+        <span className={mono ? 'font-mono text-xs' : ''}>{label}</span>
+        {hint && <span className="block truncate text-[11px] text-muted">{hint}</span>}
+      </span>
     </NavLink>
   );
 }

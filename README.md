@@ -36,9 +36,9 @@ SIC Instant, Wero) and exception paths (reject, recall, instant timeout, payment
 
 - AIS consent (redirect SCA), SEPA PIS, STET, UK domestic payment, PIIS
 - Clearing happy path, reject (`pacs.002` RJCT), recall (`camt.056` → `pacs.004`)
-- SCT Inst timeout + `pacs.028`, Verification of Payee
+- **SCT Inst / IPR**: happy path ≤10s (TIPS), VoP-then-instant, reject-in-window, timeout + `pacs.028`, instant recall
+- Verification of Payee, Wero A2A
 - **SIC CHF** credit, **SIC IP** instant + timeout, **euroSIC** EUR leg
-- **Wero** A2A (scheme → ASPSP → SCT Inst)
 - **Payment cancellation** before settlement (`DELETE` + `camt.055`)
 
 ### The mock ASPSP
@@ -69,15 +69,19 @@ Requires Node 22 (see `.nvmrc`).
 
 ```bash
 npm install
-npm run dev        # Vite only — UI works, /api/* returns 404
-npm run dev:full   # Vite + Pages Functions on :8788
+npm start          # Vite :5173 + Wrangler Functions on :8788 (preferred)
+npm run start:ui   # Vite only — UI works, /api/* returns 404
+npm run build      # production build → dist/
+npm run serve      # build then serve dist + Functions on :8788
+npm run preview    # Vite preview of dist (no Functions) on :4173
 ```
+
+Open **http://127.0.0.1:8788** for the full stack (UI + `/api/*`). Use **http://127.0.0.1:5173** for UI-only HMR.
 
 ```bash
 npm run lint
 npm run typecheck
 npm run test
-npm run build
 ```
 
 ## Deploying

@@ -56,6 +56,12 @@ export const STANDARDS: Standard[] = [
           'One endpoint shape covers every product. The payment-product path segment decides the payload: JSON for SEPA, pain.001 XML for bulk and periodic in several markets.',
         endpoints: [
           { method: 'POST', path: '/v1/payments/{payment-product}', summary: 'Initiate a single payment', scope: 'PSP_PI' },
+          {
+            method: 'POST',
+            path: '/v1/payments/instant-sepa-credit-transfers',
+            summary: 'Initiate an SCT Inst (instant SEPA) payment',
+            scope: 'PSP_PI',
+          },
           { method: 'POST', path: '/v1/bulk-payments/{payment-product}', summary: 'Initiate a bulk payment' },
           { method: 'POST', path: '/v1/periodic-payments/{payment-product}', summary: 'Initiate a standing order' },
           { method: 'GET', path: '/v1/payments/{payment-product}/{paymentId}', summary: 'Read the initiation you sent' },
@@ -99,6 +105,8 @@ export const STANDARDS: Standard[] = [
       'A consent with access.availableAccounts=allAccounts returns the account list only. Asking for balances afterwards yields CONSENT_INVALID.',
       'scaRedirect links can expire in as little as five minutes. Do not persist them.',
       'The 90-day reauthentication rule was relaxed by RTS amendment for AIS, but ASPSP behaviour still varies — handle CONSENT_EXPIRED on every read.',
+      'instant-sepa-credit-transfers is a separate product: check capability and scheme reachability; PRODUCT_INVALID / AB05 are common.',
+      'Under the Instant Payments Regulation, Verification of Payee sits in front of SCT Inst — plan a VoP step in the PISP UX.',
     ],
   },
   {
@@ -398,6 +406,48 @@ export const STANDARDS: Standard[] = [
       'Wero settles on SCT Inst (or national instant where applicable) — clearing timeouts and pacs.002 semantics still apply.',
       'Proxy resolution is not Confirmation of Payee; still run VoP where the Instant Payments Regulation requires it.',
       'Cancellation after settlement is a recall/return path, not a wallet undo.',
+    ],
+  },
+  {
+    id: 'sct-inst',
+    name: 'SEPA Instant Credit Transfer (SCT Inst)',
+    publisher: 'European Payments Council / EU Instant Payments Regulation',
+    region: 'SEPA / EEA',
+    version: '2025 Rulebook + IPR',
+    status: 'current',
+    summary:
+      'Euro instant credit transfers: funds available in ≤10 seconds, 24/7/365. Clearing via RT1, TIPS or equivalent CSM; ISO 20022 pacs with Local Instrument INST. The Instant Payments Regulation mandates reachability, pricing parity and Verification of Payee.',
+    security: {
+      clientAuth: 'Participant credentials on the CSM; TPP side remains PSD2 eIDAS when initiated via XS2A.',
+      messageSigning: 'CSM-specific; TIPS/RT1 network authentication.',
+      tokens: 'N/A at scheme layer; PISP uses Berlin Group / national XS2A.',
+      certificates: 'Scheme participation + eIDAS for TPP initiation.',
+    },
+    scaApproaches: ['ASPSP SCA on initiation', 'Exemption where RTS allows'],
+    docsUrl: 'https://www.europeanpaymentscouncil.eu/what-we-do/sepa-instant-credit-transfer',
+    apis: [
+      {
+        id: 'sct-inst-scheme',
+        name: 'SCT Inst scheme / CSM',
+        role: 'Scheme',
+        summary: 'Inter-PSP instant credit transfer and investigation messages.',
+        endpoints: [
+          { method: 'POST', path: '/sct-inst/pacs.008', summary: 'Submit instant credit transfer (LclInstrm=INST)' },
+          { method: 'POST', path: '/sct-inst/pacs.002', summary: 'Positive or negative confirmation within the SLA' },
+          { method: 'POST', path: '/sct-inst/pacs.028', summary: 'Status request after timeout / investigation' },
+          { method: 'POST', path: '/sct-inst/pacs.004', summary: 'Return after recall acceptance' },
+          { method: 'POST', path: '/sct-inst/camt.056', summary: 'Recall / cancellation request' },
+          { method: 'POST', path: '/vop/acmt.023', summary: 'Verification of Payee (IPR)' },
+        ],
+      },
+    ],
+    gotchas: [
+      'The 10-second clock starts at time of receipt / authorisation (rulebook AT-T056 timestamp) — not at CSM hop.',
+      'Missing pacs.002 is not a failure; hold the reservation and investigate with pacs.028 before telling the PSU.',
+      'AB05 / CNOR mean the creditor PSP is not reachable for SCT Inst — fall back to SCT only with explicit PSU consent.',
+      'IPR requires Verification of Payee before instant credit transfers; close-match UX is mandatory.',
+      'Originator PSP must notify the payer of the processing outcome (positive or reject) — do not leave the PISP UI on PDNG forever.',
+      'Scheme max amount and maintenance windows still apply; planned downtime must be communicated in advance.',
     ],
   },
 ];

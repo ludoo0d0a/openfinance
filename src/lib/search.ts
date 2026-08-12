@@ -3,7 +3,8 @@ import { STANDARDS } from '@/data/standards';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
 import { CODES } from '@/data/codes';
-import { SAMPLES } from '@/data/samples';
+import { ALL_SAMPLES } from '@/data/samples';
+import { extractPayloadTags } from '@/lib/payloadTags';
 
 export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint';
 
@@ -17,6 +18,8 @@ export interface IndexedDoc {
   href: string;
   /** Extra keywords that should match but should not be displayed */
   keywords: string;
+  /** ISO / JSON element names (DbtrAgt, TxSts, …) */
+  tags: string;
 }
 
 function buildDocuments(): IndexedDoc[] {
@@ -31,6 +34,7 @@ function buildDocuments(): IndexedDoc[] {
       body: s.summary,
       href: `/standards/${s.id}`,
       keywords: [s.region, s.publisher, ...s.scaApproaches, ...s.apis.map((a) => a.role)].join(' '),
+      tags: '',
     });
 
     for (const api of s.apis) {
@@ -43,12 +47,17 @@ function buildDocuments(): IndexedDoc[] {
           body: ep.summary,
           href: `/standards/${s.id}#${api.id}`,
           keywords: [api.role, s.region, ep.scope ?? ''].join(' '),
+          tags: '',
         });
       }
     }
   }
 
   for (const m of ISO_MESSAGES) {
+    const pathTags = m.requiredPaths.flatMap((p) => p.split('/').filter(Boolean));
+    const sampleTags = ALL_SAMPLES.filter(
+      (s) => s.messageShort === m.short && s.format === 'xml' && !s.id.endsWith('-json'),
+    ).flatMap((s) => extractPayloadTags(s.content, 'xml'));
     docs.push({
       id: `message:${m.short}`,
       kind: 'message',
@@ -56,7 +65,8 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: m.name,
       body: m.purpose,
       href: `/messages/${m.short}`,
-      keywords: [m.id, m.rootElement, m.area, m.direction, ...m.tags].join(' '),
+      keywords: [m.id, m.rootElement, m.area, m.direction, ...m.tags, ...pathTags].join(' '),
+      tags: [...new Set([m.rootElement, ...pathTags, ...sampleTags])].join(' '),
     });
   }
 
@@ -68,7 +78,8 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: f.summary,
       body: f.useCase,
       href: `/flows/${f.id}`,
-      keywords: [f.category, ...f.tags, ...f.steps.map((s) => `${s.label} ${s.path ?? ''}`)].join(' '),
+      keywords: [f.category, ...f.tags, ...f.steps.map((s) => `${s.label} ${s.path ?? ''} ${s.messageShort ?? ''}`)].join(' '),
+      tags: [...new Set(f.steps.map((s) => s.messageShort).filter(Boolean))].join(' '),
     });
   }
 
@@ -80,11 +91,16 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: c.name,
       body: `${c.description} ${c.action ?? ''}`,
       href: `/codes?q=${encodeURIComponent(c.code)}`,
-      keywords: [c.family, c.severity, c.http ? String(c.http) : ''].join(' '),
+      keywords: [c.family, c.fullname, c.http ? String(c.http) : ''].join(' '),
+      tags: '',
     });
   }
 
-  for (const s of SAMPLES) {
+  for (const s of ALL_SAMPLES) {
+    // Companions duplicate the XML tag set; skip extraction to keep the index lean.
+    const payloadTags =
+      s.id.endsWith('-json') && s.format === 'json' ? [] : extractPayloadTags(s.content, s.format);
+
     docs.push({
       id: `sample:${s.id}`,
       kind: 'sample',
@@ -93,6 +109,7 @@ function buildDocuments(): IndexedDoc[] {
       body: s.description,
       href: `/samples/${s.id}`,
       keywords: [s.messageShort ?? '', s.standardId ?? '', s.format].join(' '),
+      tags: payloadTags.join(' '),
     });
   }
 
@@ -103,15 +120,16 @@ export const DOCUMENTS = buildDocuments();
 
 export function createIndex(): MiniSearch<IndexedDoc> {
   const index = new MiniSearch<IndexedDoc>({
-    fields: ['title', 'subtitle', 'body', 'keywords'],
+    fields: ['title', 'subtitle', 'body', 'keywords', 'tags'],
     storeFields: ['kind', 'title', 'subtitle', 'body', 'href'],
     searchOptions: {
-      boost: { title: 4, subtitle: 2, keywords: 1.5 },
+      boost: { title: 4, tags: 6, subtitle: 2, keywords: 1.5 },
       prefix: true,
       fuzzy: 0.2,
       combineWith: 'AND',
     },
     // Codes like UK.OBIE.Field.Missing and pacs.008.001.08 must survive tokenising.
+    // Keep camelCase tags (DbtrAgt) as single tokens.
     tokenize: (text) => text.split(/[\s,;()[\]{}"'/]+/).filter(Boolean),
     processTerm: (term) => term.toLowerCase(),
   });

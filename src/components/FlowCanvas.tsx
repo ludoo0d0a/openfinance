@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import type { ActorId, Flow, FlowStep } from '@/types';
 import { ACTORS } from '@/data/flows';
+import { ACTOR_ICON } from '@/lib/icons';
+import { ACTORS_FR, useI18n } from '@/i18n';
 
 interface Props {
   flow: Flow;
@@ -9,7 +11,7 @@ interface Props {
 }
 
 const LANE_WIDTH = 152;
-const HEADER_HEIGHT = 66;
+const HEADER_HEIGHT = 72;
 const ROW_HEIGHT = 62;
 const PADDING_X = 24;
 const PADDING_BOTTOM = 28;
@@ -19,12 +21,26 @@ const layerStroke: Record<FlowStep['layer'], string> = {
   clearing: 'var(--color-violet)',
 };
 
+const ACTOR_SVG_PATH: Record<ActorId, string> = {
+  psu: 'M12 8a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c0-4 3.5-7 8-7s8 3 8 7',
+  tpp: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
+  aspsp: 'M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6',
+  beneficiary: 'M6 22V9l6-5 6 5v13M10 22v-5h4v5',
+  sca: 'M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4zM9 12l2 2 4-4',
+  csm: 'M9 9h6v6H9zM9 12H4m16 0h-5M12 9V4m0 16v-5',
+  rail: 'M6 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18 6a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM8.2 11l7.3-3.8M8.2 13l7.3 3.8',
+  scheme: 'M19 7V5a2 2 0 0 0-2-2H5a2 2 0 1 0 0 4h14a2 2 0 1 1 0 4H5a2 2 0 1 0 0 4h12a2 2 0 0 0 2-2v-2',
+};
+
+
 /**
  * A hand-rolled sequence diagram rather than a generic graph library.
  * Payments people read swimlanes: who sent what to whom, in order, with the
  * layer boundary visible. A force-directed blob would lose all of that.
  */
 export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
+  const { locale } = useI18n();
+  const actorCopy = locale === 'fr' ? ACTORS_FR : ACTORS;
   const lanes = flow.actors;
   const laneX = useMemo(() => {
     const map = new Map<ActorId, number>();
@@ -73,39 +89,46 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
           />
         ))}
 
-        {/* Lane headers */}
+        {/* Lane headers with icons */}
         {lanes.map((id) => {
-          const actor = ACTORS[id];
+          const actor = actorCopy[id] ?? ACTORS[id];
+          const meta = ACTOR_ICON[id];
+          const x = xOf(id);
           return (
             <g key={`head-${id}`}>
-              <rect
-                x={xOf(id) - LANE_WIDTH / 2 + 8}
-                y={12}
-                width={LANE_WIDTH - 16}
-                height={38}
-                fill="var(--color-ink)"
-              />
+              <rect x={x - LANE_WIDTH / 2 + 8} y={8} width={LANE_WIDTH - 16} height={52} fill="var(--color-ink)" rx="2" />
+              <circle cx={x} cy={24} r={11} fill={meta.bg} stroke={meta.color} strokeWidth="1.5" />
+              <g
+                transform={`translate(${x - 7}, 17) scale(0.58)`}
+                fill="none"
+                stroke={meta.color}
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d={ACTOR_SVG_PATH[id]} />
+              </g>
               <text
-                x={xOf(id)}
-                y={30}
+                x={x}
+                y={46}
                 textAnchor="middle"
                 fill="#ffffff"
                 fontFamily="var(--font-display)"
-                fontSize="13"
+                fontSize="12"
                 fontWeight="600"
               >
                 {actor.label}
               </text>
               <text
-                x={xOf(id)}
-                y={43}
+                x={x}
+                y={56}
                 textAnchor="middle"
                 fill="var(--color-muted-dark)"
                 fontFamily="var(--font-mono)"
-                fontSize="8"
-                letterSpacing="0.08em"
+                fontSize="7.5"
+                letterSpacing="0.06em"
               >
-                {actor.sublabel.toUpperCase()}
+                {meta.label.toUpperCase()}
               </text>
             </g>
           );

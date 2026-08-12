@@ -6,7 +6,8 @@ import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
 
 const RAILS = [
-  { id: 'rail:sepa', label: 'SEPA / SCT Inst', href: '/flows/clearing-sct-happy-path' },
+  { id: 'rail:sepa', label: 'SEPA SCT', href: '/flows/clearing-sct-happy-path' },
+  { id: 'rail:sctinst', label: 'SCT Inst / TIPS', href: '/flows/sct-inst-happy-path' },
   { id: 'rail:sic', label: 'SIC CHF', href: '/flows/sic-chf-credit' },
   { id: 'rail:eurosic', label: 'euroSIC', href: '/flows/eurosic-eur-credit' },
   { id: 'rail:sicip', label: 'SIC IP', href: '/flows/sic-ip-instant' },
@@ -73,6 +74,9 @@ function buildElements(): ElementDefinition[] {
       addEdge(standardNode, 'rail:sic', flow.name);
     } else if (tags.some((t) => t.includes('wero') || t.includes('epi'))) {
       addEdge(standardNode, 'rail:wero', flow.name);
+      addEdge(standardNode, 'rail:sctinst', 'settles on SCT Inst');
+    } else if (tags.some((t) => t.includes('sct-inst') || t.includes('tips') || t === 'instant')) {
+      addEdge(standardNode, 'rail:sctinst', flow.name);
     } else if (
       flow.category === 'clearing' ||
       flow.category === 'exception' ||
@@ -89,13 +93,18 @@ function buildElements(): ElementDefinition[] {
       if (tags.some((t) => t.includes('sic-ip'))) addEdge(messageNode, 'rail:sicip');
       else if (tags.some((t) => t.includes('eurosic'))) addEdge(messageNode, 'rail:eurosic');
       else if (tags.some((t) => t === 'sic' || t.includes('chf'))) addEdge(messageNode, 'rail:sic');
-      else if (tags.some((t) => t.includes('wero'))) addEdge(messageNode, 'rail:wero');
+      else if (tags.some((t) => t.includes('wero'))) {
+        addEdge(messageNode, 'rail:wero');
+        addEdge(messageNode, 'rail:sctinst');
+      } else if (tags.some((t) => t.includes('sct-inst') || t.includes('tips'))) addEdge(messageNode, 'rail:sctinst');
       else if (step.layer === 'clearing') addEdge(messageNode, 'rail:sepa');
     }
   }
 
-  // Explicit scheme ↔ instant rail link for Wero.
-  addEdge('standard:wero', 'rail:sepa', 'SCT Inst settlement');
+  // Explicit scheme ↔ rail links.
+  addEdge('standard:wero', 'rail:sctinst', 'SCT Inst settlement');
+  addEdge('standard:sct-inst', 'rail:sctinst');
+  addEdge('standard:berlin-group', 'rail:sctinst', 'instant-sepa-credit-transfers');
   addEdge('standard:swiss-sps', 'rail:sic');
   addEdge('standard:swiss-sps', 'rail:eurosic');
   addEdge('standard:swiss-sps', 'rail:sicip');

@@ -1,8 +1,12 @@
 import type { Sample } from '@/types';
+import { xmlToJsonString } from '@/lib/isoCodec';
 
 /**
  * Payloads are realistic but entirely synthetic: test IBANs, the FR76 reserved
  * range where possible, and BICs ending XXX. Nothing here belongs to anyone.
+ *
+ * Hand-authored entries live in SAMPLES. Every ISO XML sample also gets a
+ * derived JSON companion so each message can be inspected as XML or JSON.
  */
 export const SAMPLES: Sample[] = [
   // ── Berlin Group JSON ───────────────────────────────────────────────────
@@ -1121,8 +1125,448 @@ export const SAMPLES: Sample[] = [
   </CstmrPmtCxlReq>
 </Document>`,
   },
+  {
+    id: 'bg-instant-payment-request',
+    label: 'Berlin Group SCT Inst initiation',
+    format: 'json',
+    standardId: 'berlin-group',
+    description:
+      'Same JSON shape as sepa-credit-transfers; the path product instant-sepa-credit-transfers selects SCT Inst processing.',
+    content: `{
+  "instructedAmount": { "currency": "EUR", "amount": "42.50" },
+  "debtorAccount": { "iban": "FR7630006000011234567890189" },
+  "creditorAccount": { "iban": "DE89370400440532013000" },
+  "creditorName": "Atelier Rousseau SARL",
+  "remittanceInformationUnstructured": "Commande express 8842",
+  "endToEndIdentification": "E2E-INST-2026-0042"
+}`,
+  },
+  {
+    id: 'bg-instant-payment-status-acsc',
+    label: 'Berlin Group SCT Inst status ACSC',
+    format: 'json',
+    standardId: 'berlin-group',
+    description: 'Terminal success after pacs.002 ACSC. IPR expects the payer to be notified of this outcome.',
+    content: `{
+  "transactionStatus": "ACSC",
+  "paymentId": "inst-pay-0042",
+  "fundsAvailable": true
+}`,
+  },
+  {
+    id: 'bg-instant-payment-status-rjct',
+    label: 'Berlin Group SCT Inst status RJCT',
+    format: 'json',
+    standardId: 'berlin-group',
+    description: 'Instant reject surfaced to the TPP. Prefer mapping ISO reason codes when the ASPSP provides them.',
+    content: `{
+  "transactionStatus": "RJCT",
+  "paymentId": "inst-pay-0042",
+  "tppMessages": [
+    {
+      "category": "ERROR",
+      "code": "PAYMENT_FAILED",
+      "text": "Creditor agent not reachable for SCT Inst (AB05)"
+    }
+  ]
+}`,
+  },
+  {
+    id: 'bg-instant-payment-status-pdng',
+    label: 'Berlin Group SCT Inst status PDNG',
+    format: 'json',
+    standardId: 'berlin-group',
+    description: 'Ambiguous instant state during timeout investigation — never treat as failure or retry initiation.',
+    content: `{
+  "transactionStatus": "PDNG",
+  "paymentId": "inst-pay-0042"
+}`,
+  },
+  {
+    id: 'pacs-008-sct-inst',
+    label: 'pacs.008 SCT Inst (TIPS)',
+    format: 'xml',
+    messageShort: 'pacs.008',
+    standardId: 'sct-inst',
+    description:
+      'Interbank instant credit transfer. LclInstrm=INST and ClrSys for TIPS (or RT1). Settlement amount equals instructed amount.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>PACS8-INST-20260812-0042</MsgId>
+      <CreDtTm>2026-08-12T14:22:01.120</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <TtlIntrBkSttlmAmt Ccy="EUR">42.50</TtlIntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-08-12</IntrBkSttlmDt>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+        <ClrSys><Cd>TIPS</Cd></ClrSys>
+      </SttlmInf>
+      <InstgAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></InstdAgt>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INSTR-INST-0042</InstrId>
+        <EndToEndId>E2E-INST-2026-0042</EndToEndId>
+        <TxId>TX-INST-00000042</TxId>
+      </PmtId>
+      <PmtTpInf>
+        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
+        <LclInstrm><Cd>INST</Cd></LclInstrm>
+      </PmtTpInf>
+      <IntrBkSttlmAmt Ccy="EUR">42.50</IntrBkSttlmAmt>
+      <AccptncDtTm>2026-08-12T14:22:01.120</AccptncDtTm>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr><Nm>Marie Lefebvre</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></CdtrAgt>
+      <Cdtr><Nm>Atelier Rousseau SARL</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></CdtrAcct>
+      <RmtInf><Ustrd>Commande express 8842</Ustrd></RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>`,
+  },
+  {
+    id: 'pacs-002-sct-inst',
+    label: 'pacs.002 SCT Inst ACSC ack',
+    format: 'xml',
+    messageShort: 'pacs.002',
+    standardId: 'sct-inst',
+    description: 'Positive instant acknowledgement — funds made available inside the SLA.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>PACS2-INST-20260812-0042</MsgId>
+      <CreDtTm>2026-08-12T14:22:03.890</CreDtTm>
+      <InstgAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></InstdAgt>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PACS8-INST-20260812-0042</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+      <OrgnlCreDtTm>2026-08-12T14:22:01.120</OrgnlCreDtTm>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <OrgnlEndToEndId>E2E-INST-2026-0042</OrgnlEndToEndId>
+      <OrgnlTxId>TX-INST-00000042</OrgnlTxId>
+      <TxSts>ACSC</TxSts>
+      <AccptncDtTm>2026-08-12T14:22:03.850</AccptncDtTm>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>`,
+  },
+  {
+    id: 'pacs-002-sct-inst-reject',
+    label: 'pacs.002 SCT Inst RJCT (AB05)',
+    format: 'xml',
+    messageShort: 'pacs.002',
+    standardId: 'sct-inst',
+    description: 'Negative instant confirmation — creditor agent not reachable for SCT Inst.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>PACS2-INST-20260812-0099</MsgId>
+      <CreDtTm>2026-08-12T14:22:04.010</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PACS8-INST-20260812-0042</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <OrgnlEndToEndId>E2E-INST-2026-0042</OrgnlEndToEndId>
+      <OrgnlTxId>TX-INST-00000042</OrgnlTxId>
+      <TxSts>RJCT</TxSts>
+      <StsRsnInf>
+        <Rsn><Cd>AB05</Cd></Rsn>
+        <AddtlInf>Creditor PSP not reachable for SCT Inst</AddtlInf>
+      </StsRsnInf>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>`,
+  },
+  {
+    id: 'pacs-028-sct-inst',
+    label: 'pacs.028 SCT Inst status request',
+    format: 'xml',
+    messageShort: 'pacs.028',
+    standardId: 'sct-inst',
+    description: 'Investigation after missing pacs.002 inside the instant window.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.028.001.04">
+  <FIToFIPmtStsReq>
+    <GrpHdr>
+      <MsgId>PACS28-INST-20260812-0042</MsgId>
+      <CreDtTm>2026-08-12T14:22:12.000</CreDtTm>
+      <InstgAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></InstdAgt>
+    </GrpHdr>
+    <TxInf>
+      <OrgnlEndToEndId>E2E-INST-2026-0042</OrgnlEndToEndId>
+      <OrgnlTxId>TX-INST-00000042</OrgnlTxId>
+      <OrgnlTxRef>
+        <IntrBkSttlmAmt Ccy="EUR">42.50</IntrBkSttlmAmt>
+        <IntrBkSttlmDt>2026-08-12</IntrBkSttlmDt>
+      </OrgnlTxRef>
+    </TxInf>
+  </FIToFIPmtStsReq>
+</Document>`,
+  },
+
+  {
+    id: 'pain-008-sdd',
+    label: 'pain.008 SEPA direct debit',
+    format: 'xml',
+    messageShort: 'pain.008',
+    description: 'SDD Core collection with mandate id and sequence type. Creditor initiates; debtor account is debited.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08">
+  <CstmrDrctDbtInitn>
+    <GrpHdr>
+      <MsgId>PAIN8-20260812-001</MsgId>
+      <CreDtTm>2026-08-12T08:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>59.90</CtrlSum>
+      <InitgPty><Nm>Atelier Rousseau SARL</Nm></InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMTINF-SDD-001</PmtInfId>
+      <PmtMtd>DD</PmtMtd>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>59.90</CtrlSum>
+      <ReqdColltnDt>2026-08-15</ReqdColltnDt>
+      <Cdtr><Nm>Atelier Rousseau SARL</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></CdtrAcct>
+      <CdtrAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></CdtrAgt>
+      <CdtrSchmeId><Id><PrvtId><Othr><Id>FR12ZZZ123456</Id><SchmeNm><Prtry>SEPA</Prtry></SchmeNm></Othr></PrvtId></Id></CdtrSchmeId>
+      <DrctDbtTxInf>
+        <PmtId><EndToEndId>E2E-SDD-2026-0001</EndToEndId></PmtId>
+        <InstdAmt Ccy="EUR">59.90</InstdAmt>
+        <DrctDbtTx>
+          <MndtRltdInf>
+            <MndtId>MND-8842</MndtId>
+            <DtOfSgntr>2024-03-01</DtOfSgntr>
+          </MndtRltdInf>
+        </DrctDbtTx>
+        <DbtrAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></DbtrAgt>
+        <Dbtr><Nm>Marie Lefebvre</Nm></Dbtr>
+        <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+      </DrctDbtTxInf>
+    </PmtInf>
+  </CstmrDrctDbtInitn>
+</Document>`,
+  },
+  {
+    id: 'pain-013-rtp',
+    label: 'pain.013 request to pay',
+    format: 'xml',
+    messageShort: 'pain.013',
+    description: 'Creditor payment activation request — the ISO shape behind Request-to-Pay.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.013.001.09">
+  <CdtrPmtActvtnReq>
+    <GrpHdr>
+      <MsgId>PAIN13-20260812-001</MsgId>
+      <CreDtTm>2026-08-12T09:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <InitgPty><Nm>Atelier Rousseau SARL</Nm></InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMTINF-RTP-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <ReqdExctnDt><Dt>2026-08-12</Dt></ReqdExctnDt>
+      <Dbtr><Nm>Marie Lefebvre</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></DbtrAgt>
+      <CdtTrfTx>
+        <PmtId><EndToEndId>E2E-RTP-2026-0001</EndToEndId></PmtId>
+        <Amt><InstdAmt Ccy="EUR">125.00</InstdAmt></Amt>
+        <Cdtr><Nm>Atelier Rousseau SARL</Nm></Cdtr>
+        <CdtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></CdtrAcct>
+        <RmtInf><Ustrd>Facture RTP 2026-12</Ustrd></RmtInf>
+      </CdtTrfTx>
+    </PmtInf>
+  </CdtrPmtActvtnReq>
+</Document>`,
+  },
+  {
+    id: 'pain-014-rtp-status',
+    label: 'pain.014 RTP status report',
+    format: 'xml',
+    messageShort: 'pain.014',
+    description: 'Status answer to a pain.013 — here accepted (ACTC).',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.014.001.09">
+  <CdtrPmtActvtnReqStsRpt>
+    <GrpHdr>
+      <MsgId>PAIN14-20260812-001</MsgId>
+      <CreDtTm>2026-08-12T09:01:00</CreDtTm>
+      <InitgPty><Nm>Banque de Démonstration</Nm></InitgPty>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PAIN13-20260812-001</OrgnlMsgId>
+      <OrgnlMsgNmId>pain.013.001.09</OrgnlMsgNmId>
+      <GrpSts>ACTC</GrpSts>
+    </OrgnlGrpInfAndSts>
+  </CdtrPmtActvtnReqStsRpt>
+</Document>`,
+  },
+  {
+    id: 'pacs-009-fi-credit',
+    label: 'pacs.009 FI credit transfer',
+    format: 'xml',
+    messageShort: 'pacs.009',
+    description: 'Bank-to-bank credit — cover or liquidity, not a customer payment.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.009.001.09">
+  <FICdtTrf>
+    <GrpHdr>
+      <MsgId>PACS9-20260812-001</MsgId>
+      <CreDtTm>2026-08-12T10:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>INDA</SttlmMtd></SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <TxId>TX-FI-0000001</TxId>
+        <EndToEndId>E2E-FI-2026-0001</EndToEndId>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="EUR">1000000.00</IntrBkSttlmAmt>
+      <DbtrAgt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></CdtrAgt>
+      <Dbtr><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></Dbtr>
+      <Cdtr><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></Cdtr>
+    </CdtTrfTxInf>
+  </FICdtTrf>
+</Document>`,
+  },
+  {
+    id: 'camt-053-statement',
+    label: 'camt.053 end-of-day statement',
+    format: 'xml',
+    messageShort: 'camt.053',
+    description: 'Bank-to-customer statement with closing booked balance.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>CAMT53-20260812-001</MsgId>
+      <CreDtTm>2026-08-12T23:05:00</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>STMT-20260812</Id>
+      <CreDtTm>2026-08-12T23:05:00</CreDtTm>
+      <Acct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></Acct>
+      <Bal>
+        <Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+        <Amt Ccy="EUR">4820.15</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt><Dt>2026-08-12</Dt></Dt>
+      </Bal>
+      <Ntry>
+        <Amt Ccy="EUR">42.50</Amt>
+        <CdtDbtInd>DBIT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-08-12</Dt></BookgDt>
+        <NtryDtls><TxDtls><Refs><EndToEndId>E2E-INST-2026-0042</EndToEndId></Refs></TxDtls></NtryDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>`,
+  },
+  {
+    id: 'camt-026-unable-to-apply',
+    label: 'camt.026 unable to apply',
+    format: 'xml',
+    messageShort: 'camt.026',
+    description: 'Investigation: payment received but cannot be applied — missing remittance.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.026.001.10">
+  <UblToApply>
+    <Assgnmt>
+      <Id>CAMT26-20260812-001</Id>
+      <Assgnr><Agt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></Agt></Assgnr>
+      <Assgne><Agt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></Agt></Assgne>
+      <CreDtTm>2026-08-12T11:00:00</CreDtTm>
+    </Assgnmt>
+    <Case>
+      <Id>CASE-UNABLE-0001</Id>
+      <Cretr><Agt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></Agt></Cretr>
+    </Case>
+    <Undrlyg>
+      <IntrBk>
+        <OrgnlEndToEndId>E2E-2026-0842</OrgnlEndToEndId>
+        <OrgnlTxId>TX-DEMO-0000771412</OrgnlTxId>
+      </IntrBk>
+    </Undrlyg>
+  </UblToApply>
+</Document>`,
+  },
+  {
+    id: 'camt-087-modify',
+    label: 'camt.087 request to modify payment',
+    format: 'xml',
+    messageShort: 'camt.087',
+    description: 'Ask to correct a field (e.g. creditor name) instead of returning the payment.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.087.001.09">
+  <ReqToModfyPmt>
+    <Assgnmt>
+      <Id>CAMT87-20260812-001</Id>
+      <Assgnr><Agt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></Agt></Assgnr>
+      <Assgne><Agt><FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId></Agt></Assgne>
+      <CreDtTm>2026-08-12T11:30:00</CreDtTm>
+    </Assgnmt>
+    <Case>
+      <Id>CASE-MOD-0001</Id>
+      <Cretr><Agt><FinInstnId><BICFI>DEMOFRPPXXX</BICFI></FinInstnId></Agt></Cretr>
+    </Case>
+    <Undrlyg>
+      <IntrBk>
+        <OrgnlEndToEndId>E2E-2026-0842</OrgnlEndToEndId>
+        <OrgnlTxId>TX-DEMO-0000771412</OrgnlTxId>
+      </IntrBk>
+    </Undrlyg>
+  </ReqToModfyPmt>
+</Document>`,
+  },
 ];
 
-export const sampleById = (id: string) => SAMPLES.find((s) => s.id === id);
-export const samplesForMessage = (short: string) => SAMPLES.filter((s) => s.messageShort === short);
-export const samplesForStandard = (id: string) => SAMPLES.filter((s) => s.standardId === id);
+function jsonCompanion(sample: Sample): Sample | null {
+  if (sample.format !== 'xml' || !sample.messageShort) return null;
+  try {
+    return {
+      id: `${sample.id}-json`,
+      label: `${sample.label} (JSON)`,
+      format: 'json',
+      messageShort: sample.messageShort,
+      standardId: sample.standardId,
+      description: `JSON representation of ${sample.messageShort}. Same business data as XML sample \`${sample.id}\`.`,
+      content: xmlToJsonString(sample.content),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Hand-authored samples plus JSON companions for every ISO XML payload. */
+export const ALL_SAMPLES: Sample[] = [
+  ...SAMPLES,
+  ...SAMPLES.map(jsonCompanion).filter((s): s is Sample => s !== null),
+];
+
+export const sampleById = (id: string) => ALL_SAMPLES.find((s) => s.id === id);
+
+export const samplesForMessage = (short: string) =>
+  ALL_SAMPLES.filter((s) => s.messageShort === short).sort((a, b) => {
+    if (a.format === b.format) return a.label.localeCompare(b.label);
+    return a.format === 'xml' ? -1 : 1;
+  });
+
+export const samplesForStandard = (id: string) =>
+  ALL_SAMPLES.filter((s) => s.standardId === id && !s.id.endsWith('-json'));

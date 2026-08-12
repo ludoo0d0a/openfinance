@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { FileCode2, Braces } from 'lucide-react';
 import { parseXml, searchNodes, type XmlNode } from '@/lib/xml';
+import { tryJsonToXml, tryXmlToJsonString } from '@/lib/isoCodec';
 import { cn } from '@/lib/cn';
 import type { ValidationResult } from '@/types';
+import { useT } from '@/i18n';
 
 interface Props {
   content: string;
@@ -10,43 +13,148 @@ interface Props {
   title: string;
   description?: string;
   onContentChange?: (next: string) => void;
+  /**
+   * When true (default for ISO XML), expose an XML | JSON switch.
+   * Editing in the alternate format is converted back to the source format.
+   */
+  allowAltFormat?: boolean;
+  /** Prefill the tree filter (e.g. from search ?q=DbtrAgt). */
+  initialFilter?: string;
 }
 
 type Tab = 'tree' | 'raw' | 'validate';
+type ViewFormat = 'xml' | 'json';
 
-export function PayloadInspector({ content, format, title, description, onContentChange }: Props) {
+export function PayloadInspector({
+  content,
+  format,
+  title,
+  description,
+  onContentChange,
+  allowAltFormat,
+  initialFilter = '',
+}: Props) {
+  const t = useT();
+  const dual = allowAltFormat ?? format === 'xml';
+  const [viewFormat, setViewFormat] = useState<ViewFormat>(format);
   const [tab, setTab] = useState<Tab>('tree');
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState(initialFilter);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [convertError, setConvertError] = useState<string | null>(null);
 
-  const parsed = useMemo(() => (format === 'xml' ? parseXml(content) : null), [content, format]);
-  // Always evaluated so the discriminated union narrows without a null check.
-  const jsonTree = useMemo(() => safeJson(format === 'json' ? content : 'null'), [content, format]);
+  useEffect(() => {
+    setViewFormat(format);
+    setConvertError(null);
+    setValidation(null);
+  }, [format]);
+
+  useEffect(() => {
+    setFilter(initialFilter);
+    if (initialFilter.trim()) setTab('tree');
+  }, [initialFilter]);
+
+  // Clear validation when the source payload changes (e.g. new sample / form rebuild).
+  useEffect(() => {
+    setValidation(null);
+    setConvertError(null);
+  }, [content]);
+
+  const displayContent = useMemo(() => {
+    if (viewFormat === format) return content;
+    if (format === 'xml' && viewFormat === 'json') {
+      const result = tryXmlToJsonString(content);
+      return result.ok ? result.json : null;
+    }
+    if (format === 'json' && viewFormat === 'xml') {
+      const result = tryJsonToXml(content);
+      return result.ok ? result.xml : null;
+    }
+    return content;
+  }, [content, format, viewFormat]);
+
+  const displayError = useMemo(() => {
+    if (viewFormat === format) return null;
+    if (format === 'xml' && viewFormat === 'json') {
+      const result = tryXmlToJsonString(content);
+      return result.ok ? null : result.error;
+    }
+    if (format === 'json' && viewFormat === 'xml') {
+      const result = tryJsonToXml(content);
+      return result.ok ? null : result.error;
+    }
+    return null;
+  }, [content, format, viewFormat]);
+
+  const effective = displayContent ?? '';
+  const effectiveFormat = viewFormat;
+
+  const parsed = useMemo(
+    () => (effectiveFormat === 'xml' && displayContent ? parseXml(displayContent) : null),
+    [displayContent, effectiveFormat],
+  );
+  const jsonTree = useMemo(
+    () => safeJson(effectiveFormat === 'json' && displayContent ? displayContent : 'null'),
+    [displayContent, effectiveFormat],
+  );
 
   const matches = useMemo(() => {
-    if (format !== 'xml' || !filter.trim()) return null;
+    if (effectiveFormat !== 'xml' || !filter.trim()) return null;
     return new Set(searchNodes(parsed?.root ?? null, filter).map((n) => n.path + n.name));
-  }, [format, filter, parsed]);
+  }, [effectiveFormat, filter, parsed]);
 
-  // Only XML can be structurally validated, so JSON gets two tabs.
-  const tabs: Tab[] = format === 'xml' ? ['tree', 'raw', 'validate'] : ['tree', 'raw'];
+  const tabs: Tab[] = effectiveFormat === 'xml' ? ['tree', 'raw', 'validate'] : ['tree', 'raw'];
   const activeTab: Tab = tabs.includes(tab) ? tab : 'tree';
+
+  function handleRawChange(next: string) {
+    if (!onContentChange) return;
+    if (viewFormat === format) {
+      onContentChange(next);
+      return;
+    }
+    // Editing alternate format — convert back to the source format for the parent.
+    if (format === 'xml' && viewFormat === 'json') {
+      const result = tryJsonToXml(next);
+      if (!result.ok) {
+        setConvertError(result.error);
+        return;
+      }
+      setConvertError(null);
+      onContentChange(result.xml);
+      return;
+    }
+    if (format === 'json' && viewFormat === 'xml') {
+      const result = tryXmlToJsonString(next);
+      if (!result.ok) {
+        setConvertError(result.error);
+        return;
+      }
+      setConvertError(null);
+      onContentChange(result.json);
+    }
+  }
 
   async function runValidation() {
     setValidating(true);
     setValidationError(null);
+    const xml =
+      format === 'xml' ? content : viewFormat === 'xml' && displayContent ? displayContent : null;
+    if (!xml) {
+      setValidationError('Validation needs XML. Switch to the XML view or provide an XML source.');
+      setValidating(false);
+      return;
+    }
     try {
       const res = await fetch('/api/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ xml: content }),
+        body: JSON.stringify({ xml }),
       });
       if (!res.ok) throw new Error(`Validator returned ${res.status}`);
       setValidation((await res.json()) as ValidationResult);
     } catch {
-      setValidationError('Validator unreachable. Run `npm run dev:full` to serve the Pages Functions alongside Vite.');
+      setValidationError('Validator unreachable. Run `npm start` so Pages Functions serve /api/validate.');
     } finally {
       setValidating(false);
     }
@@ -56,45 +164,68 @@ export function PayloadInspector({ content, format, title, description, onConten
     <section className="panel-ink flex min-h-0 flex-col">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-line px-4 py-3">
         <div className="min-w-0">
-          <p className="eyebrow-dark">{format === 'xml' ? 'ISO 20022 payload' : 'API payload'}</p>
+          <p className="eyebrow-dark inline-flex items-center gap-1.5">
+            {effectiveFormat === 'xml' ? <FileCode2 size={12} aria-hidden /> : <Braces size={12} aria-hidden />}
+            {format === 'xml' || dual ? t('payload.isoPayload') : t('payload.apiPayload')}
+            {dual && <span className="text-muted-dark">· {effectiveFormat.toUpperCase()}</span>}
+          </p>
           <h3 className="truncate text-sm font-semibold text-white">{title}</h3>
         </div>
-        <nav className="flex shrink-0 gap-px" aria-label="Payload view">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => {
-                setTab(t);
-                if (t === 'validate' && !validation && !validating) void runValidation();
-              }}
-              className={cn(
-                'px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest transition-colors',
-                activeTab === t ? 'bg-white text-ink' : 'bg-ink-raised text-muted-dark hover:text-white',
-              )}
-            >
-              {t}
-            </button>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-2">
+          {dual && (
+            <div className="flex gap-px" role="group" aria-label="Payload format">
+              <FormatBtn active={viewFormat === 'xml'} onClick={() => setViewFormat('xml')}>
+                <FileCode2 size={11} aria-hidden /> XML
+              </FormatBtn>
+              <FormatBtn active={viewFormat === 'json'} onClick={() => setViewFormat('json')}>
+                <Braces size={11} aria-hidden /> JSON
+              </FormatBtn>
+            </div>
+          )}
+          <nav className="flex shrink-0 gap-px" aria-label="Payload view">
+            {tabs.map((tabKey) => (
+              <button
+                key={tabKey}
+                type="button"
+                onClick={() => {
+                  setTab(tabKey);
+                  if (tabKey === 'validate' && !validation && !validating) void runValidation();
+                }}
+                className={cn(
+                  'px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest transition-colors',
+                  activeTab === tabKey ? 'bg-white text-ink' : 'bg-ink-raised text-muted-dark hover:text-white',
+                )}
+              >
+                {tabKey === 'raw' ? effectiveFormat : tabKey === 'tree' ? t('payload.tree') : t('payload.validate')}
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
 
-      {description && <p className="border-b border-ink-line px-4 py-2.5 text-[13px] leading-relaxed text-muted-dark">{description}</p>}
+      {description && (
+        <p className="border-b border-ink-line px-4 py-2.5 text-[13px] leading-relaxed text-muted-dark">{description}</p>
+      )}
+      {(displayError || convertError) && (
+        <p className="border-b border-ink-line px-4 py-2 text-[12px] text-ochre">{displayError ?? convertError}</p>
+      )}
 
-      {activeTab === 'tree' && (
+      {activeTab === 'tree' && displayContent !== null && (
         <>
           <div className="border-b border-ink-line px-4 py-2">
             <input
               type="search"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder={format === 'xml' ? 'Filter elements, values, attributes…' : 'Filter keys and values…'}
+              placeholder={
+                effectiveFormat === 'xml' ? t('payload.filterXml') : t('payload.filterJson')
+              }
               className="w-full bg-transparent font-mono text-xs text-white placeholder:text-muted-dark focus:outline-none"
-              aria-label="Filter payload"
+              aria-label={t('payload.filterAria')}
             />
           </div>
           <div className="scroll-ink min-h-0 flex-1 overflow-auto px-2 py-2 font-mono text-xs">
-            {format === 'xml' ? (
+            {effectiveFormat === 'xml' ? (
               parsed?.wellFormed && parsed.root ? (
                 <XmlTree node={parsed.root} matches={matches} filter={filter} />
               ) : (
@@ -109,18 +240,18 @@ export function PayloadInspector({ content, format, title, description, onConten
         </>
       )}
 
-      {activeTab === 'raw' && (
+      {activeTab === 'raw' && displayContent !== null && (
         <div className="min-h-0 flex-1">
           {onContentChange ? (
             <textarea
-              value={content}
-              onChange={(e) => onContentChange(e.target.value)}
+              value={effective}
+              onChange={(e) => handleRawChange(e.target.value)}
               spellCheck={false}
               aria-label="Editable payload"
               className="scroll-ink h-full w-full resize-none bg-transparent p-4 font-mono text-xs leading-relaxed text-[#dfe5ee] focus:outline-none"
             />
           ) : (
-            <pre className="scroll-ink h-full overflow-auto p-4 text-xs leading-relaxed text-[#dfe5ee]">{content}</pre>
+            <pre className="scroll-ink h-full overflow-auto p-4 text-xs leading-relaxed text-[#dfe5ee]">{effective}</pre>
           )}
         </div>
       )}
@@ -136,27 +267,61 @@ export function PayloadInspector({ content, format, title, description, onConten
             disabled={validating}
             className="mt-4 border border-ink-line px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-white hover:bg-ink-raised disabled:opacity-40"
           >
-            Run check again
+            {t('payload.runAgain')}
           </button>
         </div>
       )}
 
       <footer className="flex flex-wrap gap-x-5 gap-y-1 border-t border-ink-line px-4 py-2 font-mono text-[10px] text-muted-dark">
-        {format === 'xml' && parsed && (
+        {effectiveFormat === 'xml' && parsed && (
           <>
             <span>{parsed.stats.elements} elements</span>
             <span>depth {parsed.stats.depth}</span>
             {parsed.messageId && <span className="text-white">{parsed.messageId}</span>}
           </>
         )}
-        <span>{content.length} chars</span>
+        <span>{effective.length} chars</span>
+        <span className="uppercase">{effectiveFormat}</span>
         {matches && <span className="text-signal">{matches.size} matches</span>}
       </footer>
     </section>
   );
 }
 
-function XmlTree({ node, matches, filter, depth = 0 }: { node: XmlNode; matches: Set<string> | null; filter: string; depth?: number }) {
+function FormatBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-widest',
+        active ? 'bg-white text-ink' : 'bg-ink-raised text-muted-dark hover:text-white',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function XmlTree({
+  node,
+  matches,
+  filter,
+  depth = 0,
+}: {
+  node: XmlNode;
+  matches: Set<string> | null;
+  filter: string;
+  depth?: number;
+}) {
   const [open, setOpen] = useState(depth < 4);
   const hasChildren = node.children.length > 0;
   const isMatch = matches?.has(node.path + node.name) ?? false;
@@ -175,37 +340,29 @@ function XmlTree({ node, matches, filter, depth = 0 }: { node: XmlNode; matches:
         {hasChildren ? (
           <button
             type="button"
-            onClick={() => setOpen(!open)}
-            aria-expanded={open}
-            aria-label={`${open ? 'Collapse' : 'Expand'} ${node.name}`}
-            className="w-3 shrink-0 text-left text-muted-dark hover:text-white"
+            onClick={() => setOpen((v) => !v)}
+            className="w-3 shrink-0 text-muted-dark"
+            aria-label={open ? 'Collapse' : 'Expand'}
           >
-            {open ? '−' : '+'}
+            {open ? '▾' : '▸'}
           </button>
         ) : (
           <span className="w-3 shrink-0" />
         )}
-
-        <span className="text-[#8fb4ff]">{node.name}</span>
-
-        {Object.entries(node.attributes)
-          .filter(([k]) => !k.startsWith('xmlns'))
-          .map(([k, v]) => (
-            <span key={k} className="text-ochre">
-              {k}=&quot;{v}&quot;
-            </span>
-          ))}
-
-        {node.text !== null && <span className="text-jade">{node.text}</span>}
+        <span className="text-signal">{'<'}</span>
+        <span className="text-[#9ecbff]">{node.name}</span>
+        {Object.entries(node.attributes).map(([k, v]) => (
+          <span key={k} className="text-muted-dark">
+            {' '}
+            <span className="text-ochre">{k}</span>=<span className="text-jade">"{v}"</span>
+          </span>
+        ))}
+        <span className="text-signal">{hasChildren || node.text ? '>' : ' />'}</span>
+        {node.text && !hasChildren && <span className="text-[#dfe5ee]">{node.text}</span>}
       </div>
-
-      {hasChildren && open && (
-        <div className="border-l border-ink-line">
-          {node.children.map((child, i) => (
-            <XmlTree key={`${child.path}-${i}`} node={child} matches={matches} filter={filter} depth={depth + 1} />
-          ))}
-        </div>
-      )}
+      {open && hasChildren && node.children.map((child, i) => (
+        <XmlTree key={`${child.path}-${i}`} node={child} matches={matches} filter={filter} depth={depth + 1} />
+      ))}
     </div>
   );
 }
@@ -215,99 +372,93 @@ function subtreeHasMatch(node: XmlNode, matches: Set<string>): boolean {
   return node.children.some((c) => subtreeHasMatch(c, matches));
 }
 
-function JsonTree({ value, name, filter, depth }: { value: unknown; name: string; filter: string; depth: number }) {
+function JsonTree({
+  value,
+  name,
+  filter,
+  depth,
+}: {
+  value: unknown;
+  name: string;
+  filter: string;
+  depth: number;
+}) {
   const [open, setOpen] = useState(depth < 3);
   const q = filter.trim().toLowerCase();
+  const selfMatch = !q || name.toLowerCase().includes(q) || String(value).toLowerCase().includes(q);
 
-  if (value === null || typeof value !== 'object') {
-    const rendered = typeof value === 'string' ? `"${value}"` : String(value);
-    const hit = q && (name.toLowerCase().includes(q) || rendered.toLowerCase().includes(q));
-    if (q && !hit) return null;
+  if (value !== null && typeof value === 'object') {
+    const entries = Array.isArray(value)
+      ? value.map((v, i) => [String(i), v] as const)
+      : Object.entries(value as Record<string, unknown>);
+    const childMatch = q
+      ? entries.some(([k, v]) => jsonSubtreeMatches(k, v, q))
+      : true;
+    if (q && !selfMatch && !childMatch) return null;
+
     return (
-      <div style={{ paddingLeft: depth * 14 }} className={cn('px-1.5 py-[3px]', hit && 'bg-signal/25')}>
-        <span className="text-[#8fb4ff]">{name}</span>
-        <span className="text-muted-dark">: </span>
-        <span className={typeof value === 'string' ? 'text-jade' : 'text-ochre'}>{rendered}</span>
+      <div style={{ paddingLeft: depth === 0 ? 0 : 14 }}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-baseline gap-1.5 px-1.5 py-[3px] hover:bg-ink-raised"
+        >
+          <span className="w-3 text-muted-dark">{open ? '▾' : '▸'}</span>
+          <span className="text-[#9ecbff]">{name}</span>
+          <span className="text-muted-dark">{Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`}</span>
+        </button>
+        {open &&
+          entries.map(([k, v]) => <JsonTree key={k} value={v} name={k} filter={filter} depth={depth + 1} />)}
       </div>
     );
   }
 
-  const entries = Array.isArray(value) ? value.map((v, i) => [String(i), v] as const) : Object.entries(value);
+  if (q && !selfMatch) return null;
 
   return (
-    <div>
-      <div style={{ paddingLeft: depth * 14 }} className="px-1.5 py-[3px]">
-        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="text-muted-dark hover:text-white">
-          {open ? '−' : '+'}
-        </button>{' '}
-        <span className="text-[#8fb4ff]">{name}</span>
-        <span className="text-muted-dark">
-          {' '}
-          {Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`}
-        </span>
-      </div>
-      {open &&
-        entries.map(([k, v]) => <JsonTree key={k} value={v} name={k} filter={filter} depth={depth + 1} />)}
+    <div style={{ paddingLeft: depth === 0 ? 0 : 14 }} className="px-1.5 py-[3px] hover:bg-ink-raised">
+      <span className="text-[#9ecbff]">{name}</span>
+      <span className="text-muted-dark">: </span>
+      <span className={typeof value === 'string' ? 'text-jade' : 'text-[#dfe5ee]'}>
+        {typeof value === 'string' ? `"${value}"` : String(value)}
+      </span>
     </div>
   );
+}
+
+function jsonSubtreeMatches(name: string, value: unknown, q: string): boolean {
+  if (name.toLowerCase().includes(q) || String(value).toLowerCase().includes(q)) return true;
+  if (value && typeof value === 'object') {
+    const entries = Array.isArray(value)
+      ? value.map((v, i) => [String(i), v] as const)
+      : Object.entries(value as Record<string, unknown>);
+    return entries.some(([k, v]) => jsonSubtreeMatches(k, v, q));
+  }
+  return false;
+}
+
+function safeJson(content: string): { ok: true; value: unknown } | { ok: false; error: string } {
+  try {
+    return { ok: true, value: JSON.parse(content) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Invalid JSON' };
+  }
 }
 
 function ValidationReport({ result }: { result: ValidationResult }) {
-  const ok = result.wellFormed && result.errors.length === 0;
-
   return (
-    <div className="space-y-4">
-      <div className={cn('border px-3 py-2', ok ? 'border-jade text-jade' : 'border-vermillion text-vermillion')}>
-        <p className="font-mono text-[11px] uppercase tracking-widest">{ok ? 'Structure OK' : 'Problems found'}</p>
-        <p className="mt-1 text-white">
-          {result.messageShort ? `Recognised as ${result.messageShort}` : 'Message type not recognised from the namespace'}
-        </p>
-      </div>
-
-      {result.errors.length > 0 && (
-        <div>
-          <p className="eyebrow-dark mb-2">Errors</p>
-          <ul className="space-y-2">
-            {result.errors.map((e, i) => (
-              <li key={i} className="border-l-2 border-vermillion pl-3">
-                <p className="text-white">{e.message}</p>
-                <p className="text-muted-dark">
-                  {e.rule} · {e.path}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {result.warnings.length > 0 && (
-        <div>
-          <p className="eyebrow-dark mb-2">Warnings</p>
-          <ul className="space-y-2">
-            {result.warnings.map((w, i) => (
-              <li key={i} className="border-l-2 border-ochre pl-3">
-                <p className="text-white">{w.message}</p>
-                <p className="text-muted-dark">
-                  {w.rule} · {w.path}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <p className="text-muted-dark">
-        This checks well-formedness, the namespace, and the elements a scheme validator would insist on. It is not a full
-        XSD validation — schema files are not bundled.
+    <div className="space-y-3">
+      <p className={result.errors.length === 0 ? 'text-jade' : 'text-vermillion'}>
+        {result.errors.length === 0 ? 'Structural checks passed.' : `${result.errors.length} issue(s).`}
       </p>
+      {result.messageShort && <p className="text-muted-dark">Detected {result.messageShort}</p>}
+      {[...result.errors, ...result.warnings].map((issue, i) => (
+        <div key={`${issue.path}-${i}`} className="border border-ink-line px-3 py-2">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-dark">{issue.rule}</p>
+          <p className="mt-1 text-[#dfe5ee]">{issue.message}</p>
+          <p className="mt-1 font-mono text-[11px] text-muted-dark">{issue.path}</p>
+        </div>
+      ))}
     </div>
   );
-}
-
-function safeJson(text: string): { ok: true; value: unknown; error: null } | { ok: false; value: null; error: string } {
-  try {
-    return { ok: true, value: JSON.parse(text), error: null };
-  } catch (e) {
-    return { ok: false, value: null, error: e instanceof Error ? e.message : 'parse failed' };
-  }
 }

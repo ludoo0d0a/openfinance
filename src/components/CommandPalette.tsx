@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearchIndex } from '@/hooks/useSearchIndex';
-import { KIND_LABELS, type ResultKind } from '@/lib/search';
+import { type ResultKind } from '@/lib/search';
+import { looksLikeIsoTag } from '@/lib/payloadTags';
 import { cn } from '@/lib/cn';
+import { useT } from '@/i18n';
 
 const kindColor: Record<ResultKind, string> = {
   standard: 'text-signal',
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export function CommandPalette({ open, onClose }: Props) {
+  const t = useT();
   const { query, setQuery, results } = useSearchIndex();
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,10 +39,21 @@ export function CommandPalette({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  function go(href: string) {
+  function resolveHref(href: string, kind: ResultKind): string {
+    const q = query.trim();
+    if (!q || !looksLikeIsoTag(q)) return href;
+    if (kind === 'sample' || kind === 'message') {
+      const url = new URL(href, 'https://local');
+      url.searchParams.set('q', q);
+      return `${url.pathname}?${url.searchParams.toString()}`;
+    }
+    return href;
+  }
+
+  function go(href: string, kind: ResultKind) {
     onClose();
     setQuery('');
-    navigate(href);
+    navigate(resolveHref(href, kind));
   }
 
   function onKeyDown(e: KeyboardEvent) {
@@ -53,7 +67,7 @@ export function CommandPalette({ open, onClose }: Props) {
       setCursor((c) => Math.max(c - 1, 0));
     } else if (e.key === 'Enter' && results[cursor]) {
       e.preventDefault();
-      go(results[cursor].href);
+      go(results[cursor].href, results[cursor].kind);
     }
   }
 
@@ -62,18 +76,18 @@ export function CommandPalette({ open, onClose }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Search everything"
+        aria-label={t('search.title')}
         className="w-full max-w-2xl border border-ink bg-surface"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 border-b border-rule px-4 py-3">
-          <span className="eyebrow shrink-0">Search</span>
+          <span className="eyebrow shrink-0">{t('search.title')}</span>
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="pacs.008, AC01, consent, recall, UK.OBIE…"
+            placeholder={t('search.placeholder')}
             className="w-full bg-transparent font-mono text-sm focus:outline-none"
           />
           <kbd className="shrink-0 border border-rule px-1.5 py-0.5 font-mono text-[10px] text-muted">ESC</kbd>
@@ -82,7 +96,7 @@ export function CommandPalette({ open, onClose }: Props) {
         <ul className="scroll-paper max-h-[52vh] overflow-y-auto">
           {results.length === 0 && (
             <li className="px-4 py-8 text-center text-sm text-muted">
-              {query.trim().length < 2 ? 'Type at least two characters.' : 'Nothing matched. Try a code, a message id, or a standard name.'}
+              {query.trim().length < 2 ? t('search.emptyShort') : t('search.emptyNone')}
             </li>
           )}
           {results.map((r, i) => (
@@ -90,14 +104,14 @@ export function CommandPalette({ open, onClose }: Props) {
               <button
                 type="button"
                 onMouseEnter={() => setCursor(i)}
-                onClick={() => go(r.href)}
+                onClick={() => go(r.href, r.kind)}
                 className={cn(
                   'flex w-full items-baseline gap-3 border-b border-rule-soft px-4 py-2.5 text-left',
                   i === cursor && 'bg-signal-soft',
                 )}
               >
                 <span className={cn('w-16 shrink-0 font-mono text-[10px] uppercase tracking-widest', kindColor[r.kind])}>
-                  {KIND_LABELS[r.kind]}
+                  {t(`kind.${r.kind}`)}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-mono text-[13px] font-medium">{r.title}</span>
@@ -109,9 +123,9 @@ export function CommandPalette({ open, onClose }: Props) {
         </ul>
 
         <div className="flex gap-4 border-t border-rule px-4 py-2 font-mono text-[10px] text-muted">
-          <span>↑↓ move</span>
-          <span>↵ open</span>
-          <span className="ml-auto">{results.length} results</span>
+          <span>{t('search.move')}</span>
+          <span>{t('search.open')}</span>
+          <span className="ml-auto">{t('search.results', { count: results.length })}</span>
         </div>
       </div>
     </div>

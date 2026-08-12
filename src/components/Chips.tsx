@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { codeByValue } from '@/data/codes';
 import { cn } from '@/lib/cn';
+import { LayerIcon } from '@/lib/icons';
 import type { CodeEntry, Endpoint } from '@/types';
 
 const severityClass: Record<CodeEntry['severity'], string> = {
@@ -58,10 +59,11 @@ export function LayerTag({ layer }: { layer: 'api' | 'clearing' }) {
   return (
     <span
       className={cn(
-        'border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider',
+        'inline-flex items-center gap-1.5 border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider',
         layer === 'api' ? 'border-signal bg-signal-soft text-signal' : 'border-violet bg-violet-soft text-violet',
       )}
     >
+      <LayerIcon layer={layer} size={12} />
       {layer === 'api' ? 'API layer' : 'Clearing layer'}
     </span>
   );

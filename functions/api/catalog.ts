@@ -2,7 +2,7 @@ import { STANDARDS } from '../../src/data/standards';
 import { ISO_MESSAGES } from '../../src/data/iso20022';
 import { FLOWS } from '../../src/data/flows';
 import { CODES } from '../../src/data/codes';
-import { SAMPLES } from '../../src/data/samples';
+import { ALL_SAMPLES } from '../../src/data/samples';
 
 /**
  * The catalog as data, so the same content can back a CLI, a CI check or
@@ -38,10 +38,10 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
     }
 
     case 'samples': {
-      if (id) return respond(SAMPLES.filter((s) => s.id === id), cache);
+      if (id) return respond(ALL_SAMPLES.filter((s) => s.id === id), cache);
       // Payloads are large; the index omits them.
       return respond(
-        SAMPLES.map(({ content: _content, ...rest }) => rest),
+        ALL_SAMPLES.map(({ content: _content, ...rest }) => rest),
         cache,
       );
     }
@@ -54,7 +54,7 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
             messages: ISO_MESSAGES.length,
             flows: FLOWS.length,
             codes: CODES.length,
-            samples: SAMPLES.length,
+            samples: ALL_SAMPLES.length,
           },
           standards: STANDARDS.map((s) => ({ id: s.id, name: s.name, region: s.region, version: s.version })),
           flows: FLOWS.map((f) => ({ id: f.id, name: f.name, category: f.category, steps: f.steps.length })),

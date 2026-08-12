@@ -123,8 +123,12 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sic-ip-timeout',
       'eurosic-eur-credit',
       'wero-a2a-payment',
+      'sct-inst-happy-path',
+      'sct-inst-reject',
+      'sct-inst-vop',
+      'sepa-instant-timeout',
     ],
-    tags: ['interbank', 'sepa', 'sct', 'instant', 'pacs', 'sic', 'eurosic', 'wero'],
+    tags: ['interbank', 'sepa', 'sct', 'instant', 'pacs', 'sic', 'eurosic', 'wero', 'sct-inst', 'tips'],
   },
   {
     id: 'pacs.002.001.10',
@@ -150,8 +154,11 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sic-ip-timeout',
       'eurosic-eur-credit',
       'wero-a2a-payment',
+      'sct-inst-happy-path',
+      'sct-inst-reject',
+      'sct-inst-vop',
     ],
-    tags: ['status', 'acsc', 'rjct', 'instant', 'pacs', 'sic'],
+    tags: ['status', 'acsc', 'rjct', 'instant', 'pacs', 'sic', 'sct-inst', 'ack'],
   },
   {
     id: 'pacs.004.001.09',
@@ -169,8 +176,8 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'PmtRtr/TxInf/RtrdIntrBkSttlmAmt',
       'PmtRtr/TxInf/RtrRsnInf/Rsn/Cd',
     ],
-    flows: ['clearing-recall'],
-    tags: ['return', 'r-transaction', 'recall', 'pacs'],
+    flows: ['clearing-recall', 'sct-inst-recall'],
+    tags: ['return', 'r-transaction', 'recall', 'pacs', 'sct-inst'],
   },
   {
     id: 'pacs.009.001.09',
@@ -194,7 +201,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     rootElement: 'FIToFIPmtStsReq',
     requiredPaths: ['FIToFIPmtStsReq/GrpHdr/MsgId', 'FIToFIPmtStsReq/TxInf/OrgnlEndToEndId'],
     flows: ['sepa-instant-timeout', 'sic-ip-timeout'],
-    tags: ['enquiry', 'investigation', 'timeout', 'pacs', 'sic-ip'],
+    tags: ['enquiry', 'investigation', 'timeout', 'pacs', 'sic-ip', 'sct-inst'],
   },
 
   // ── camt: cash management ───────────────────────────────────────────────
@@ -241,7 +248,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'BkToCstmrDbtCdtNtfctn/Ntfctn/Id',
       'BkToCstmrDbtCdtNtfctn/Ntfctn/Acct/Id',
     ],
-    flows: ['clearing-sct-happy-path'],
+    flows: ['clearing-sct-happy-path', 'sct-inst-happy-path'],
     tags: ['notification', 'instant', 'credit', 'camt'],
   },
   {
@@ -260,8 +267,8 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'FIToFIPmtCxlReq/Undrlyg/TxInf/OrgnlEndToEndId',
       'FIToFIPmtCxlReq/Undrlyg/TxInf/CxlRsnInf/Rsn/Cd',
     ],
-    flows: ['clearing-recall'],
-    tags: ['recall', 'cancellation', 'fraud', 'camt'],
+    flows: ['clearing-recall', 'sct-inst-recall'],
+    tags: ['recall', 'cancellation', 'fraud', 'camt', 'sct-inst'],
   },
   {
     id: 'camt.029.001.09',
@@ -272,8 +279,8 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     purpose: 'The answer to a camt.056 or camt.026. Negative answers carry a RejectionReason; positive ones are followed by a pacs.004.',
     rootElement: 'RsltnOfInvstgtn',
     requiredPaths: ['RsltnOfInvstgtn/Assgnmt/Id', 'RsltnOfInvstgtn/Sts/Conf'],
-    flows: ['clearing-recall'],
-    tags: ['investigation', 'resolution', 'recall', 'camt'],
+    flows: ['clearing-recall', 'sct-inst-recall'],
+    tags: ['investigation', 'resolution', 'recall', 'camt', 'sct-inst'],
   },
   {
     id: 'camt.055.001.08',
@@ -323,8 +330,8 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'Verification of Payee. Since the SEPA Instant Regulation made VoP mandatory in October 2025, this is the pre-flight check before a credit transfer leaves.',
     rootElement: 'IdVrfctnReq',
     requiredPaths: ['IdVrfctnReq/Assgnmt/Id', 'IdVrfctnReq/Vrfctn/Id', 'IdVrfctnReq/Vrfctn/PtyAndAcctId'],
-    flows: ['vop-check'],
-    tags: ['vop', 'verification of payee', 'confirmation of payee', 'acmt'],
+    flows: ['vop-check', 'sct-inst-vop'],
+    tags: ['vop', 'verification of payee', 'confirmation of payee', 'acmt', 'ipr'],
   },
   {
     id: 'acmt.024.001.03',
@@ -335,8 +342,8 @@ export const ISO_MESSAGES: Iso20022Message[] = [
     purpose: 'The VoP answer: match, close match with the correct name returned, or no match.',
     rootElement: 'IdVrfctnRpt',
     requiredPaths: ['IdVrfctnRpt/Assgnmt/Id', 'IdVrfctnRpt/Rpt/OrgnlId', 'IdVrfctnRpt/Rpt/Vrfctn'],
-    flows: ['vop-check'],
-    tags: ['vop', 'match', 'report', 'acmt'],
+    flows: ['vop-check', 'sct-inst-vop'],
+    tags: ['vop', 'match', 'report', 'acmt', 'ipr'],
   },
 ];
 
