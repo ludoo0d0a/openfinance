@@ -146,6 +146,35 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
           },
         },
         {
+          selector: 'node[kind = "message"]',
+          style: {
+            label: 'data(label)',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'text-margin-y': 0,
+            'text-wrap': 'wrap',
+            'text-max-width': '92px',
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': '10px',
+            'font-weight': 600,
+            color: '#5b45d6',
+            'background-color': '#ffffff',
+            'background-image': 'none',
+            'border-width': 1.5,
+            'border-color': '#5b45d6',
+            shape: 'round-rectangle',
+            width: 96,
+            height: 34,
+          },
+        },
+        {
+          selector: 'node[kind = "message"][layer = "api"]',
+          style: {
+            color: '#1f4fd8',
+            'border-color': '#1f4fd8',
+          },
+        },
+        {
           selector: 'edge.selected',
           style: {
             width: 3,
@@ -153,6 +182,16 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
             'target-arrow-color': '#0d1420',
             color: '#0d1420',
             'font-size': '10px',
+            'font-weight': 700,
+            'z-index': 10,
+          },
+        },
+        {
+          selector: 'node[kind = "message"].selected',
+          style: {
+            'background-color': '#0d1420',
+            'border-color': '#0d1420',
+            color: '#ffffff',
             'font-weight': 700,
             'z-index': 10,
           },
@@ -166,9 +205,15 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
       userPanningEnabled: true,
     });
 
-    cy.on('tap', 'edge', (evt) => {
+    cy.on('tap', 'edge, node[kind = "message"]', (evt) => {
       const n = Number(evt.target.data('step'));
       if (Number.isFinite(n)) onSelectRef.current(n);
+    });
+    cy.on('mouseover', 'edge, node[kind = "message"]', () => {
+      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
+    });
+    cy.on('mouseout', 'edge, node[kind = "message"]', () => {
+      if (containerRef.current) containerRef.current.style.cursor = '';
     });
 
     cyRef.current = cy;
@@ -181,8 +226,9 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
-    cy.edges().removeClass('selected');
+    cy.elements().removeClass('selected');
     cy.$(`edge[step = "${selectedStep}"]`).addClass('selected');
+    cy.$(`node[kind = "message"][step = "${selectedStep}"]`).addClass('selected');
   }, [selectedStep, elements]);
 
   return (
@@ -208,7 +254,7 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-0.5 w-5 bg-violet" /> {t('flow.clearingHop')}
         </span>
-        <span>{t('flow.clickArrow')}</span>
+        <span>{t('flow.clickMessage')}</span>
       </div>
     </div>
   );
@@ -235,7 +281,58 @@ function buildElements(
     });
   }
 
+  const pairCounts = new Map<string, number>();
   for (const step of flow.steps) {
+    const key = `${step.from}->${step.to}`;
+    pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1);
+  }
+  const pairIndex = new Map<number, { i: number; total: number }>();
+  const pairSeen = new Map<string, number>();
+  for (const step of flow.steps) {
+    const key = `${step.from}->${step.to}`;
+    const i = pairSeen.get(key) ?? 0;
+    pairIndex.set(step.n, { i, total: pairCounts.get(key) ?? 1 });
+    pairSeen.set(key, i + 1);
+  }
+
+  for (const step of flow.steps) {
+    if (step.messageShort) {
+      const from = positions.get(step.from) ?? { x: 0, y: 0 };
+      const to = positions.get(step.to) ?? { x: 0, y: 0 };
+      const hop = pairIndex.get(step.n) ?? { i: 0, total: 1 };
+      elements.push({
+        data: {
+          id: `msg:${step.n}`,
+          label: step.messageShort,
+          kind: 'message',
+          step: String(step.n),
+          layer: step.layer,
+        },
+        position: messagePosition(from, to, hop.i, hop.total),
+      });
+      elements.push({
+        data: {
+          id: `step:${step.n}:in`,
+          source: `actor:${step.from}`,
+          target: `msg:${step.n}`,
+          step: String(step.n),
+          layer: step.layer,
+          edgeLabel: String(step.n).padStart(2, '0'),
+        },
+      });
+      elements.push({
+        data: {
+          id: `step:${step.n}:out`,
+          source: `msg:${step.n}`,
+          target: `actor:${step.to}`,
+          step: String(step.n),
+          layer: step.layer,
+          edgeLabel: '',
+        },
+      });
+      continue;
+    }
+
     elements.push({
       data: {
         id: `step:${step.n}`,
@@ -302,6 +399,25 @@ function layoutActors(actors: ActorId[]): Map<ActorId, { x: number; y: number }>
   });
 
   return map;
+}
+
+function messagePosition(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  index: number,
+  total: number,
+): { x: number; y: number } {
+  const spread = (index - (total - 1) / 2) * 44;
+  if (from.x === to.x && from.y === to.y) {
+    return { x: from.x + 96, y: from.y + spread };
+  }
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return {
+    x: from.x + dx * 0.5 + (-dy / len) * spread,
+    y: from.y + dy * 0.5 + (dx / len) * spread,
+  };
 }
 
 function truncate(text: string, max: number) {

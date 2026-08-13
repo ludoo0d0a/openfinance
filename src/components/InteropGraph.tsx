@@ -50,14 +50,22 @@ function buildElements(): ElementDefinition[] {
   }
 
   // Keep the map readable: only messages that appear in at least one flow.
-  const usedMessages = ISO_MESSAGES.filter((m) => m.flows.length > 0);
-  for (const m of usedMessages) {
+  const usedShorts = new Set<string>();
+  for (const m of ISO_MESSAGES) {
+    if (m.flows.length > 0) usedShorts.add(m.short);
+  }
+  for (const flow of FLOWS) {
+    for (const step of flow.steps) {
+      if (step.messageShort) usedShorts.add(step.messageShort);
+    }
+  }
+  for (const short of usedShorts) {
     elements.push({
       data: {
-        id: `message:${m.short}`,
-        label: m.short,
+        id: `message:${short}`,
+        label: short,
         kind: 'message',
-        href: `/messages/${m.short}`,
+        href: `/messages/${short}`,
       },
     });
   }

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { flowById } from '@/data/flows';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { flowById, isoMessagesInFlow, usagesOfMessage } from '@/data/flows';
+import { messageByShort } from '@/data/iso20022';
 import { standardById } from '@/data/standards';
 import { sampleById, samplesForMessage } from '@/data/samples';
 import { FlowCanvas } from '@/components/FlowCanvas';
@@ -21,15 +22,54 @@ export function FlowView() {
   const t = useT();
   const { locale } = useI18n();
   const { flowId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const catalogFlow = flowId ? flowById(flowId) : undefined;
   const flow = catalogFlow ? localizeFlow(catalogFlow, locale) : undefined;
-  const [selected, setSelected] = useState(1);
-  const [diagram, setDiagram] = useState<DiagramMode>('entities');
+
+  const diagram: DiagramMode = searchParams.get('diagram') === 'sequence' ? 'sequence' : 'entities';
+  const requestedStep = Number(searchParams.get('step'));
+  const selected =
+    flow && Number.isInteger(requestedStep) && requestedStep >= 1 && requestedStep <= flow.steps.length
+      ? requestedStep
+      : 1;
 
   useEffect(() => {
-    setSelected(1);
-    setDiagram('entities');
-  }, [flowId]);
+    if (!flow) return;
+    if (Number.isInteger(requestedStep) && (requestedStep < 1 || requestedStep > flow.steps.length)) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('step');
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [flow, requestedStep, setSearchParams]);
+
+  function selectStep(n: number) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (n <= 1) next.delete('step');
+        else next.set('step', String(n));
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  function setDiagram(mode: DiagramMode) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (mode === 'entities') next.delete('diagram');
+        else next.set('diagram', mode);
+        return next;
+      },
+      { replace: true },
+    );
+  }
 
   const step = useMemo(() => flow?.steps.find((s) => s.n === selected) ?? flow?.steps[0], [flow, selected]);
   const sample = useMemo(() => {
@@ -39,6 +79,8 @@ export function FlowView() {
     return undefined;
   }, [step]);
   const standard = flow ? standardById(flow.standardId) : undefined;
+  const hopMessage = step?.messageShort ? messageByShort(step.messageShort) : undefined;
+  const flowMessages = flow ? isoMessagesInFlow(flow) : [];
 
   if (!flow || !step) return <NotFoundView />;
 
@@ -80,16 +122,39 @@ export function FlowView() {
               </div>
             </div>
             {diagram === 'entities' ? (
-              <EntityFlowDiagram flow={flow} selectedStep={selected} onSelectStep={setSelected} />
+              <EntityFlowDiagram flow={flow} selectedStep={selected} onSelectStep={selectStep} />
             ) : (
               <>
                 <p className="mb-3 font-mono text-[10px] text-muted">{t('flow.clickStep')}</p>
-                <FlowCanvas flow={flow} selectedStep={selected} onSelectStep={setSelected} />
+                <FlowCanvas flow={flow} selectedStep={selected} onSelectStep={selectStep} />
               </>
+            )}
+            {flowMessages.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-rule-soft pt-3">
+                <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-muted">{t('flow.messages')}</span>
+                {flowMessages.map((short) => {
+                  const first = flow.steps.find((s) => s.messageShort === short);
+                  const active = step.messageShort === short;
+                  return (
+                    <button
+                      key={short}
+                      type="button"
+                      onClick={() => first && selectStep(first.n)}
+                      className={cn(
+                        'inline-flex items-center gap-1 border px-2 py-1 font-mono text-[11px]',
+                        active ? 'border-ink bg-ink text-white' : 'border-rule bg-surface text-ink hover:border-ink',
+                      )}
+                    >
+                      <MessageTypeIcon short={short} size={12} />
+                      {short}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </section>
 
-          <section className="panel">
+          <section className="panel" id="step-detail">
             <header className="flex flex-wrap items-center gap-3 border-b border-rule px-4 py-3">
               <span className="font-mono text-lg font-medium tnum text-muted">{String(step.n).padStart(2, '0')}</span>
               <h2 className="flex-1 text-base font-semibold">{step.label}</h2>
@@ -106,6 +171,16 @@ export function FlowView() {
               )}
 
               <p className="text-sm leading-relaxed">{step.detail}</p>
+
+              {hopMessage && (
+                <MessageHopCard
+                  short={hopMessage.short}
+                  purpose={hopMessage.purpose}
+                  currentFlowId={flow.id}
+                  currentStep={step.n}
+                  onSelectStep={selectStep}
+                />
+              )}
 
               {step.headers && step.headers.length > 0 && (
                 <div>
@@ -131,16 +206,6 @@ export function FlowView() {
                 </div>
               )}
 
-              {step.messageShort && (
-                <p className="flex flex-wrap items-center gap-2 text-sm">
-                  <MessageTypeIcon short={step.messageShort} size={16} />
-                  <span>{t('flow.message')}:</span>
-                  <Link to={`/messages/${step.messageShort}`} className="font-mono text-signal hover:underline">
-                    {step.messageShort}
-                  </Link>
-                </p>
-              )}
-
               <p className="flex flex-wrap items-center gap-2 text-[12px] text-muted">
                 <ActorIcon actor={step.from} size={12} />
                 <span className="font-mono uppercase tracking-wider">{step.from}</span>
@@ -153,7 +218,7 @@ export function FlowView() {
                 <button
                   type="button"
                   disabled={selected <= 1}
-                  onClick={() => setSelected(selected - 1)}
+                  onClick={() => selectStep(selected - 1)}
                   className="border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest disabled:opacity-35"
                 >
                   {t('flow.prev')}
@@ -161,7 +226,7 @@ export function FlowView() {
                 <button
                   type="button"
                   disabled={selected >= flow.steps.length}
-                  onClick={() => setSelected(selected + 1)}
+                  onClick={() => selectStep(selected + 1)}
                   className="border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest disabled:opacity-35"
                 >
                   {t('flow.next')}
@@ -173,7 +238,7 @@ export function FlowView() {
 
         <div className="min-w-0 space-y-6">
           {sample ? (
-            <div className="xl:sticky xl:top-[69px]">
+            <div className="xl:sticky xl:top-[69px]" id="step-sample">
               <PayloadInspector
                 content={sample.content}
                 format={sample.format}
@@ -210,6 +275,82 @@ export function FlowView() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function MessageHopCard({
+  short,
+  purpose,
+  currentFlowId,
+  currentStep,
+  onSelectStep,
+}: {
+  short: string;
+  purpose: string;
+  currentFlowId: string;
+  currentStep: number;
+  onSelectStep: (n: number) => void;
+}) {
+  const t = useT();
+  const { locale } = useI18n();
+  const usages = usagesOfMessage(short);
+  const here = usages.find((u) => u.flow.id === currentFlowId);
+  const elsewhere = usages.filter((u) => u.flow.id !== currentFlowId);
+
+  return (
+    <div className="border border-violet bg-violet-soft px-3 py-3">
+      <p className="flex flex-wrap items-center gap-2 text-sm">
+        <MessageTypeIcon short={short} size={16} />
+        <span className="eyebrow !text-violet">{t('flow.message')}</span>
+        <Link to={`/messages/${short}`} className="font-mono text-signal hover:underline">
+          {short}
+        </Link>
+        <Link to={`/messages/${short}`} className="ml-auto font-mono text-[11px] text-signal hover:underline">
+          {t('flow.messagePage')}
+        </Link>
+      </p>
+      <p className="mt-2 text-[13px] leading-relaxed">{purpose}</p>
+      {here && here.steps.length > 1 && (
+        <div className="mt-2">
+          <p className="eyebrow mb-1">{t('flow.usageHere')}</p>
+          <div className="flex flex-wrap gap-1">
+            {here.steps.map((s) => {
+              const label = localizeFlow(here.flow, locale).steps.find((ls) => ls.n === s.n)?.label ?? s.label;
+              return (
+                <button
+                  key={s.n}
+                  type="button"
+                  onClick={() => onSelectStep(s.n)}
+                  className={cn(
+                    'border px-2 py-0.5 font-mono text-[11px]',
+                    s.n === currentStep ? 'border-ink bg-ink text-white' : 'border-rule bg-surface hover:border-ink',
+                  )}
+                >
+                  {String(s.n).padStart(2, '0')} · {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {elsewhere.length > 0 && (
+        <div className="mt-2">
+          <p className="eyebrow mb-1">{t('flow.usageOther')}</p>
+          <ul className="flex flex-wrap gap-x-3 gap-y-1">
+            {elsewhere.map(({ flow, steps }) => (
+              <li key={flow.id}>
+                <Link
+                  to={`/flows/${flow.id}?step=${steps[0].n}`}
+                  className="font-mono text-[11px] text-signal hover:underline"
+                >
+                  {localizeFlow(flow, locale).name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

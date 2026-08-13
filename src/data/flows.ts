@@ -1,4 +1,4 @@
-import type { Actor, ActorId, Flow } from '@/types';
+import type { Actor, ActorId, Flow, FlowStep } from '@/types';
 
 export const ACTORS: Record<ActorId, Actor> = {
   psu: { id: 'psu', label: 'PSU', sublabel: 'Payment service user' },
@@ -1422,6 +1422,28 @@ export const FLOWS: Flow[] = [
 ];
 
 export const flowById = (id: string) => FLOWS.find((f) => f.id === id);
+
+/** Flows and steps that actually put this ISO message on the wire. */
+export function usagesOfMessage(short: string): { flow: Flow; steps: FlowStep[] }[] {
+  const out: { flow: Flow; steps: FlowStep[] }[] = [];
+  for (const flow of FLOWS) {
+    const steps = flow.steps.filter((s) => s.messageShort === short);
+    if (steps.length) out.push({ flow, steps });
+  }
+  return out;
+}
+
+/** Distinct ISO message shorts in diagram order. */
+export function isoMessagesInFlow(flow: Flow): string[] {
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+  for (const step of flow.steps) {
+    if (!step.messageShort || seen.has(step.messageShort)) continue;
+    seen.add(step.messageShort);
+    ordered.push(step.messageShort);
+  }
+  return ordered;
+}
 
 export const CATEGORY_LABELS: Record<Flow['category'], string> = {
   'account-information': 'Account information',

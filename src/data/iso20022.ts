@@ -35,7 +35,7 @@ import { parseMessageId } from '../lib/messageId';
       'CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/Cdtr',
       'CstmrCdtTrfInitn/PmtInf/CdtTrfTxInf/CdtrAcct/Id/IBAN',
     ],
-    flows: ['bg-pis-sepa-redirect', 'clearing-sct-happy-path', 'ukob-domestic-payment', 'sic-chf-credit'],
+    flows: ['clearing-sct-happy-path', 'sic-chf-credit'],
     tags: ['initiation', 'sepa', 'credit transfer', 'bulk', 'pain', 'sic', 'chf'],
     versions: [
       {
@@ -75,7 +75,7 @@ import { parseMessageId } from '../lib/messageId';
       'CstmrPmtStsRpt/OrgnlGrpInfAndSts/OrgnlMsgId',
       'CstmrPmtStsRpt/OrgnlGrpInfAndSts/OrgnlMsgNmId',
     ],
-    flows: ['clearing-sct-happy-path', 'clearing-reject', 'sic-chf-credit'],
+    flows: ['sic-chf-credit'],
     tags: ['status', 'report', 'rejection', 'pain', 'sic'],
   },
   {
@@ -142,9 +142,9 @@ import { parseMessageId } from '../lib/messageId';
       'FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr',
     ],
     flows: [
+      'bg-pis-sepa-redirect',
       'clearing-sct-happy-path',
       'clearing-reject',
-      'clearing-recall',
       'sic-chf-credit',
       'sic-ip-instant',
       'sic-ip-timeout',

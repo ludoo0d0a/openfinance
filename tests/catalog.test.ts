@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FLOWS, ACTORS } from '../src/data/flows';
+import { FLOWS, ACTORS, usagesOfMessage } from '../src/data/flows';
 import { ISO_MESSAGES } from '../src/data/iso20022';
 import { ALL_SAMPLES, SAMPLES, samplesForMessage } from '../src/data/samples';
 import { FLOWS_FR } from '../src/i18n/flowsFr';
@@ -57,6 +57,15 @@ describe('referential integrity', () => {
       for (const flowId of message.flows) {
         expect(FLOWS.map((f) => f.id), `${message.short} -> ${flowId}`).toContain(flowId);
       }
+    }
+  });
+
+  it('message.flows matches every step that references the message', () => {
+    for (const message of ISO_MESSAGES) {
+      const actual = usagesOfMessage(message.short)
+        .map((u) => u.flow.id)
+        .sort();
+      expect([...message.flows].sort(), message.short).toEqual(actual);
     }
   });
 

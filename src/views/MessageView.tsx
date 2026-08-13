@@ -8,13 +8,13 @@ import {
   versionsFor,
 } from '@/data/iso20022';
 import { samplesForMessage } from '@/data/samples';
-import { FLOWS } from '@/data/flows';
+import { usagesOfMessage } from '@/data/flows';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { Tag } from '@/components/Chips';
 import { messageIdFromPayload, namespaceFor, parseMessageId } from '@/lib/messageId';
 import { cn } from '@/lib/cn';
-import { useI18n, useT } from '@/i18n';
+import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 
 const DIRECTION_KEYS: Record<string, string> = {
@@ -64,7 +64,11 @@ export function MessageView() {
   if (!message || !selectedVersion) return <NotFoundView />;
 
   const sample = samples[activeSample];
-  const flows = FLOWS.filter((f) => message.flows.includes(f.id));
+  const usages = usagesOfMessage(message.short).map((u) => {
+    const flow = localizeFlow(u.flow, locale);
+    const steps = u.steps.map((s) => flow.steps.find((ls) => ls.n === s.n) ?? s);
+    return { flow, steps };
+  });
   const isAck = message.short === 'pacs.002';
   const parts = parseMessageId(selectedVersion.id);
   const sampleMatchesVersion =
@@ -99,6 +103,26 @@ export function MessageView() {
         )}
         {message.short === 'pacs.008' && (
           <p className="mt-3 border-l-2 border-signal pl-3 text-[13px] leading-relaxed">{t('message.build008')}</p>
+        )}
+        {usages.length > 0 && (
+          <div className="mt-5">
+            <p className="eyebrow mb-2">{t('message.appearsIn')}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {usages.map(({ flow, steps }) => (
+                <li key={flow.id}>
+                  <Link
+                    to={`/flows/${flow.id}?step=${steps[0].n}`}
+                    className="inline-flex items-center gap-1.5 border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                  >
+                    <span>{flow.name}</span>
+                    <span className="font-mono text-[10px] text-muted">
+                      {steps.map((s) => String(s.n).padStart(2, '0')).join(' · ')}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </header>
 
@@ -190,15 +214,27 @@ export function MessageView() {
             </ul>
           </section>
 
-          {flows.length > 0 && (
+          {usages.length > 0 && (
             <section className="panel p-4">
-              <h2 className="eyebrow mb-2">{t('message.appearsIn')}</h2>
-              <ul className="space-y-1">
-                {flows.map((f) => (
-                  <li key={f.id}>
-                    <Link to={`/flows/${f.id}`} className="text-[13px] text-signal hover:underline">
-                      {f.name}
+              <h2 className="eyebrow mb-2">{t('message.usage')}</h2>
+              <ul className="space-y-3">
+                {usages.map(({ flow, steps }) => (
+                  <li key={flow.id}>
+                    <Link to={`/flows/${flow.id}?step=${steps[0].n}`} className="text-[13px] font-medium text-signal hover:underline">
+                      {flow.name}
                     </Link>
+                    <ul className="mt-1 space-y-0.5">
+                      {steps.map((s) => (
+                        <li key={s.n}>
+                          <Link
+                            to={`/flows/${flow.id}?step=${s.n}`}
+                            className="font-mono text-[11px] text-muted hover:text-ink hover:underline"
+                          >
+                            {String(s.n).padStart(2, '0')} · {s.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ul>

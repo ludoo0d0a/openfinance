@@ -155,7 +155,12 @@ export const fr: MessageTree = {
     clickStep: 'Cliquez une étape, ou tabulez puis Entrée',
     apiHop: 'Saut API',
     clearingHop: 'Saut compensation',
-    clickArrow: 'Cliquez une flèche pour inspecter le message',
+    clickArrow: 'Cliquez une flèche pour inspecter le saut',
+    clickMessage: 'Cliquez un message (pacs.008, …) pour l’info, l’usage et l’exemple',
+    messages: 'Messages',
+    messagePage: 'Fiche complète →',
+    usageHere: 'Dans ce flux',
+    usageOther: 'Aussi utilisé dans',
     noPayload: 'Pas de payload',
     noPayloadBody:
       'Cette étape est une redirection, une attente ou un événement hors bande — aucun message sur le fil à inspecter. Les étapes avec payload sont marquées d’une méthode ou d’un id de message.',
@@ -187,6 +192,7 @@ export const fr: MessageTree = {
     requiredHint:
       'Pas le XSD complet — les chemins dont l’absence provoque les rejets que l’on voit vraiment en production.',
     appearsIn: 'Apparaît dans',
+    usage: 'Usage dans les flux',
     editHint: 'Éditez dans l’onglet XML / JSON, puis lancez le contrôle.',
     modified: 'Modifié —',
     reset: 'réinitialiser',

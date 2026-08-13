@@ -216,18 +216,45 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
                 {truncate(step.label, selfCall ? 26 : Math.max(18, Math.abs(to - from) / 6.4))}
               </text>
 
-              {(step.method || step.messageShort) && (
-                <text
-                  x={labelX}
-                  y={y + 17}
-                  textAnchor={labelAnchor}
-                  fontFamily="var(--font-mono)"
-                  fontSize="9.5"
-                  fill={stroke}
-                >
-                  {step.method ? `${step.method} ${truncate(step.path ?? '', 30)}` : step.messageShort}
-                </text>
-              )}
+              {(step.method || step.messageShort) &&
+                (step.messageShort ? (
+                  <>
+                    <rect
+                      x={
+                        (selfCall ? labelX : labelX - Math.min(52, step.messageShort.length * 3.4) - 5)
+                      }
+                      y={y + 6}
+                      width={Math.min(104, step.messageShort.length * 6.8 + 10)}
+                      height={14}
+                      rx={2}
+                      fill={selected ? stroke : 'var(--color-surface)'}
+                      stroke={stroke}
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={labelX}
+                      y={y + 16.5}
+                      textAnchor={labelAnchor}
+                      fontFamily="var(--font-mono)"
+                      fontSize="9.5"
+                      fontWeight={selected ? 600 : 500}
+                      fill={selected ? '#ffffff' : stroke}
+                    >
+                      {step.messageShort}
+                    </text>
+                  </>
+                ) : (
+                  <text
+                    x={labelX}
+                    y={y + 17}
+                    textAnchor={labelAnchor}
+                    fontFamily="var(--font-mono)"
+                    fontSize="9.5"
+                    fill={stroke}
+                  >
+                    {`${step.method} ${truncate(step.path ?? '', 30)}`}
+                  </text>
+                ))}
 
               <circle cx={from} cy={y} r={selected ? 3.5 : 2.5} fill={stroke} />
             </g>
