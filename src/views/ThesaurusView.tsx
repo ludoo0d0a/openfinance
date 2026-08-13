@@ -1,18 +1,28 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import {
+  CODE_FAMILIES,
   THESAURUS,
   THESAURUS_CATEGORY_LABELS,
+  THESAURUS_CODES,
   localizeThesaurusEntry,
   type ThesaurusCategory,
   type ThesaurusEntry,
 } from '@/data/thesaurus';
 import { cn } from '@/lib/cn';
 import { useI18n, useT } from '@/i18n';
+import type { CodeFamily } from '@/types';
 
 const CATEGORIES = Object.keys(THESAURUS_CATEGORY_LABELS) as ThesaurusCategory[];
+
+const severityDot: Record<NonNullable<ThesaurusEntry['severity']>, string> = {
+  success: 'bg-jade',
+  pending: 'bg-ochre',
+  error: 'bg-vermillion',
+  info: 'bg-muted',
+};
 
 export function ThesaurusView() {
   const t = useT();
@@ -20,7 +30,8 @@ export function ThesaurusView() {
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const category = (params.get('category') as ThesaurusCategory | null) || null;
-  const [activeId, setActiveId] = useState(() => params.get('id') ?? 'vop');
+  const family = (params.get('family') as CodeFamily | null) || null;
+  const activeId = params.get('id') ?? 'vop';
 
   const localized = useMemo(
     () => THESAURUS.map((e) => localizeThesaurusEntry(e, locale)),
@@ -30,14 +41,23 @@ export function ThesaurusView() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return localized.filter((e) => {
+      if (family && e.family !== family) return false;
       if (category && e.category !== category) return false;
       if (!q) return true;
-      const hay = [e.term, e.displayName, e.displayDefinition, ...e.displayAliases, ...(e.aliases.en ?? [])]
+      const hay = [
+        e.term,
+        e.displayName,
+        e.displayDefinition,
+        e.action ?? '',
+        e.family ?? '',
+        ...e.displayAliases,
+        ...(e.aliases.en ?? []),
+      ]
         .join(' ')
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [localized, query, category]);
+  }, [localized, query, category, family]);
 
   const active =
     filtered.find((e) => e.id === activeId) ??
@@ -55,9 +75,10 @@ export function ThesaurusView() {
   }
 
   function select(entry: ThesaurusEntry) {
-    setActiveId(entry.id);
     update({ id: entry.id });
   }
+
+  const showFamilies = category === 'code' || Boolean(family);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
@@ -80,15 +101,34 @@ export function ThesaurusView() {
           className="w-full border border-rule bg-surface px-3 py-2.5 font-mono text-sm focus:border-ink focus:outline-none"
         />
         <div className="flex flex-wrap gap-1.5">
-          <FilterBtn active={!category} onClick={() => update({ category: null })}>
+          <FilterBtn active={!category && !family} onClick={() => update({ category: null, family: null })}>
             {t('thesaurus.all', { count: THESAURUS.length })}
           </FilterBtn>
           {CATEGORIES.map((c) => (
-            <FilterBtn key={c} active={category === c} onClick={() => update({ category: c })}>
-              {THESAURUS_CATEGORY_LABELS[c][locale]}
+            <FilterBtn
+              key={c}
+              active={category === c && !family}
+              onClick={() => update({ category: c, family: null })}
+            >
+              {c === 'code'
+                ? `${THESAURUS_CATEGORY_LABELS[c][locale]} (${THESAURUS_CODES.length})`
+                : THESAURUS_CATEGORY_LABELS[c][locale]}
             </FilterBtn>
           ))}
         </div>
+        {showFamilies && (
+          <div className="flex flex-wrap gap-1.5">
+            {CODE_FAMILIES.map((f) => (
+              <FilterBtn
+                key={f}
+                active={family === f}
+                onClick={() => update({ category: 'code', family: family === f ? null : f })}
+              >
+                {t(`family.${f}`)}
+              </FilterBtn>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -106,10 +146,15 @@ export function ThesaurusView() {
                   active?.id === e.id && 'bg-signal-soft',
                 )}
               >
-                <span className="font-mono text-sm font-semibold text-signal">{e.term}</span>
+                <span className="flex items-center gap-2">
+                  {e.severity && (
+                    <span className={cn('h-2 w-2 shrink-0', severityDot[e.severity])} aria-hidden />
+                  )}
+                  <span className="font-mono text-sm font-semibold text-signal">{e.term}</span>
+                </span>
                 <span className="text-[13px] text-ink">{e.displayName}</span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                  {e.categoryLabel}
+                  {e.family ? t(`family.${e.family}`) : e.categoryLabel}
                 </span>
               </button>
             </li>
@@ -118,10 +163,20 @@ export function ThesaurusView() {
 
         {active && (
           <article className="panel p-5 sm:p-6">
-            <p className="eyebrow">{active.categoryLabel}</p>
+            <p className="eyebrow">
+              {active.family ? t(`family.${active.family}`) : active.categoryLabel}
+              {active.http ? ` · HTTP ${active.http}` : ''}
+            </p>
             <h2 className="mt-2 font-mono text-2xl font-bold text-signal">{active.term}</h2>
             <p className="mt-1 text-lg font-semibold">{active.displayName}</p>
             <p className="mt-4 text-[15px] leading-relaxed">{active.displayDefinition}</p>
+
+            {active.action && (
+              <p className="mt-4 border-l-2 border-signal pl-3 text-[13px] leading-relaxed text-muted">
+                <span className="eyebrow mb-1 block">{t('thesaurus.action')}</span>
+                {active.action}
+              </p>
+            )}
 
             {active.displayAliases.length > 0 && (
               <div className="mt-5">

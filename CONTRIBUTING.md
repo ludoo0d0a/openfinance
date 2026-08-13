@@ -19,7 +19,7 @@ written down.
 - **Gotchas should come from experience.** "X-Request-ID must be a UUID" is in the spec. "Log it, it is the only handle
   support desks accept" is not, and that is the sentence worth adding.
 - **Every code needs an `action`.** The description says what the code means. The action says whether a retry is
-  legitimate. People open the registry for the second one.
+  legitimate. People open the thesaurus for the second one.
 - **Say when banks disagree with the spec.** `recurringIndicator=false` with `frequencyPerDay>1` is invalid and widely
   accepted. Both halves matter.
 - **Keep samples synthetic.** Test IBANs, BICs ending `XXX`, invented names. Never paste a real payload, redacted or
@@ -32,7 +32,8 @@ written down.
 | A message | `src/data/iso20022.ts` | `requiredPaths` are the elements whose absence causes rejections you have actually seen, not the full XSD |
 | A sample | `src/data/samples.ts` | Namespace must match the catalog entry's `id`, and the payload must satisfy its own `requiredPaths` — CI checks both |
 | A flow | `src/data/flows.ts` | Steps numbered from 1 with no gaps. Every actor a step touches must be in `actors` or its arrow falls back to the last lane |
-| A code | `src/data/codes.ts` | Unique within its family |
+| A glossary term | `src/data/thesaurus.ts` | Bilingual EN/FR name and definition |
+| A code | `src/data/codes.ts` | Unique within its family; merged into the thesaurus as `category: 'code'` |
 | A standard | `src/data/standards.ts` | Endpoints are indexed individually and become searchable |
 
 No UI changes are needed for any of these. Views are derived from the data.
@@ -44,8 +45,8 @@ npm run lint && npm run typecheck && npm run test && npm run build
 ```
 
 `tests/catalog.test.ts` is the one that will catch you: it verifies every cross-reference between flows, samples,
-messages and codes, checks step numbering, and confirms each XML sample declares the namespace its catalog entry
-expects.
+messages and thesaurus codes, checks step numbering, and confirms each XML sample declares the namespace its catalog
+entry expects.
 
 ## Style
 

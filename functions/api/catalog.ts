@@ -1,17 +1,16 @@
 import { STANDARDS } from '../../src/data/standards';
 import { ISO_MESSAGES } from '../../src/data/iso20022';
 import { FLOWS } from '../../src/data/flows';
-import { CODES } from '../../src/data/codes';
 import { ALL_SAMPLES } from '../../src/data/samples';
-import { THESAURUS } from '../../src/data/thesaurus';
+import { THESAURUS, THESAURUS_CODES } from '../../src/data/thesaurus';
 
 /**
  * The catalog as data, so the same content can back a CLI, a CI check or
  * someone else's tooling without scraping the UI.
  *
  *   GET /api/catalog                     summary
- *   GET /api/catalog?section=codes       full code registry
- *   GET /api/catalog?section=thesaurus   glossary entries
+ *   GET /api/catalog?section=codes       thesaurus entries with category=code
+ *   GET /api/catalog?section=thesaurus   glossary + codes
  *   GET /api/catalog?section=samples     samples without payloads
  *   GET /api/catalog?section=samples&id=pacs-008-sct   one sample with payload
  */
@@ -34,8 +33,13 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
       return respond(id ? FLOWS.filter((f) => f.id === id) : FLOWS, cache);
 
     case 'codes': {
-      const codes = family ? CODES.filter((c) => c.family === family) : CODES;
-      return respond(id ? codes.filter((c) => c.code.toLowerCase() === id.toLowerCase()) : codes, cache);
+      const codes = family ? THESAURUS_CODES.filter((c) => c.family === family) : THESAURUS_CODES;
+      return respond(
+        id
+          ? codes.filter((c) => c.id === id || c.term.toLowerCase() === id.toLowerCase())
+          : codes,
+        cache,
+      );
     }
 
     case 'thesaurus':
@@ -57,7 +61,7 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
             standards: STANDARDS.length,
             messages: ISO_MESSAGES.length,
             flows: FLOWS.length,
-            codes: CODES.length,
+            codes: THESAURUS_CODES.length,
             samples: ALL_SAMPLES.length,
             thesaurus: THESAURUS.length,
           },

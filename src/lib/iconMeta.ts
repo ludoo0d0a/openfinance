@@ -2,7 +2,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   BookOpen,
   Building2,
-  ClipboardList,
   FileCode2,
   GitBranch,
   Globe2,
@@ -39,7 +38,6 @@ export const ACTOR_ICON: Record<
 export const UI_ICONS = {
   overview: Layers,
   map: Map,
-  codes: ClipboardList,
   search: Search,
   flow: GitBranch,
   entities: Waypoints,

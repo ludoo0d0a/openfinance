@@ -1,4 +1,5 @@
-import type { Locale } from '@/types';
+import type { CodeEntry, CodeFamily, Locale } from '@/types';
+import { CODES } from './codes';
 
 export type ThesaurusCategory =
   | 'concept'
@@ -23,13 +24,20 @@ export interface ThesaurusEntry {
   definition: Record<Locale, string>;
   seeAlso?: string[];
   links?: ThesaurusLink[];
+  /** Set when category is `code` — which registry family this belongs to. */
+  family?: CodeFamily;
+  severity?: CodeEntry['severity'];
+  http?: number;
+  /** What to do when you see this code. English catalog copy. */
+  action?: string;
 }
 
 /**
  * Payments / Open Finance glossary. English is the working language of the
  * catalog; French names and definitions sit on the same entries.
+ * Status and error codes from `codes.ts` are merged in as category `code`.
  */
-export const THESAURUS: ThesaurusEntry[] = [
+const GLOSSARY: ThesaurusEntry[] = [
   {
     id: 'vop',
     term: 'VoP',
@@ -155,67 +163,6 @@ export const THESAURUS: ThesaurusEntry[] = [
     ],
   },
   {
-    id: 'mtch',
-    term: 'MTCH',
-    name: {
-      en: 'Match',
-      fr: 'Correspondance',
-    },
-    aliases: {
-      en: ['match', 'VoP match'],
-      fr: ['match', 'correspondance VoP'],
-    },
-    category: 'code',
-    definition: {
-      en: 'VoP outcome: the typed payee name matches the account holder. Safe to proceed with the credit transfer.',
-      fr: 'Résultat VoP : le nom saisi correspond au titulaire du compte. On peut poursuivre le virement en sécurité.',
-    },
-    seeAlso: ['vop', 'cmtc', 'nmtc'],
-    links: [{ label: 'Code MTCH', href: '/codes?q=MTCH' }],
-  },
-  {
-    id: 'cmtc',
-    term: 'CMTC',
-    name: {
-      en: 'Close match',
-      fr: 'Correspondance proche',
-    },
-    aliases: {
-      en: ['close match', 'CMTC'],
-      fr: ['correspondance proche', 'quasi-correspondance', 'CMTC'],
-    },
-    category: 'code',
-    definition: {
-      en:
-        'VoP outcome: not an exact match, but a close one. The report returns the suggested legal name. The PSU must see it and confirm before the payment continues.',
-      fr:
-        'Résultat VoP : pas une correspondance exacte, mais proche. Le rapport renvoie le nom légal suggéré. Le PSU doit le voir et confirmer avant de poursuivre le paiement.',
-    },
-    seeAlso: ['vop', 'mtch', 'nmtc'],
-    links: [{ label: 'Code CMTC', href: '/codes?q=CMTC' }],
-  },
-  {
-    id: 'nmtc',
-    term: 'NMTC',
-    name: {
-      en: 'No match',
-      fr: 'Aucune correspondance',
-    },
-    aliases: {
-      en: ['no match', 'mismatch', 'NMTC'],
-      fr: ['aucune correspondance', 'non-correspondance', 'mismatch', 'NMTC'],
-    },
-    category: 'code',
-    definition: {
-      en:
-        'VoP outcome: the name does not match the account. The PSU may still proceed after an explicit risk acceptance; log that consent for liability.',
-      fr:
-        'Résultat VoP : le nom ne correspond pas au compte. Le PSU peut quand même continuer après acceptation explicite du risque ; journalisez ce consentement pour la responsabilité.',
-    },
-    seeAlso: ['vop', 'mtch', 'cmtc'],
-    links: [{ label: 'Code NMTC', href: '/codes?q=NMTC' }],
-  },
-  {
     id: 'sct-inst',
     term: 'SCT Inst',
     name: {
@@ -328,6 +275,84 @@ export const THESAURUS: ThesaurusEntry[] = [
   },
 ];
 
+/** Bilingual overlays for codes that already had a glossary entry. */
+const CODE_OVERLAYS: Record<string, Partial<ThesaurusEntry>> = {
+  mtch: {
+    name: { en: 'Match', fr: 'Correspondance' },
+    aliases: { en: ['match', 'VoP match'], fr: ['match', 'correspondance VoP'] },
+    definition: {
+      en: 'VoP outcome: the typed payee name matches the account holder. Safe to proceed with the credit transfer.',
+      fr: 'Résultat VoP : le nom saisi correspond au titulaire du compte. On peut poursuivre le virement en sécurité.',
+    },
+    seeAlso: ['vop', 'cmtc', 'nmtc'],
+  },
+  cmtc: {
+    name: { en: 'Close match', fr: 'Correspondance proche' },
+    aliases: {
+      en: ['close match', 'CMTC'],
+      fr: ['correspondance proche', 'quasi-correspondance', 'CMTC'],
+    },
+    definition: {
+      en:
+        'VoP outcome: not an exact match, but a close one. The report returns the suggested legal name. The PSU must see it and confirm before the payment continues.',
+      fr:
+        'Résultat VoP : pas une correspondance exacte, mais proche. Le rapport renvoie le nom légal suggéré. Le PSU doit le voir et confirmer avant de poursuivre le paiement.',
+    },
+    seeAlso: ['vop', 'mtch', 'nmtc'],
+  },
+  nmtc: {
+    name: { en: 'No match', fr: 'Aucune correspondance' },
+    aliases: {
+      en: ['no match', 'mismatch', 'NMTC'],
+      fr: ['aucune correspondance', 'non-correspondance', 'mismatch', 'NMTC'],
+    },
+    definition: {
+      en:
+        'VoP outcome: the name does not match the account. The PSU may still proceed after an explicit risk acceptance; log that consent for liability.',
+      fr:
+        'Résultat VoP : le nom ne correspond pas au compte. Le PSU peut quand même continuer après acceptation explicite du risque ; journalisez ce consentement pour la responsabilité.',
+    },
+    seeAlso: ['vop', 'mtch', 'cmtc'],
+  },
+};
+
+export function slugCodeId(code: string): string {
+  return code.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function entryFromCode(c: CodeEntry): ThesaurusEntry {
+  const id = slugCodeId(c.code);
+  const overlay = CODE_OVERLAYS[id];
+  return {
+    id,
+    term: c.code,
+    name: overlay?.name ?? { en: c.name, fr: c.name },
+    aliases: overlay?.aliases ?? { en: [c.name], fr: [c.name] },
+    category: 'code',
+    definition: overlay?.definition ?? { en: c.description, fr: c.description },
+    seeAlso: overlay?.seeAlso,
+    family: c.family,
+    severity: c.severity,
+    http: c.http,
+    action: c.action,
+  };
+}
+
+export const THESAURUS: ThesaurusEntry[] = [...GLOSSARY, ...CODES.map(entryFromCode)];
+
+export const THESAURUS_CODES = THESAURUS.filter((e) => e.category === 'code');
+
+export const CODE_FAMILIES = [
+  'iso-tx-status',
+  'iso-status-reason',
+  'bg-error',
+  'stet-error',
+  'ukob-error',
+  'sca-status',
+  'consent-status',
+  'scheme-status',
+] as const satisfies readonly CodeFamily[];
+
 export const THESAURUS_CATEGORY_LABELS: Record<ThesaurusCategory, Record<Locale, string>> = {
   concept: { en: 'Concept', fr: 'Concept' },
   regulation: { en: 'Regulation', fr: 'Réglementation' },
@@ -338,6 +363,11 @@ export const THESAURUS_CATEGORY_LABELS: Record<ThesaurusCategory, Record<Locale,
 
 export function thesaurusById(id: string): ThesaurusEntry | undefined {
   return THESAURUS.find((e) => e.id === id);
+}
+
+export function codeByValue(code: string): ThesaurusEntry | undefined {
+  const q = code.toLowerCase();
+  return THESAURUS_CODES.find((e) => e.term.toLowerCase() === q);
 }
 
 export function localizeThesaurusEntry(entry: ThesaurusEntry, locale: Locale) {

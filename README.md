@@ -29,7 +29,8 @@ SIC Instant, Wero) and exception paths (reject, recall, instant timeout, payment
 | Cytoscape interop map (standards × messages × rails) | `/map` · `InteropGraph` |
 | ISO 20022 messages with namespaces and mandatory elements | `src/data/iso20022.ts` |
 | Sample payloads (XML / JSON), editable in place | `src/data/samples.ts` |
-| Status and error codes with remediation | `src/data/codes.ts` |
+| Status and error codes with remediation | `src/data/codes.ts` (merged into the thesaurus) |
+| Payments thesaurus (terms + codes) | `/thesaurus` · `src/data/thesaurus.ts` |
 | Structural validation of ISO 20022 documents | `functions/api/validate.ts` |
 | Mock ASPSP with awkward-but-realistic behaviour | `functions/api/mock/[[path]].ts` |
 | Full catalog as JSON | `functions/api/catalog.ts` |

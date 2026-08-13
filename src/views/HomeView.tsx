@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
-import { CODES } from '@/data/codes';
+import { THESAURUS_CODES } from '@/data/thesaurus';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { CodeChip, Tag } from '@/components/Chips';
 import { UI_ICONS } from '@/lib/iconMeta';
@@ -188,8 +188,11 @@ export function HomeView() {
                   ),
                 )}
               </div>
-              <Link to="/codes" className="mt-4 inline-block font-mono text-xs text-signal hover:underline">
-                {t('home.allCodes', { count: CODES.length })}
+              <Link
+                to="/thesaurus?category=code"
+                className="mt-4 inline-block font-mono text-xs text-signal hover:underline"
+              >
+                {t('home.allCodes', { count: THESAURUS_CODES.length })}
               </Link>
             </div>
           </section>
@@ -202,7 +205,7 @@ export function HomeView() {
             standards: STANDARDS.length,
             flows: FLOWS.length,
             messages: ISO_MESSAGES.length,
-            codes: CODES.length,
+            codes: THESAURUS_CODES.length,
           })}
         </p>
       </footer>

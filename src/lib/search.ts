@@ -2,7 +2,6 @@ import MiniSearch from 'minisearch';
 import { STANDARDS } from '@/data/standards';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
-import { CODES } from '@/data/codes';
 import { ALL_SAMPLES } from '@/data/samples';
 import { THESAURUS } from '@/data/thesaurus';
 import { extractPayloadTags } from '@/lib/payloadTags';
@@ -92,19 +91,6 @@ function buildDocuments(): IndexedDoc[] {
     });
   }
 
-  for (const c of CODES) {
-    docs.push({
-      id: `code:${c.family}:${c.code}`,
-      kind: 'code',
-      title: c.code,
-      subtitle: c.name,
-      body: `${c.description} ${c.action ?? ''}`,
-      href: `/codes?q=${encodeURIComponent(c.code)}`,
-      keywords: [c.family, c.severity, c.http ? String(c.http) : ''].join(' '),
-      tags: '',
-    });
-  }
-
   for (const s of ALL_SAMPLES) {
     // Companions duplicate the XML tag set; skip extraction to keep the index lean.
     const payloadTags =
@@ -123,15 +109,21 @@ function buildDocuments(): IndexedDoc[] {
   }
 
   for (const e of THESAURUS) {
+    const isCode = e.category === 'code';
     docs.push({
-      id: `term:${e.id}`,
-      kind: 'term',
+      id: isCode ? `code:${e.term}` : `term:${e.id}`,
+      kind: isCode ? 'code' : 'term',
       title: e.term,
       subtitle: e.name.en,
-      body: `${e.definition.en} ${e.definition.fr} ${e.name.fr}`,
-      href: `/thesaurus?id=${encodeURIComponent(e.id)}`,
+      body: `${e.definition.en} ${e.definition.fr} ${e.name.fr} ${e.action ?? ''}`,
+      href: isCode
+        ? `/thesaurus?category=code&id=${encodeURIComponent(e.id)}`
+        : `/thesaurus?id=${encodeURIComponent(e.id)}`,
       keywords: [
         e.category,
+        e.family ?? '',
+        e.severity ?? '',
+        e.http ? String(e.http) : '',
         ...e.aliases.en,
         ...e.aliases.fr,
         e.name.en,

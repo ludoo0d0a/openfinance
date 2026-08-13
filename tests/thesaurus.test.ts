@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { THESAURUS, localizeThesaurusEntry, thesaurusById } from '../src/data/thesaurus';
+import { THESAURUS, codeByValue, localizeThesaurusEntry, thesaurusById } from '../src/data/thesaurus';
 import { createIndex } from '../src/lib/search';
 
 describe('thesaurus', () => {
@@ -23,6 +23,21 @@ describe('thesaurus', () => {
       expect(e.definition.en.length, e.id).toBeGreaterThan(10);
       expect(e.definition.fr.length, e.id).toBeGreaterThan(10);
     }
+  });
+
+  it('merges the code registry, keeping bilingual VoP outcomes', () => {
+    const mtch = codeByValue('MTCH');
+    expect(mtch).toBeDefined();
+    expect(mtch!.category).toBe('code');
+    expect(mtch!.family).toBe('iso-status-reason');
+    expect(mtch!.severity).toBe('success');
+    expect(mtch!.action).toMatch(/Proceed/i);
+    expect(mtch!.name.fr).toMatch(/Correspondance/i);
+    expect(mtch!.definition.fr.length).toBeGreaterThan(40);
+
+    const ac01 = codeByValue('AC01');
+    expect(ac01?.term).toBe('AC01');
+    expect(ac01?.action).toMatch(/Data fix/i);
   });
 
   it('search finds VoP as a thesaurus term', () => {

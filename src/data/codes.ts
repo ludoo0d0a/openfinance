@@ -1,5 +1,9 @@
 import type { CodeEntry, CodeFamily } from '@/types';
 
+/**
+ * Compact authoring form for status and error codes. Merged into THESAURUS
+ * as category `code` entries — do not import this module from the UI.
+ */
 export const FAMILY_LABELS: Record<CodeFamily, string> = {
   'iso-tx-status': 'ISO 20022 transaction status',
   'iso-status-reason': 'ISO 20022 status reason',
@@ -819,6 +823,3 @@ export const CODES: CodeEntry[] = [
     action: 'Read tppMessages and transactionStatus. For instant, correlate with pacs.002 reason codes.',
   },
 ];
-
-export const codeByValue = (code: string) => CODES.find((c) => c.code.toLowerCase() === code.toLowerCase());
-export const codesByFamily = (family: CodeFamily) => CODES.filter((c) => c.family === family);
