@@ -13,7 +13,6 @@ export const fr: MessageTree = {
     overview: 'Vue d’ensemble',
     try: 'Éditeur d’essai',
     map: 'Carte d’interop',
-    codes: 'Registre des codes',
     thesaurus: 'Thésaurus',
     standards: 'Standards',
     flows: 'Flux',
@@ -117,30 +116,19 @@ export const fr: MessageTree = {
     lead:
       'Un réseau Cytoscape de la façon dont les standards XS2A / Open Banking se relient aux messages ISO 20022 et aux rails de compensation (SEPA, SIC, euroSIC, SIC IP, Wero). Utilisez une page de flux pour les swimlanes ordonnées ; utilisez cette carte pour la topologie.',
   },
-  codes: {
-    eyebrow: 'Registre',
-    title: 'Chaque code, et que faire',
-    lead:
-      'Statuts et motifs ISO 20022 aux côtés des codes d’erreur API de chaque standard. La colonne qui compte est la dernière : un nouvel essai est-il légitime, ou allez-vous créer un paiement en double.',
-    placeholder: 'AC01, insuffisant, signature, consentement…',
-    filterAria: 'Filtrer les codes',
-    all: 'Tous {{count}}',
-    action: 'Que faire',
-    count: '{{filtered}} sur {{total}} codes',
-    empty: 'Aucun résultat. Les codes sont insensibles à la casse ; essayez un fragment comme « AC » ou « consent ».',
-  },
   thesaurus: {
     eyebrow: 'Glossaire',
     title: 'Thésaurus des paiements',
     lead:
-      'Définitions courtes des termes qui reviennent en PSD2, SCT Inst et ISO 20022 — à commencer par la Vérification du bénéficiaire (VoP). Basculez la langue pour les intitulés français.',
-    placeholder: 'VoP, MTCH, acmt.023, paiements instantanés…',
+      'Définitions courtes des termes qui reviennent en PSD2, SCT Inst et ISO 20022 — y compris chaque statut et motif, et si un nouvel essai est légitime. Basculez la langue pour les intitulés français.',
+    placeholder: 'VoP, AC01, MTCH, CONSENT_INVALID…',
     filterAria: 'Filtrer le thésaurus',
     all: 'Tous {{count}}',
-    empty: 'Aucun résultat. Essayez VoP, CoP, MTCH ou acmt.',
+    empty: 'Aucun résultat. Essayez VoP, AC01, ou un fragment comme « consent ».',
     alsoCalled: 'Aussi appelé',
     seeAlso: 'Voir aussi',
     explore: 'Explorer dans le catalogue',
+    action: 'Que faire',
   },
   notFound: {
     title: 'Rien à ce chemin',

@@ -13,7 +13,6 @@ export const en: MessageTree = {
     overview: 'Overview',
     try: 'Try editor',
     map: 'Interop map',
-    codes: 'Code registry',
     thesaurus: 'Thesaurus',
     standards: 'Standards',
     flows: 'Flows',
@@ -115,30 +114,19 @@ export const en: MessageTree = {
     lead:
       'A Cytoscape network of how XS2A / Open Banking standards connect to ISO 20022 messages and clearing rails (SEPA, SIC, euroSIC, SIC IP, Wero). Use a flow page for ordered swimlanes; use this map for the topology.',
   },
-  codes: {
-    eyebrow: 'Registry',
-    title: 'Every code, and what to do about it',
-    lead:
-      'ISO 20022 statuses and reason codes alongside the API error codes from each standard. The column that matters is the last one: whether a retry is legitimate, or whether you are about to create a duplicate payment.',
-    placeholder: 'AC01, insufficient, signature, consent…',
-    filterAria: 'Filter codes',
-    all: 'All {{count}}',
-    action: 'What to do',
-    count: '{{filtered}} of {{total}} codes',
-    empty: 'Nothing matched. Codes are case-insensitive; try a fragment like "AC" or "consent".',
-  },
   thesaurus: {
     eyebrow: 'Glossary',
     title: 'Payments thesaurus',
     lead:
-      'Short definitions for the words that keep turning up in PSD2, SCT Inst and ISO 20022 — starting with Verification of Payee (VoP). Switch language for the French naming.',
-    placeholder: 'VoP, MTCH, acmt.023, Instant Payments…',
+      'Short definitions for the words that keep turning up in PSD2, SCT Inst and ISO 20022 — including every status and reason code, and whether a retry is legitimate. Switch language for the French naming.',
+    placeholder: 'VoP, AC01, MTCH, CONSENT_INVALID…',
     filterAria: 'Filter thesaurus',
     all: 'All {{count}}',
-    empty: 'Nothing matched. Try VoP, CoP, MTCH or acmt.',
+    empty: 'Nothing matched. Try VoP, AC01, or a fragment like "consent".',
     alsoCalled: 'Also called',
     seeAlso: 'See also',
     explore: 'Explore in the catalog',
+    action: 'What to do',
   },
   notFound: {
     title: 'Nothing at this path',

@@ -5,6 +5,7 @@ import { ALL_SAMPLES, SAMPLES, samplesForMessage } from '../src/data/samples';
 import { FLOWS_FR } from '../src/i18n/flowsFr';
 import { STANDARDS } from '../src/data/standards';
 import { CODES } from '../src/data/codes';
+import { codeByValue, THESAURUS, THESAURUS_CODES } from '../src/data/thesaurus';
 import { DOCUMENTS, createIndex } from '../src/lib/search';
 
 /**
@@ -108,8 +109,8 @@ describe('referential integrity', () => {
     }
   });
 
-  it('every code referenced by a flow step is in the registry', () => {
-    const known = new Set(CODES.map((c) => c.code.toLowerCase()));
+  it('every code referenced by a flow step is in the thesaurus', () => {
+    const known = new Set(THESAURUS_CODES.map((c) => c.term.toLowerCase()));
     const missing: string[] = [];
     for (const flow of FLOWS) {
       for (const step of flow.steps) {
@@ -144,6 +145,24 @@ describe('referential integrity', () => {
       seen.add(key);
     }
   });
+
+  it('every authored code is a thesaurus entry', () => {
+    for (const code of CODES) {
+      const entry = codeByValue(code.code);
+      expect(entry, code.code).toBeDefined();
+      expect(entry!.family).toBe(code.family);
+      expect(entry!.action).toBe(code.action);
+    }
+    expect(THESAURUS_CODES.length).toBe(CODES.length);
+  });
+
+  it('thesaurus ids are unique', () => {
+    const seen = new Set<string>();
+    for (const e of THESAURUS) {
+      expect(seen.has(e.id), `duplicate thesaurus id ${e.id}`).toBe(false);
+      seen.add(e.id);
+    }
+  });
 });
 
 describe('search index', () => {
@@ -160,7 +179,9 @@ describe('search index', () => {
   });
 
   it('finds a reason code by its exact value', () => {
-    expect(index.search('AC01').some((h) => h.id.endsWith(':AC01'))).toBe(true);
+    const hits = index.search('AC01');
+    expect(hits.some((h) => h.id === 'code:AC01')).toBe(true);
+    expect(hits.some((h) => String(h.href).includes('/thesaurus'))).toBe(true);
   });
 
   it('survives dot-heavy OBIE codes', () => {
