@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react';
-import cytoscape, { type Core, type ElementDefinition } from 'cytoscape';
-import type { ActorId, Flow, FlowStep } from '@/types';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ActorId, Flow } from '@/types';
 import { ACTORS } from '@/data/flows';
 import { ActorIcon } from '@/lib/icons';
 import { ACTOR_ICON, actorIconDataUri } from '@/lib/iconMeta';
+import { ACTOR_H, ACTOR_W, layoutEntityFlow, tokenOnHop } from '@/lib/entityFlowLayout';
 import { ENTITY_LABEL_FR, useI18n, useT } from '@/i18n';
 
 interface Props {
@@ -12,7 +12,6 @@ interface Props {
   onSelectStep: (n: number) => void;
 }
 
-/** Friendly labels for the transaction diagram (user, bank, CSM, …). */
 const ENTITY_LABEL_EN: Record<ActorId, { title: string; role: string }> = {
   psu: { title: 'User', role: 'PSU' },
   tpp: { title: 'TPP', role: 'AISP / PISP' },
@@ -29,221 +28,285 @@ const LAYER_COLOR = {
   clearing: '#5b45d6',
 } as const;
 
+const HOPS_PER_SEC = 0.85;
+
 /**
- * Entity / transaction diagram: actors as boxes with icons, each step as a
- * labeled arrow (pacs.008, pacs.002 ack, …). Complements the swimlane view.
+ * Entity / transaction diagram: actors as boxes, each hop as an arrow with a
+ * compact numbered tag (pacs.008, POST, …). A request token can replay the path.
  */
 export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
   const t = useT();
   const { locale } = useI18n();
   const entityLabel = locale === 'fr' ? ENTITY_LABEL_FR : ENTITY_LABEL_EN;
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cyRef = useRef<Core | null>(null);
+  const layout = useMemo(() => layoutEntityFlow(flow), [flow]);
+  const maxProgress = layout.hops.length;
+
+  const [progress, setProgress] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const progressRef = useRef(0);
+  const lastHopRef = useRef(0);
   const onSelectRef = useRef(onSelectStep);
   onSelectRef.current = onSelectStep;
-
-  const actors = useMemo(() => {
-    const set = new Set<ActorId>(flow.actors);
-    for (const step of flow.steps) {
-      set.add(step.from);
-      set.add(step.to);
-    }
-    return [...set];
-  }, [flow]);
-
-  const elements = useMemo(() => buildElements(flow, actors, entityLabel), [flow, actors, entityLabel]);
+  progressRef.current = progress;
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    setProgress(0);
+    setPlaying(false);
+    lastHopRef.current = 0;
+  }, [flow.id]);
 
-    const cy = cytoscape({
-      container: containerRef.current,
-      elements,
-      style: [
-        {
-          selector: 'node',
-          style: {
-            label: 'data(label)',
-            // Label sits under the box so the icon can occupy the center.
-            'text-valign': 'bottom',
-            'text-halign': 'center',
-            'text-margin-y': 14,
-            'text-wrap': 'wrap',
-            'text-max-width': '110px',
-            'font-family': 'IBM Plex Sans, sans-serif',
-            'font-size': '11px',
-            'font-weight': 600,
-            color: '#0d1420',
-            'background-color': '#ffffff',
-            'background-image': 'data(icon)',
-            'background-fit': 'none',
-            'background-clip': 'none',
-            'background-repeat': 'no-repeat',
-            // Cytoscape bgPos only accepts % / px — 'center' parses as null and crashes.
-            'background-width': '40px',
-            'background-height': '40px',
-            'background-position-x': '50%',
-            'background-position-y': '50%',
-            'background-image-opacity': 1,
-            'border-width': 1.5,
-            'border-color': '#c8d1de',
-            shape: 'round-rectangle',
-            width: 112,
-            height: 72,
-          },
-        },
-        {
-          selector: 'node[kind = "bank"]',
-          style: { 'border-color': '#1f4fd8', 'background-color': '#dde5fb' },
-        },
-        {
-          selector: 'node[kind = "csm"]',
-          style: { 'border-color': '#5b45d6', 'background-color': '#e4dffb' },
-        },
-        {
-          selector: 'node[kind = "user"]',
-          style: { 'border-color': '#0b8f63', 'background-color': '#d5f0e5' },
-        },
-        {
-          selector: 'node[kind = "scheme"]',
-          style: { 'border-color': '#b26b00', 'background-color': '#f9ecd4' },
-        },
-        {
-          selector: 'edge',
-          style: {
-            label: 'data(edgeLabel)',
-            'font-family': 'JetBrains Mono, monospace',
-            'font-size': '9px',
-            color: '#5b6779',
-            'text-background-color': '#f4f6f9',
-            'text-background-opacity': 1,
-            'text-background-padding': '3px',
-            'curve-style': 'bezier',
-            'control-point-step-size': 40,
-            width: 1.5,
-            'line-color': '#c8d1de',
-            'target-arrow-color': '#c8d1de',
-            'target-arrow-shape': 'triangle',
-            'arrow-scale': 1,
-            'source-endpoint': 'outside-to-node',
-            'target-endpoint': 'outside-to-node',
-          },
-        },
-        {
-          selector: 'edge[layer = "api"]',
-          style: {
-            'line-color': LAYER_COLOR.api,
-            'target-arrow-color': LAYER_COLOR.api,
-            color: LAYER_COLOR.api,
-          },
-        },
-        {
-          selector: 'edge[layer = "clearing"]',
-          style: {
-            'line-color': LAYER_COLOR.clearing,
-            'target-arrow-color': LAYER_COLOR.clearing,
-            color: LAYER_COLOR.clearing,
-          },
-        },
-        {
-          selector: 'node[kind = "message"]',
-          style: {
-            label: 'data(label)',
-            'text-valign': 'center',
-            'text-halign': 'center',
-            'text-margin-y': 0,
-            'text-wrap': 'wrap',
-            'text-max-width': '92px',
-            'font-family': 'JetBrains Mono, monospace',
-            'font-size': '10px',
-            'font-weight': 600,
-            color: '#5b45d6',
-            'background-color': '#ffffff',
-            'background-image': 'none',
-            'border-width': 1.5,
-            'border-color': '#5b45d6',
-            shape: 'round-rectangle',
-            width: 96,
-            height: 34,
-          },
-        },
-        {
-          selector: 'node[kind = "message"][layer = "api"]',
-          style: {
-            color: '#1f4fd8',
-            'border-color': '#1f4fd8',
-          },
-        },
-        {
-          selector: 'edge.selected',
-          style: {
-            width: 3,
-            'line-color': '#0d1420',
-            'target-arrow-color': '#0d1420',
-            color: '#0d1420',
-            'font-size': '10px',
-            'font-weight': 700,
-            'z-index': 10,
-          },
-        },
-        {
-          selector: 'node[kind = "message"].selected',
-          style: {
-            'background-color': '#0d1420',
-            'border-color': '#0d1420',
-            color: '#ffffff',
-            'font-weight': 700,
-            'z-index': 10,
-          },
-        },
-      ],
-      layout: { name: 'preset', fit: true, padding: 36 },
-      minZoom: 0.4,
-      maxZoom: 2.2,
-      wheelSensitivity: 0.2,
-      userZoomingEnabled: true,
-      userPanningEnabled: true,
-    });
-
-    cy.on('tap', 'edge, node[kind = "message"]', (evt) => {
-      const n = Number(evt.target.data('step'));
-      if (Number.isFinite(n)) onSelectRef.current(n);
-    });
-    cy.on('mouseover', 'edge, node[kind = "message"]', () => {
-      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
-    });
-    cy.on('mouseout', 'edge, node[kind = "message"]', () => {
-      if (containerRef.current) containerRef.current.style.cursor = '';
-    });
-
-    cyRef.current = cy;
-    return () => {
-      cy.destroy();
-      cyRef.current = null;
+  useEffect(() => {
+    if (!playing) return;
+    let frame = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const next = Math.min(maxProgress, progressRef.current + dt * HOPS_PER_SEC);
+      setProgress(next);
+      const hopN = hopAtProgress(next, maxProgress);
+      if (hopN && hopN !== lastHopRef.current) {
+        lastHopRef.current = hopN;
+        onSelectRef.current(hopN);
+      }
+      if (next >= maxProgress) {
+        setPlaying(false);
+        return;
+      }
+      frame = requestAnimationFrame(tick);
     };
-  }, [elements]);
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [playing, maxProgress]);
 
-  useEffect(() => {
-    const cy = cyRef.current;
-    if (!cy) return;
-    cy.elements().removeClass('selected');
-    cy.$(`edge[step = "${selectedStep}"]`).addClass('selected');
-    cy.$(`node[kind = "message"][step = "${selectedStep}"]`).addClass('selected');
-  }, [selectedStep, elements]);
+  const activeHopIndex =
+    layout.hops.length === 0
+      ? -1
+      : Math.min(layout.hops.length - 1, Math.floor(Math.min(progress, Math.max(0, maxProgress - 0.0001))));
+  const tokenT = progress >= maxProgress ? 1 : progress % 1;
+  const token =
+    activeHopIndex >= 0 && (playing || progress > 0)
+      ? tokenOnHop(layout.hops[activeHopIndex], progress === 0 ? 0 : tokenT)
+      : null;
+
+  function play() {
+    if (progressRef.current >= maxProgress) {
+      progressRef.current = 0;
+      setProgress(0);
+    }
+    setPlaying(true);
+  }
+
+  function seek(value: number) {
+    setPlaying(false);
+    setProgress(value);
+    const hopN = hopAtProgress(value, maxProgress);
+    if (hopN) {
+      lastHopRef.current = hopN;
+      onSelectStep(hopN);
+    }
+  }
 
   return (
     <div>
-      <div
-        ref={containerRef}
-        className="h-[min(52vh,420px)] w-full border border-rule-soft bg-paper-raised"
-        role="img"
-        aria-label={`${flow.name} transaction flow between entities`}
-      />
+      <div className="overflow-x-auto scroll-paper">
+        <svg
+          viewBox={`0 0 ${layout.width} ${layout.height}`}
+          width={layout.width}
+          height={layout.height}
+          role="img"
+          aria-label={`${flow.name} transaction flow between entities`}
+          className="max-w-none"
+        >
+          <defs>
+            <marker
+              id={`${flow.id}-arrow-api`}
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
+              <path d="M0,1 L9,5 L0,9 z" fill={LAYER_COLOR.api} />
+            </marker>
+            <marker
+              id={`${flow.id}-arrow-clearing`}
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
+              <path d="M0,1 L9,5 L0,9 z" fill={LAYER_COLOR.clearing} />
+            </marker>
+            <marker
+              id={`${flow.id}-arrow-selected`}
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
+              <path d="M0,1 L9,5 L0,9 z" fill="#0d1420" />
+            </marker>
+          </defs>
+
+          {layout.hops.map((hop) => {
+            const selected = hop.step.n === selectedStep;
+            const color = selected ? '#0d1420' : LAYER_COLOR[hop.step.layer];
+            const marker = selected
+              ? `url(#${flow.id}-arrow-selected)`
+              : `url(#${flow.id}-arrow-${hop.step.layer})`;
+            return (
+              <g
+                key={`arrow-${hop.step.n}`}
+                className="cursor-pointer"
+                onClick={() => {
+                  setPlaying(false);
+                  onSelectStep(hop.step.n);
+                }}
+              >
+                <path d={hop.path} fill="none" stroke="transparent" strokeWidth="14" />
+                <path
+                  d={hop.path}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={selected ? 2.4 : 1.5}
+                  markerEnd={marker}
+                />
+              </g>
+            );
+          })}
+
+          {layout.actors.map((actor) => {
+            const meta = entityLabel[actor.id] ?? {
+              title: ACTORS[actor.id]?.label ?? actor.id,
+              role: ACTORS[actor.id]?.sublabel ?? '',
+            };
+            const kind = nodeKind(actor.id);
+            const palette = kindColor(kind);
+            return (
+              <g key={actor.id}>
+                <rect
+                  x={actor.x - ACTOR_W / 2}
+                  y={actor.y - ACTOR_H / 2}
+                  width={ACTOR_W}
+                  height={ACTOR_H}
+                  rx={4}
+                  fill={palette.bg}
+                  stroke={palette.border}
+                  strokeWidth="1.5"
+                />
+                <image
+                  href={actorIconDataUri(actor.id)}
+                  x={actor.x - 18}
+                  y={actor.y - 28}
+                  width={36}
+                  height={36}
+                />
+                <text
+                  x={actor.x}
+                  y={actor.y + 22}
+                  textAnchor="middle"
+                  fontFamily="var(--font-display)"
+                  fontSize="11"
+                  fontWeight="600"
+                  fill="#0d1420"
+                >
+                  {meta.title}
+                </text>
+              </g>
+            );
+          })}
+
+          {layout.hops.map((hop) => {
+            const selected = hop.step.n === selectedStep;
+            const color = selected ? '#0d1420' : LAYER_COLOR[hop.step.layer];
+            return (
+              <g
+                key={`tag-${hop.step.n}`}
+                className="cursor-pointer"
+                onClick={() => {
+                  setPlaying(false);
+                  onSelectStep(hop.step.n);
+                }}
+              >
+                <title>{`${String(hop.step.n).padStart(2, '0')} ${hop.step.label}`}</title>
+                <rect
+                  x={hop.tag.x - hop.tagWidth / 2}
+                  y={hop.tag.y - 10}
+                  width={hop.tagWidth}
+                  height={20}
+                  rx={3}
+                  fill={selected ? '#0d1420' : '#ffffff'}
+                  stroke={color}
+                  strokeWidth="1.25"
+                />
+                <text
+                  x={hop.tag.x}
+                  y={hop.tag.y + 4}
+                  textAnchor="middle"
+                  fontFamily="var(--font-mono)"
+                  fontSize="10"
+                  fontWeight={selected ? 700 : 600}
+                  fill={selected ? '#ffffff' : color}
+                >
+                  {hop.tagLabel}
+                </text>
+              </g>
+            );
+          })}
+
+          {token && (
+            <g>
+              <circle cx={token.x} cy={token.y} r={9} fill="#0d1420" stroke="#ffffff" strokeWidth="2" />
+              <circle cx={token.x} cy={token.y} r={3.5} fill="#d5f0e5" />
+            </g>
+          )}
+        </svg>
+      </div>
+
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        {actors.map((id) => (
-          <span key={id} className="inline-flex items-center gap-1.5 text-[11px] text-muted">
-            <ActorIcon actor={id} size={12} />
-            <span className="font-medium text-ink">{ACTOR_ICON[id].label}</span>
+        <button
+          type="button"
+          onClick={() => (playing ? setPlaying(false) : play())}
+          className="border border-ink bg-ink px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-white"
+        >
+          {playing ? t('flow.pause') : t('flow.runScenario')}
+        </button>
+        <button
+          type="button"
+          onClick={() => seek(0)}
+          className="border border-rule px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest"
+        >
+          {t('flow.restart')}
+        </button>
+        <label className="flex min-w-[180px] flex-1 items-center gap-2 text-[11px] text-muted">
+          <span className="font-mono uppercase tracking-wider">{t('flow.playback')}</span>
+          <input
+            type="range"
+            min={0}
+            max={maxProgress}
+            step={0.01}
+            value={progress}
+            onChange={(e) => seek(Number(e.target.value))}
+            className="h-1.5 w-full accent-ink"
+            aria-label={t('flow.playback')}
+          />
+          <span className="w-10 font-mono tnum">
+            {String(hopAtProgress(progress, maxProgress) ?? 0).padStart(2, '0')}
+          </span>
+        </label>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        {layout.actors.map((a) => (
+          <span key={a.id} className="inline-flex items-center gap-1.5 text-[11px] text-muted">
+            <ActorIcon actor={a.id} size={12} />
+            <span className="font-medium text-ink">{ACTOR_ICON[a.id].label}</span>
           </span>
         ))}
       </div>
@@ -260,102 +323,11 @@ export function EntityFlowDiagram({ flow, selectedStep, onSelectStep }: Props) {
   );
 }
 
-function buildElements(
-  flow: Flow,
-  actors: ActorId[],
-  entityLabel: Record<string, { title: string; role: string }>,
-): ElementDefinition[] {
-  const elements: ElementDefinition[] = [];
-  const positions = layoutActors(actors);
-
-  for (const id of actors) {
-    const meta = entityLabel[id] ?? { title: ACTORS[id]?.label ?? id, role: ACTORS[id]?.sublabel ?? '' };
-    elements.push({
-      data: {
-        id: `actor:${id}`,
-        label: `${meta.title}\n${meta.role}`,
-        kind: nodeKind(id),
-        icon: actorIconDataUri(id),
-      },
-      position: positions.get(id) ?? { x: 0, y: 0 },
-    });
-  }
-
-  const pairCounts = new Map<string, number>();
-  for (const step of flow.steps) {
-    const key = `${step.from}->${step.to}`;
-    pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1);
-  }
-  const pairIndex = new Map<number, { i: number; total: number }>();
-  const pairSeen = new Map<string, number>();
-  for (const step of flow.steps) {
-    const key = `${step.from}->${step.to}`;
-    const i = pairSeen.get(key) ?? 0;
-    pairIndex.set(step.n, { i, total: pairCounts.get(key) ?? 1 });
-    pairSeen.set(key, i + 1);
-  }
-
-  for (const step of flow.steps) {
-    if (step.messageShort) {
-      const from = positions.get(step.from) ?? { x: 0, y: 0 };
-      const to = positions.get(step.to) ?? { x: 0, y: 0 };
-      const hop = pairIndex.get(step.n) ?? { i: 0, total: 1 };
-      elements.push({
-        data: {
-          id: `msg:${step.n}`,
-          label: step.messageShort,
-          kind: 'message',
-          step: String(step.n),
-          layer: step.layer,
-        },
-        position: messagePosition(from, to, hop.i, hop.total),
-      });
-      elements.push({
-        data: {
-          id: `step:${step.n}:in`,
-          source: `actor:${step.from}`,
-          target: `msg:${step.n}`,
-          step: String(step.n),
-          layer: step.layer,
-          edgeLabel: String(step.n).padStart(2, '0'),
-        },
-      });
-      elements.push({
-        data: {
-          id: `step:${step.n}:out`,
-          source: `msg:${step.n}`,
-          target: `actor:${step.to}`,
-          step: String(step.n),
-          layer: step.layer,
-          edgeLabel: '',
-        },
-      });
-      continue;
-    }
-
-    elements.push({
-      data: {
-        id: `step:${step.n}`,
-        source: `actor:${step.from}`,
-        target: `actor:${step.to}`,
-        step: String(step.n),
-        layer: step.layer,
-        edgeLabel: edgeLabel(step),
-      },
-    });
-  }
-
-  return elements;
-}
-
-function edgeLabel(step: FlowStep): string {
-  const n = String(step.n).padStart(2, '0');
-  if (step.messageShort) {
-    const ack = /pacs\.002/i.test(step.messageShort) ? ' ack' : '';
-    return `${n} ${step.messageShort}${ack}`;
-  }
-  if (step.method) return `${n} ${step.method}`;
-  return `${n} ${truncate(step.label, 22)}`;
+function hopAtProgress(progress: number, max: number): number | undefined {
+  if (max <= 0) return undefined;
+  if (progress <= 0) return 1;
+  if (progress >= max) return max;
+  return Math.min(max, Math.floor(progress) + 1);
 }
 
 function nodeKind(id: ActorId): string {
@@ -365,61 +337,9 @@ function nodeKind(id: ActorId): string {
   return 'bank';
 }
 
-function layoutActors(actors: ActorId[]): Map<ActorId, { x: number; y: number }> {
-  const rank: Record<ActorId, number> = {
-    psu: 0,
-    tpp: 1,
-    scheme: 1,
-    sca: 2,
-    aspsp: 3,
-    csm: 4,
-    rail: 4,
-    beneficiary: 5,
-  };
-
-  const byRank = new Map<number, ActorId[]>();
-  for (const id of actors) {
-    const r = rank[id] ?? 3;
-    const list = byRank.get(r) ?? [];
-    list.push(id);
-    byRank.set(r, list);
-  }
-
-  const ranks = [...byRank.keys()].sort((a, b) => a - b);
-  const map = new Map<ActorId, { x: number; y: number }>();
-  const colGap = 180;
-  const rowGap = 140;
-
-  ranks.forEach((r, col) => {
-    const column = byRank.get(r) ?? [];
-    column.forEach((id, row) => {
-      const offset = ((column.length - 1) * rowGap) / 2;
-      map.set(id, { x: col * colGap, y: row * rowGap - offset });
-    });
-  });
-
-  return map;
-}
-
-function messagePosition(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  index: number,
-  total: number,
-): { x: number; y: number } {
-  const spread = (index - (total - 1) / 2) * 44;
-  if (from.x === to.x && from.y === to.y) {
-    return { x: from.x + 96, y: from.y + spread };
-  }
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy) || 1;
-  return {
-    x: from.x + dx * 0.5 + (-dy / len) * spread,
-    y: from.y + dy * 0.5 + (dx / len) * spread,
-  };
-}
-
-function truncate(text: string, max: number) {
-  return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+function kindColor(kind: string): { border: string; bg: string } {
+  if (kind === 'bank') return { border: '#1f4fd8', bg: '#dde5fb' };
+  if (kind === 'csm') return { border: '#5b45d6', bg: '#e4dffb' };
+  if (kind === 'user') return { border: '#0b8f63', bg: '#d5f0e5' };
+  return { border: '#b26b00', bg: '#f9ecd4' };
 }
