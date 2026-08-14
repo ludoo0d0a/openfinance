@@ -32,7 +32,7 @@ written down.
 | A message | `src/data/iso20022.ts` | `requiredPaths` are the elements whose absence causes rejections you have actually seen, not the full XSD |
 | A sample | `src/data/samples.ts` | Namespace must match the catalog entry's `id`, and the payload must satisfy its own `requiredPaths` — CI checks both |
 | A flow | `src/data/flows.ts` | Steps numbered from 1 with no gaps. Every actor a step touches must be in `actors` or its arrow falls back to the last lane |
-| A glossary term | `src/data/glossaryEntries.ts` (EU/UK) or `src/data/glossaryMastercard.ts` | Bilingual EN/FR name and definition; cite `sources` when aligned with a public glossary |
+| A glossary term | `src/data/glossaryEntries.ts` (EU/UK) or `src/data/glossaryMastercard.ts` | Bilingual EN/FR name and definition; cite `sources` when aligned with a public glossary. ISO messages are merged automatically as `category: 'message'` |
 | A code | `src/data/codes.ts` | Unique within its family; merged into the glossary as `category: 'code'` |
 | A standard | `src/data/standards.ts` | Endpoints are indexed individually and become searchable |
 

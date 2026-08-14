@@ -38,28 +38,6 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       { label: 'SCT Inst happy path', href: '/flows/sct-inst-happy-path' },
     ],
   }),
-  g('acmt-023', 'acmt.023', 'message', { en: 'Identification Verification Request', fr: 'Demande de vérification d’identité' }, {
-    en: 'ISO 20022 message that carries the Verification of Payee request: the payee name as typed by the PSU and the IBAN to check. Do not normalise the name before sending — that defeats the check.',
-    fr: 'Message ISO 20022 portant la demande de Verification of Payee : le nom du bénéficiaire tel que saisi par le PSU et l’IBAN à contrôler. Ne normalisez pas le nom avant envoi — cela annule l’intérêt du contrôle.',
-  }, {
-    aliases: { en: ['acmt.023', 'VoP request'], fr: ['acmt.023', 'demande VoP'] },
-    seeAlso: ['vop', 'acmt-024', 'acmt', 'iso-20022'],
-    links: [
-      { label: 'Message acmt.023', href: '/messages/acmt.023' },
-      { label: 'Sample', href: '/samples/acmt-023-vop' },
-    ],
-  }),
-  g('acmt-024', 'acmt.024', 'message', { en: 'Identification Verification Report', fr: 'Rapport de vérification d’identité' }, {
-    en: 'ISO 20022 answer to a VoP request. Carries MTCH, CMTC (with the suggested legal name) or NMTC. Close-match UX must show the suggested name; no-match requires explicit PSU risk acceptance.',
-    fr: 'Réponse ISO 20022 à une demande VoP. Porte MTCH, CMTC (avec le nom légal suggéré) ou NMTC. Sur close-match, l’UX doit afficher le nom suggéré ; sur no-match, le PSU doit accepter explicitement le risque.',
-  }, {
-    aliases: { en: ['acmt.024', 'VoP report', 'VoP response'], fr: ['acmt.024', 'rapport VoP', 'réponse VoP'] },
-    seeAlso: ['vop', 'acmt-023', 'mtch', 'cmtc', 'nmtc'],
-    links: [
-      { label: 'Message acmt.024', href: '/messages/acmt.024' },
-      { label: 'Sample', href: '/samples/acmt-024-vop-report' },
-    ],
-  }),
   g('sct', 'SCT', 'scheme', { en: 'SEPA Credit Transfer', fr: 'Virement SEPA' }, {
     en: 'EPC scheme for non-urgent euro credit transfers between payment accounts in SEPA, on common ISO 20022 rules (typically pacs.008, Local Instrument not INST). Batch rails such as STEP2; instant variant is SCT Inst.',
     fr: 'Schéma EPC de virement euro non urgent entre comptes de paiement dans l’espace SEPA, sur des règles ISO 20022 communes (souvent pacs.008, sans Local Instrument INST). Rails de lot tels que STEP2 ; la variante instantanée est le SCT Inst.',
@@ -694,7 +672,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Domaine ISO 20022 des instructions client-banque : pain.001 virement, pain.008 prélèvement, pain.013 request-to-pay.',
   }, {
     aliases: { en: ['Payments Initiation', 'pain.001'], fr: ['initiation des paiements', 'pain'] },
-    seeAlso: ['pacs', 'iso-20022', 'camt', 'acmt'],
+    seeAlso: ['pacs', 'iso-20022', 'camt', 'acmt', 'pain-001', 'pain-008', 'pain-013'],
     links: [{ label: 'pain.001', href: '/messages/pain.001' }],
   }),
   g('pacs', 'pacs', 'concept', { en: 'Payments Clearing & Settlement (pacs)', fr: 'Compensation et règlement (pacs)' }, {
@@ -702,7 +680,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Domaine ISO 20022 de compensation interbancaire. pacs.008 est le virement client ; pacs.002 le statut/ack.',
   }, {
     aliases: { en: ['Payments Clearing and Settlement'], fr: ['compensation et règlement'] },
-    seeAlso: ['pain', 'camt', 'csm', 'iso-20022'],
+    seeAlso: ['pain', 'camt', 'csm', 'iso-20022', 'pacs-008', 'pacs-002'],
     links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
   }),
   g('camt', 'camt', 'concept', { en: 'Cash Management (camt)', fr: 'Gestion de trésorerie (camt)' }, {
@@ -710,7 +688,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Domaine ISO 20022 de cash management : relevés (camt.053), notifications (camt.054), rappels (camt.056) et investigations.',
   }, {
     aliases: { en: ['Cash Management'], fr: ['gestion de trésorerie'] },
-    seeAlso: ['pacs', 'iso-20022', 'pain'],
+    seeAlso: ['pacs', 'iso-20022', 'pain', 'camt-053', 'camt-054', 'camt-056'],
   }),
   g('acmt', 'acmt', 'concept', { en: 'Account Management (acmt)', fr: 'Gestion de compte (acmt)' }, {
     en: 'ISO 20022 account-management area. VoP uses acmt.023 (request) and acmt.024 (report).',

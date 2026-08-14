@@ -5,7 +5,7 @@ import { ALL_SAMPLES, SAMPLES, samplesForMessage } from '../src/data/samples';
 import { FLOWS_FR } from '../src/i18n/flowsFr';
 import { STANDARDS } from '../src/data/standards';
 import { CODES } from '../src/data/codes';
-import { codeByValue, GLOSSARY, GLOSSARY_CODES } from '../src/data/glossary';
+import { codeByValue, GLOSSARY, GLOSSARY_CODES, GLOSSARY_MESSAGES } from '../src/data/glossary';
 import { DOCUMENTS, createIndex } from '../src/lib/search';
 
 /**
@@ -144,6 +144,15 @@ describe('referential integrity', () => {
       expect(seen.has(key), `duplicate ${key}`).toBe(false);
       seen.add(key);
     }
+  });
+
+  it('every ISO message is a glossary entry', () => {
+    for (const m of ISO_MESSAGES) {
+      const entry = GLOSSARY_MESSAGES.find((e) => e.term === m.short);
+      expect(entry, m.short).toBeDefined();
+      expect(entry!.category).toBe('message');
+    }
+    expect(GLOSSARY_MESSAGES.length).toBe(ISO_MESSAGES.length);
   });
 
   it('every authored code is a glossary entry', () => {

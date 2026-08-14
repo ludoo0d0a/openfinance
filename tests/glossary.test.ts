@@ -6,6 +6,7 @@ import {
   glossaryById,
   localizeGlossaryEntry,
 } from '../src/data/glossary';
+import { ISO_MESSAGES } from '../src/data/iso20022';
 import { createIndex } from '../src/lib/search';
 
 describe('glossary', () => {
@@ -58,11 +59,16 @@ describe('glossary', () => {
     expect(glossaryById('tpp')!.sources).toEqual(expect.arrayContaining(['bundesbank', 'ravelin']));
   });
 
-  it('ISO message ids are category message; only acmt.023/024 for now', () => {
+  it('every ISO catalog message is a glossary entry with category message', () => {
     const dotted = GLOSSARY.filter((e) => /^(pacs|pain|camt|acmt|auth|remt)\.\d+$/i.test(e.term));
-    expect(dotted.map((e) => e.term).sort()).toEqual(['acmt.023', 'acmt.024']);
     for (const e of dotted) {
       expect(e.category, e.term).toBe('message');
+    }
+    expect(dotted.map((e) => e.term).sort()).toEqual([...ISO_MESSAGES.map((m) => m.short)].sort());
+    for (const m of ISO_MESSAGES) {
+      const e = GLOSSARY.find((x) => x.term === m.short);
+      expect(e, m.short).toBeDefined();
+      expect(e!.category).toBe('message');
     }
     expect(glossaryById('pain')?.category).toBe('concept');
     expect(glossaryById('pacs')?.category).toBe('concept');
