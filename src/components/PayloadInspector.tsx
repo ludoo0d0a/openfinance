@@ -358,12 +358,41 @@ function XmlTree({
           </span>
         ))}
         <span className="text-signal">{hasChildren || node.text ? '>' : ' />'}</span>
-        {node.text && !hasChildren && <span className="text-[#dfe5ee]">{node.text}</span>}
+        {node.text && !hasChildren && (
+          <>
+            <span className="text-[#dfe5ee]">{node.text}</span>
+            <CloseTag name={node.name} />
+          </>
+        )}
+        {hasChildren && !open && (
+          <>
+            <span className="text-muted-dark">…</span>
+            <CloseTag name={node.name} />
+          </>
+        )}
       </div>
-      {open && hasChildren && node.children.map((child, i) => (
-        <XmlTree key={`${child.path}-${i}`} node={child} matches={matches} filter={filter} depth={depth + 1} />
-      ))}
+      {open && hasChildren && (
+        <>
+          {node.children.map((child, i) => (
+            <XmlTree key={`${child.path}-${i}`} node={child} matches={matches} filter={filter} depth={depth + 1} />
+          ))}
+          <div className="flex items-baseline gap-1.5 px-1.5 py-[3px]">
+            <span className="w-3 shrink-0" />
+            <CloseTag name={node.name} />
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+function CloseTag({ name }: { name: string }) {
+  return (
+    <span>
+      <span className="text-signal">{'</'}</span>
+      <span className="text-[#9ecbff]">{name}</span>
+      <span className="text-signal">{'>'}</span>
+    </span>
   );
 }
 
