@@ -19,8 +19,9 @@ export function AppShell() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if (isSearchToggleHotkey(e)) {
         e.preventDefault();
+        e.stopPropagation();
         setPaletteOpen((v) => !v);
       }
       if (e.key === '/' && !isTypingTarget(e.target)) {
@@ -31,8 +32,8 @@ export function AppShell() {
         setNavOpen(false);
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [navOpen]);
 
   useEffect(() => {
@@ -282,4 +283,15 @@ function groupBy<T, K extends string>(items: T[], key: (item: T) => K): Record<K
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
+}
+
+function isApplePlatform(): boolean {
+  return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+}
+
+/** ⌘K on Apple, Ctrl+K elsewhere. Capture-phase so the browser does not steal ⌘K. */
+function isSearchToggleHotkey(e: KeyboardEvent): boolean {
+  const isK = e.code === 'KeyK' || e.key.toLowerCase() === 'k';
+  if (!isK || e.altKey || e.shiftKey) return false;
+  return isApplePlatform() ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
 }
