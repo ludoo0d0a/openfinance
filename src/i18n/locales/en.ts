@@ -288,8 +288,6 @@ export const en: MessageTree = {
     iso: 'ISO 20022 sample',
     api: 'API sample',
     highlighting: 'Highlighting {{tag}} in the tree',
-    copy: 'Copy',
-    reset: 'Reset',
   },
   payload: {
     isoPayload: 'ISO 20022 payload',

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { sampleById } from '@/data/samples';
 import { messageByShort } from '@/data/iso20022';
@@ -13,11 +12,6 @@ export function SampleView() {
   const [searchParams] = useSearchParams();
   const tagQuery = searchParams.get('q') ?? '';
   const sample = sampleId ? sampleById(sampleId) : undefined;
-  const [content, setContent] = useState(sample?.content ?? '');
-
-  useEffect(() => {
-    setContent(sample?.content ?? '');
-  }, [sample?.id, sample?.content]);
 
   if (!sample) return <NotFoundView />;
 
@@ -51,30 +45,12 @@ export function SampleView() {
 
       <div className="h-[74vh] min-h-[540px]">
         <PayloadInspector
-          content={content}
+          content={sample.content}
           format={sample.format}
           title={sample.label}
-          onContentChange={setContent}
           allowAltFormat={Boolean(sample.messageShort)}
           initialFilter={tagQuery}
         />
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-3 font-mono text-[11px]">
-        <button
-          type="button"
-          onClick={() => void navigator.clipboard.writeText(content)}
-          className="border border-rule px-3 py-1.5 uppercase tracking-widest hover:border-ink"
-        >
-          Copy
-        </button>
-        <button
-          type="button"
-          onClick={() => setContent(sample.content)}
-          className="border border-rule px-3 py-1.5 uppercase tracking-widest hover:border-ink"
-        >
-          Reset
-        </button>
       </div>
     </div>
   );

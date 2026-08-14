@@ -296,8 +296,6 @@ export const fr: MessageTree = {
     iso: 'Exemple ISO 20022',
     api: 'Exemple API',
     highlighting: 'Mise en évidence de {{tag}} dans l’arbre',
-    copy: 'Copier',
-    reset: 'Réinitialiser',
   },
   payload: {
     isoPayload: 'Payload ISO 20022',
