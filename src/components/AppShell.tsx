@@ -55,9 +55,15 @@ export function AppShell() {
         <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem
-          to="/thesaurus"
-          label={t('nav.thesaurus')}
-          icon={<UI_ICONS.thesaurus size={14} />}
+          to="/glossary"
+          label={t('nav.glossary')}
+          icon={<UI_ICONS.glossary size={14} />}
+          onNavigate={() => setNavOpen(false)}
+        />
+        <NavItem
+          to="/about"
+          label={t('nav.about')}
+          icon={<UI_ICONS.about size={14} />}
           onNavigate={() => setNavOpen(false)}
         />
       </NavSection>

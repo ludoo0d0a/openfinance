@@ -4,37 +4,38 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import {
   CODE_FAMILIES,
-  THESAURUS,
-  THESAURUS_CATEGORY_LABELS,
-  THESAURUS_CODES,
-  localizeThesaurusEntry,
-  type ThesaurusCategory,
-  type ThesaurusEntry,
-} from '@/data/thesaurus';
+  GLOSSARY,
+  GLOSSARY_CATEGORY_LABELS,
+  GLOSSARY_CODES,
+  GLOSSARY_SOURCES,
+  localizeGlossaryEntry,
+  type GlossaryCategory,
+  type GlossaryEntry,
+} from '@/data/glossary';
 import { cn } from '@/lib/cn';
 import { useI18n, useT } from '@/i18n';
 import type { CodeFamily } from '@/types';
 
-const CATEGORIES = Object.keys(THESAURUS_CATEGORY_LABELS) as ThesaurusCategory[];
+const CATEGORIES = Object.keys(GLOSSARY_CATEGORY_LABELS) as GlossaryCategory[];
 
-const severityDot: Record<NonNullable<ThesaurusEntry['severity']>, string> = {
+const severityDot: Record<NonNullable<GlossaryEntry['severity']>, string> = {
   success: 'bg-jade',
   pending: 'bg-ochre',
   error: 'bg-vermillion',
   info: 'bg-muted',
 };
 
-export function ThesaurusView() {
+export function GlossaryView() {
   const t = useT();
   const { locale } = useI18n();
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
-  const category = (params.get('category') as ThesaurusCategory | null) || null;
+  const category = (params.get('category') as GlossaryCategory | null) || null;
   const family = (params.get('family') as CodeFamily | null) || null;
   const activeId = params.get('id') ?? 'vop';
 
   const localized = useMemo(
-    () => THESAURUS.map((e) => localizeThesaurusEntry(e, locale)),
+    () => GLOSSARY.map((e) => localizeGlossaryEntry(e, locale)),
     [locale],
   );
 
@@ -74,21 +75,40 @@ export function ThesaurusView() {
     setParams(merged, { replace: true });
   }
 
-  function select(entry: ThesaurusEntry) {
+  function select(entry: GlossaryEntry) {
     update({ id: entry.id });
   }
 
   const showFamilies = category === 'code' || Boolean(family);
+  const sourceMeta = (active?.sources ?? [])
+    .map((id) => GLOSSARY_SOURCES.find((s) => s.id === id))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
       <header className="max-w-3xl">
         <p className="eyebrow inline-flex items-center gap-1.5">
           <BookOpen size={12} aria-hidden />
-          {t('thesaurus.eyebrow')}
+          {t('glossary.eyebrow')}
         </p>
-        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('thesaurus.title')}</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('thesaurus.lead')}</p>
+        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('glossary.title')}</h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('glossary.lead')}</p>
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">
+          {t('glossary.sourcesLead')}{' '}
+          <Link to="/about" className="text-signal hover:underline">
+            {t('nav.about')}
+          </Link>
+          .
+        </p>
+        <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px]">
+          {GLOSSARY_SOURCES.map((s) => (
+            <li key={s.id}>
+              <a href={s.href} target="_blank" rel="noreferrer" className="text-signal hover:underline">
+                {s.label} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
       </header>
 
       <div className="mt-7 space-y-3">
@@ -96,13 +116,13 @@ export function ThesaurusView() {
           type="search"
           value={query}
           onChange={(e) => update({ q: e.target.value })}
-          placeholder={t('thesaurus.placeholder')}
-          aria-label={t('thesaurus.filterAria')}
+          placeholder={t('glossary.placeholder')}
+          aria-label={t('glossary.filterAria')}
           className="w-full border border-rule bg-surface px-3 py-2.5 font-mono text-sm focus:border-ink focus:outline-none"
         />
         <div className="flex flex-wrap gap-1.5">
           <FilterBtn active={!category && !family} onClick={() => update({ category: null, family: null })}>
-            {t('thesaurus.all', { count: THESAURUS.length })}
+            {t('glossary.all', { count: GLOSSARY.length })}
           </FilterBtn>
           {CATEGORIES.map((c) => (
             <FilterBtn
@@ -111,8 +131,8 @@ export function ThesaurusView() {
               onClick={() => update({ category: c, family: null })}
             >
               {c === 'code'
-                ? `${THESAURUS_CATEGORY_LABELS[c][locale]} (${THESAURUS_CODES.length})`
-                : THESAURUS_CATEGORY_LABELS[c][locale]}
+                ? `${GLOSSARY_CATEGORY_LABELS[c][locale]} (${GLOSSARY_CODES.length})`
+                : GLOSSARY_CATEGORY_LABELS[c][locale]}
             </FilterBtn>
           ))}
         </div>
@@ -134,7 +154,7 @@ export function ThesaurusView() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
         <ul className="panel divide-y divide-rule-soft lg:max-h-[70vh] lg:overflow-y-auto">
           {filtered.length === 0 && (
-            <li className="px-4 py-8 text-center text-sm text-muted">{t('thesaurus.empty')}</li>
+            <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.empty')}</li>
           )}
           {filtered.map((e) => (
             <li key={e.id}>
@@ -173,14 +193,14 @@ export function ThesaurusView() {
 
             {active.action && (
               <p className="mt-4 border-l-2 border-signal pl-3 text-[13px] leading-relaxed text-muted">
-                <span className="eyebrow mb-1 block">{t('thesaurus.action')}</span>
+                <span className="eyebrow mb-1 block">{t('glossary.action')}</span>
                 {active.action}
               </p>
             )}
 
             {active.displayAliases.length > 0 && (
               <div className="mt-5">
-                <h3 className="eyebrow mb-2">{t('thesaurus.alsoCalled')}</h3>
+                <h3 className="eyebrow mb-2">{t('glossary.alsoCalled')}</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {active.displayAliases.map((a) => (
                     <span key={a} className="border border-rule bg-surface px-2 py-1 font-mono text-[11px]">
@@ -193,7 +213,7 @@ export function ThesaurusView() {
 
             {active.seeAlso && active.seeAlso.length > 0 && (
               <div className="mt-5">
-                <h3 className="eyebrow mb-2">{t('thesaurus.seeAlso')}</h3>
+                <h3 className="eyebrow mb-2">{t('glossary.seeAlso')}</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {active.seeAlso.map((id) => {
                     const related = localized.find((e) => e.id === id);
@@ -215,13 +235,31 @@ export function ThesaurusView() {
 
             {active.links && active.links.length > 0 && (
               <div className="mt-5">
-                <h3 className="eyebrow mb-2">{t('thesaurus.explore')}</h3>
+                <h3 className="eyebrow mb-2">{t('glossary.explore')}</h3>
                 <ul className="space-y-1">
                   {active.links.map((link) => (
                     <li key={link.href}>
-                      <Link to={link.href} className="font-mono text-[12px] text-signal hover:underline">
-                        {link.label} →
-                      </Link>
+                      <CatalogOrExternalLink href={link.href} label={link.label} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {sourceMeta.length > 0 && (
+              <div className="mt-5">
+                <h3 className="eyebrow mb-2">{t('glossary.alignedWith')}</h3>
+                <ul className="space-y-1">
+                  {sourceMeta.map((s) => (
+                    <li key={s.id}>
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-mono text-[12px] text-signal hover:underline"
+                      >
+                        {s.label} ↗
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -231,6 +269,23 @@ export function ThesaurusView() {
         )}
       </div>
     </div>
+  );
+}
+
+function CatalogOrExternalLink({ href, label }: { href: string; label: string }) {
+  const external = /^https?:\/\//i.test(href);
+  const className = 'font-mono text-[12px] text-signal hover:underline';
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={className}>
+        {label} ↗
+      </a>
+    );
+  }
+  return (
+    <Link to={href} className={className}>
+      {label} →
+    </Link>
   );
 }
 

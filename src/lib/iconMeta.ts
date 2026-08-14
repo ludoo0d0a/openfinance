@@ -5,6 +5,7 @@ import {
   FileCode2,
   GitBranch,
   Globe2,
+  Info,
   Landmark,
   Layers,
   Map,
@@ -46,7 +47,8 @@ export const UI_ICONS = {
   xml: FileCode2,
   standard: Landmark,
   try: PencilLine,
-  thesaurus: BookOpen,
+  glossary: BookOpen,
+  about: Info,
 } as const;
 
 /**

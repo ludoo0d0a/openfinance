@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
-import { THESAURUS_CODES } from '@/data/thesaurus';
+import { GLOSSARY_CODES } from '@/data/glossary';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { CodeChip, Tag } from '@/components/Chips';
 import { UI_ICONS } from '@/lib/iconMeta';
@@ -189,10 +189,10 @@ export function HomeView() {
                 )}
               </div>
               <Link
-                to="/thesaurus?category=code"
+                to="/glossary?category=code"
                 className="mt-4 inline-block font-mono text-xs text-signal hover:underline"
               >
-                {t('home.allCodes', { count: THESAURUS_CODES.length })}
+                {t('home.allCodes', { count: GLOSSARY_CODES.length })}
               </Link>
             </div>
           </section>
@@ -205,8 +205,11 @@ export function HomeView() {
             standards: STANDARDS.length,
             flows: FLOWS.length,
             messages: ISO_MESSAGES.length,
-            codes: THESAURUS_CODES.length,
-          })}
+            codes: GLOSSARY_CODES.length,
+          })}{' '}
+          <Link to="/about" className="text-signal hover:underline">
+            {t('nav.about')}
+          </Link>
         </p>
       </footer>
     </div>

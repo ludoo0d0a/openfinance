@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { codeByValue } from '@/data/thesaurus';
+import { codeByValue, glossaryHref } from '@/data/glossary';
 import { cn } from '@/lib/cn';
 import { LayerIcon } from '@/lib/icons';
 import type { CodeEntry, Endpoint } from '@/types';
@@ -14,19 +14,17 @@ const severityClass: Record<CodeEntry['severity'], string> = {
 
 /**
  * Codes are the currency of payments debugging, so every one that appears
- * anywhere in the app links back to the thesaurus entry that explains it.
+ * anywhere in the app links back to the glossary entry that explains it.
  */
 export function CodeChip({ code, size = 'sm' }: { code: string; size?: 'sm' | 'md' }) {
   const entry = codeByValue(code);
   const cls = entry?.severity ? severityClass[entry.severity] : 'border-rule bg-paper-raised text-muted';
-  const href = entry
-    ? `/thesaurus?category=code&id=${encodeURIComponent(entry.id)}`
-    : `/thesaurus?category=code&q=${encodeURIComponent(code)}`;
+  const href = entry ? glossaryHref(entry) : `/glossary?category=code&q=${encodeURIComponent(code)}`;
 
   return (
     <Link
       to={href}
-      title={entry ? `${entry.name.en} — ${entry.definition.en}` : 'Not in the thesaurus'}
+      title={entry ? `${entry.name.en} — ${entry.definition.en}` : 'Not in the glossary'}
       className={cn(
         'inline-block border font-mono leading-none transition-opacity hover:opacity-75',
         cls,

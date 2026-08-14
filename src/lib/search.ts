@@ -3,7 +3,7 @@ import { STANDARDS } from '@/data/standards';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
 import { ALL_SAMPLES } from '@/data/samples';
-import { THESAURUS } from '@/data/thesaurus';
+import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/data/glossary';
 import { extractPayloadTags } from '@/lib/payloadTags';
 
 export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint' | 'term';
@@ -108,7 +108,7 @@ function buildDocuments(): IndexedDoc[] {
     });
   }
 
-  for (const e of THESAURUS) {
+  for (const e of GLOSSARY) {
     const isCode = e.category === 'code';
     docs.push({
       id: isCode ? `code:${e.term}` : `term:${e.id}`,
@@ -116,9 +116,7 @@ function buildDocuments(): IndexedDoc[] {
       title: e.term,
       subtitle: e.name.en,
       body: `${e.definition.en} ${e.definition.fr} ${e.name.fr} ${e.action ?? ''}`,
-      href: isCode
-        ? `/thesaurus?category=code&id=${encodeURIComponent(e.id)}`
-        : `/thesaurus?id=${encodeURIComponent(e.id)}`,
+      href: glossaryHref(e),
       keywords: [
         e.category,
         e.family ?? '',
@@ -157,6 +155,54 @@ export function createIndex(): MiniSearch<IndexedDoc> {
 
   index.addAll(DOCUMENTS);
   return index;
+}
+
+export interface SearchHit {
+  id: string;
+  kind: ResultKind;
+  title: string;
+  subtitle: string;
+  body: string;
+  href: string;
+  score: number;
+}
+
+/** Glossary matches first (same matcher as the glossary page), then the MiniSearch catalog. */
+export function searchCatalog(index: MiniSearch<IndexedDoc>, query: string): SearchHit[] {
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  const glossaryHits = searchGlossary(q).map((e, i) => glossaryHit(e, 10_000 - i));
+  const seen = new Set(glossaryHits.map((h) => h.id));
+  const catalogHits: SearchHit[] = [];
+  for (const r of index.search(q)) {
+    const id = String(r.id);
+    if (seen.has(id)) continue;
+    const doc = r as unknown as IndexedDoc;
+    catalogHits.push({
+      id,
+      kind: doc.kind,
+      title: doc.title,
+      subtitle: doc.subtitle,
+      body: doc.body,
+      href: doc.href,
+      score: r.score,
+    });
+  }
+  return [...glossaryHits, ...catalogHits].slice(0, 40);
+}
+
+function glossaryHit(e: GlossaryEntry, score: number): SearchHit {
+  const isCode = e.category === 'code';
+  return {
+    id: isCode ? `code:${e.term}` : `term:${e.id}`,
+    kind: isCode ? 'code' : 'term',
+    title: e.term,
+    subtitle: e.name.en,
+    body: e.definition.en,
+    href: glossaryHref(e),
+    score,
+  };
 }
 
 export const KIND_LABELS: Record<ResultKind, string> = {

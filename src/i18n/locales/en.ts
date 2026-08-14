@@ -13,7 +13,8 @@ export const en: MessageTree = {
     overview: 'Overview',
     try: 'Try editor',
     map: 'Interop map',
-    thesaurus: 'Thesaurus',
+    glossary: 'Glossary',
+    about: 'About',
     standards: 'Standards',
     flows: 'Flows',
     messages: 'Messages',
@@ -114,19 +115,33 @@ export const en: MessageTree = {
     lead:
       'A Cytoscape network of how XS2A / Open Banking standards connect to ISO 20022 messages and clearing rails (SEPA, SIC, euroSIC, SIC IP, Wero). Use a flow page for ordered swimlanes; use this map for the topology.',
   },
-  thesaurus: {
+  glossary: {
     eyebrow: 'Glossary',
-    title: 'Payments thesaurus',
+    title: 'Payments glossary',
     lead:
-      'Short definitions for the words that keep turning up in PSD2, SCT Inst and ISO 20022 — including every status and reason code, and whether a retry is legitimate. Switch language for the French naming.',
-    placeholder: 'VoP, AC01, MTCH, CONSENT_INVALID…',
-    filterAria: 'Filter thesaurus',
+      'Short definitions for the words that keep turning up in PSD2, SCT Inst, Open Banking and ISO 20022 — including every status and reason code, and whether a retry is legitimate. Switch language for the French naming.',
+    sourcesLead: 'Aligned with public glossaries (UK Open Banking, Mastercard Open Finance US, Konsentus Europe, Bundesbank PSD2, Ravelin PSD acronyms). Full citations on',
+    placeholder: 'SCT, TIPS, PIIS, VoP, AC01…',
+    filterAria: 'Filter glossary',
     all: 'All {{count}}',
-    empty: 'Nothing matched. Try VoP, AC01, or a fragment like "consent".',
+    empty: 'Nothing matched. Try SCT, TIPS, VoP, AC01, or a fragment like "consent".',
     alsoCalled: 'Also called',
     seeAlso: 'See also',
     explore: 'Explore in the catalog',
+    alignedWith: 'Aligned with',
     action: 'What to do',
+  },
+  about: {
+    eyebrow: 'About',
+    title: 'About this explorer',
+    lead:
+      'A payment crosses a border halfway through its life: JSON over HTTPS on the TPP side, ISO 20022 XML on the bank side. This site holds both vocabularies in one catalog.',
+    glossaryTitle: 'Glossary sources',
+    glossaryLead:
+      'Terms, codes and acronyms in the glossary are written for integrators. Where an entry maps onto a public industry glossary, the source is linked on the entry and listed here.',
+    glossaryCount: '{{count}} entries in the catalog.',
+    glossaryNote:
+      'Mastercard entries describe Open Finance US product vocabulary (Data Connect, FinBanks, Partner Linked). They sit beside EU/UK PSD2 terms so the same catalog covers both dialects — they are not interchangeable legal definitions.',
   },
   notFound: {
     title: 'Nothing at this path',
@@ -142,7 +157,11 @@ export const en: MessageTree = {
     apiHop: 'API hop',
     clearingHop: 'Clearing hop',
     clickArrow: 'Click an arrow to inspect the hop',
-    clickMessage: 'Click a message box (pacs.008, …) for info, usage and sample',
+    clickMessage: 'Click a tag on an arrow (pacs.008, …) for info, usage and sample',
+    runScenario: 'Run scenario',
+    pause: 'Pause',
+    restart: 'Restart',
+    playback: 'Playback',
     messages: 'Messages',
     messagePage: 'Full detail →',
     usageHere: 'This flow',

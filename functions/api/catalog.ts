@@ -2,15 +2,16 @@ import { STANDARDS } from '../../src/data/standards';
 import { ISO_MESSAGES } from '../../src/data/iso20022';
 import { FLOWS } from '../../src/data/flows';
 import { ALL_SAMPLES } from '../../src/data/samples';
-import { THESAURUS, THESAURUS_CODES } from '../../src/data/thesaurus';
+import { GLOSSARY, GLOSSARY_CODES } from '../../src/data/glossary';
 
 /**
  * The catalog as data, so the same content can back a CLI, a CI check or
  * someone else's tooling without scraping the UI.
  *
  *   GET /api/catalog                     summary
- *   GET /api/catalog?section=codes       thesaurus entries with category=code
- *   GET /api/catalog?section=thesaurus   glossary + codes
+ *   GET /api/catalog?section=codes       glossary entries with category=code
+ *   GET /api/catalog?section=glossary    glossary + codes
+ *   GET /api/catalog?section=thesaurus   alias of glossary
  *   GET /api/catalog?section=samples     samples without payloads
  *   GET /api/catalog?section=samples&id=pacs-008-sct   one sample with payload
  */
@@ -33,7 +34,7 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
       return respond(id ? FLOWS.filter((f) => f.id === id) : FLOWS, cache);
 
     case 'codes': {
-      const codes = family ? THESAURUS_CODES.filter((c) => c.family === family) : THESAURUS_CODES;
+      const codes = family ? GLOSSARY_CODES.filter((c) => c.family === family) : GLOSSARY_CODES;
       return respond(
         id
           ? codes.filter((c) => c.id === id || c.term.toLowerCase() === id.toLowerCase())
@@ -42,12 +43,12 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
       );
     }
 
+    case 'glossary':
     case 'thesaurus':
-      return respond(id ? THESAURUS.filter((e) => e.id === id) : THESAURUS, cache);
+      return respond(id ? GLOSSARY.filter((e) => e.id === id) : GLOSSARY, cache);
 
     case 'samples': {
       if (id) return respond(ALL_SAMPLES.filter((s) => s.id === id), cache);
-      // Payloads are large; the index omits them.
       return respond(
         ALL_SAMPLES.map(({ content: _content, ...rest }) => rest),
         cache,
@@ -61,15 +62,15 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
             standards: STANDARDS.length,
             messages: ISO_MESSAGES.length,
             flows: FLOWS.length,
-            codes: THESAURUS_CODES.length,
+            codes: GLOSSARY_CODES.length,
             samples: ALL_SAMPLES.length,
-            thesaurus: THESAURUS.length,
+            glossary: GLOSSARY.length,
           },
           standards: STANDARDS.map((s) => ({ id: s.id, name: s.name, region: s.region, version: s.version })),
           flows: FLOWS.map((f) => ({ id: f.id, name: f.name, category: f.category, steps: f.steps.length })),
           messages: ISO_MESSAGES.map((m) => ({ short: m.short, id: m.id, name: m.name })),
-          thesaurus: THESAURUS.map((e) => ({ id: e.id, term: e.term, category: e.category })),
-          sections: ['standards', 'messages', 'flows', 'codes', 'samples', 'thesaurus'],
+          glossary: GLOSSARY.map((e) => ({ id: e.id, term: e.term, category: e.category })),
+          sections: ['standards', 'messages', 'flows', 'codes', 'samples', 'glossary'],
         },
         cache,
       );

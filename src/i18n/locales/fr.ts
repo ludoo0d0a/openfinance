@@ -13,7 +13,8 @@ export const fr: MessageTree = {
     overview: 'Vue d’ensemble',
     try: 'Éditeur d’essai',
     map: 'Carte d’interop',
-    thesaurus: 'Thésaurus',
+    glossary: 'Glossaire',
+    about: 'À propos',
     standards: 'Standards',
     flows: 'Flux',
     messages: 'Messages',
@@ -116,19 +117,34 @@ export const fr: MessageTree = {
     lead:
       'Un réseau Cytoscape de la façon dont les standards XS2A / Open Banking se relient aux messages ISO 20022 et aux rails de compensation (SEPA, SIC, euroSIC, SIC IP, Wero). Utilisez une page de flux pour les swimlanes ordonnées ; utilisez cette carte pour la topologie.',
   },
-  thesaurus: {
+  glossary: {
     eyebrow: 'Glossaire',
-    title: 'Thésaurus des paiements',
+    title: 'Glossaire des paiements',
     lead:
-      'Définitions courtes des termes qui reviennent en PSD2, SCT Inst et ISO 20022 — y compris chaque statut et motif, et si un nouvel essai est légitime. Basculez la langue pour les intitulés français.',
-    placeholder: 'VoP, AC01, MTCH, CONSENT_INVALID…',
-    filterAria: 'Filtrer le thésaurus',
+      'Définitions courtes des termes qui reviennent en PSD2, SCT Inst, Open Banking et ISO 20022 — y compris chaque statut et motif, et si un nouvel essai est légitime. Basculez la langue pour les intitulés français.',
+    sourcesLead:
+      'Aligné sur des glossaires publics (Open Banking UK, Mastercard Open Finance US, Konsentus Europe, PSD2 Bundesbank, sigles PSD Ravelin). Citations complètes dans',
+    placeholder: 'SCT, TIPS, PIIS, VoP, AC01…',
+    filterAria: 'Filtrer le glossaire',
     all: 'Tous {{count}}',
-    empty: 'Aucun résultat. Essayez VoP, AC01, ou un fragment comme « consent ».',
+    empty: 'Aucun résultat. Essayez SCT, TIPS, VoP, AC01, ou un fragment comme « consent ».',
     alsoCalled: 'Aussi appelé',
     seeAlso: 'Voir aussi',
     explore: 'Explorer dans le catalogue',
+    alignedWith: 'Aligné sur',
     action: 'Que faire',
+  },
+  about: {
+    eyebrow: 'À propos',
+    title: 'À propos de cet explorateur',
+    lead:
+      'Un paiement traverse une frontière à mi-parcours : JSON sur HTTPS côté TPP, XML ISO 20022 côté banque. Ce site réunit les deux vocabulaires dans un seul catalogue.',
+    glossaryTitle: 'Sources du glossaire',
+    glossaryLead:
+      'Les termes, codes et sigles du glossaire sont écrits pour les intégrateurs. Quand une entrée correspond à un glossaire public, la source est liée sur l’entrée et listée ici.',
+    glossaryCount: '{{count}} entrées dans le catalogue.',
+    glossaryNote:
+      'Les entrées Mastercard décrivent le vocabulaire produit Open Finance US (Data Connect, FinBanks, Partner Linked). Elles côtoient les termes PSD2 UE/UK pour couvrir les deux dialectes — ce ne sont pas des définitions juridiques interchangeables.',
   },
   notFound: {
     title: 'Rien à ce chemin',
@@ -144,7 +160,11 @@ export const fr: MessageTree = {
     apiHop: 'Saut API',
     clearingHop: 'Saut compensation',
     clickArrow: 'Cliquez une flèche pour inspecter le saut',
-    clickMessage: 'Cliquez un message (pacs.008, …) pour l’info, l’usage et l’exemple',
+    clickMessage: 'Cliquez l’étiquette sur une flèche (pacs.008, …) pour l’info, l’usage et l’exemple',
+    runScenario: 'Lancer le scénario',
+    pause: 'Pause',
+    restart: 'Recommencer',
+    playback: 'Lecture',
     messages: 'Messages',
     messagePage: 'Fiche complète →',
     usageHere: 'Dans ce flux',

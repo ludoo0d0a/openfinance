@@ -1,7 +1,7 @@
 import type { CodeEntry, CodeFamily } from '@/types';
 
 /**
- * Compact authoring form for status and error codes. Merged into THESAURUS
+ * Compact authoring form for status and error codes. Merged into GLOSSARY
  * as category `code` entries — do not import this module from the UI.
  */
 export const FAMILY_LABELS: Record<CodeFamily, string> = {

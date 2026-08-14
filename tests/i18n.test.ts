@@ -14,7 +14,7 @@ describe('i18n', () => {
   });
 
   it('keeps EN and FR key trees aligned for core nav', () => {
-    for (const key of ['nav.overview', 'nav.try', 'home.title1', 'locale.fr', 'flow.entities']) {
+    for (const key of ['nav.overview', 'nav.try', 'nav.glossary', 'nav.about', 'home.title1', 'locale.fr', 'flow.entities']) {
       expect(resolveMessage(en, key), key).toBeTypeOf('string');
       expect(resolveMessage(fr, key), key).toBeTypeOf('string');
     }

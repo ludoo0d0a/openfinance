@@ -29,8 +29,9 @@ SIC Instant, Wero) and exception paths (reject, recall, instant timeout, payment
 | Cytoscape interop map (standards × messages × rails) | `/map` · `InteropGraph` |
 | ISO 20022 messages with namespaces and mandatory elements | `src/data/iso20022.ts` |
 | Sample payloads (XML / JSON), editable in place | `src/data/samples.ts` |
-| Status and error codes with remediation | `src/data/codes.ts` (merged into the thesaurus) |
-| Payments thesaurus (terms + codes) | `/thesaurus` · `src/data/thesaurus.ts` |
+| Status and error codes with remediation | `src/data/codes.ts` (merged into the glossary) |
+| Payments glossary (terms + codes) | `/glossary` · `src/data/glossary.ts` |
+| About / glossary sources | `/about` |
 | Structural validation of ISO 20022 documents | `functions/api/validate.ts` |
 | Mock ASPSP with awkward-but-realistic behaviour | `functions/api/mock/[[path]].ts` |
 | Full catalog as JSON | `functions/api/catalog.ts` |
@@ -124,6 +125,16 @@ which standards, messages and rails connect.
 Shaped by [issettled/iso20022-issettled](https://github.com/issettled/iso20022-issettled),
 Berlin Group OpenAPI specs, STET examples, and SIX Swiss Payment Standards / SIC ISO 20022
 implementation guidelines. Sample payloads are synthetic.
+
+Glossary entries are aligned with (and link out to):
+
+- [Open Banking UK glossary](https://www.openbanking.org.uk/glossary/)
+- [Mastercard Open Finance US glossary](https://developer.mastercard.com/open-finance-us/documentation/glossary/)
+- [Konsentus Open Banking & Open Finance glossary (Europe)](https://www.konsentus.com/open-banking-open-finance-glossary-europe/)
+- [Deutsche Bundesbank PSD2 glossary](https://www.bundesbank.de/en/tasks/payment-systems/psd2/psd2-glossary-775962)
+- [Ravelin PSD glossary (acronyms)](https://www.ravelin.com/blog/psd2-glossary-acronyms)
+
+The same citations live on `/about` and on each glossary entry that maps onto those sources.
 
 ## Licence
 
