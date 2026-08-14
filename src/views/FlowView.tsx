@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { flowById, isoMessagesInFlow, usagesOfMessage } from '@/data/flows';
 import { messageByShort } from '@/data/iso20022';
@@ -26,6 +27,7 @@ export function FlowView() {
   const catalogFlow = flowId ? flowById(flowId) : undefined;
   const flow = catalogFlow ? localizeFlow(catalogFlow, locale) : undefined;
 
+  const [fullscreen, setFullscreen] = useState(false);
   const diagram: DiagramMode = searchParams.get('diagram') === 'sequence' ? 'sequence' : 'entities';
   const requestedStep = Number(searchParams.get('step'));
   const selected =
@@ -46,6 +48,20 @@ export function FlowView() {
       );
     }
   }, [flow, requestedStep, setSearchParams]);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreen(false);
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [fullscreen]);
 
   function selectStep(n: number) {
     setSearchParams(
@@ -107,30 +123,60 @@ export function FlowView() {
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_460px]">
         <div className="min-w-0 space-y-6">
-          <section className="panel p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <section
+            className={cn(
+              'panel p-4',
+              fullscreen && 'fixed inset-0 z-[70] flex h-dvh w-full flex-col rounded-none border-0',
+            )}
+          >
+            <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
               <h2 className="eyebrow">{diagram === 'entities' ? t('flow.txFlow') : t('flow.sequence')}</h2>
-              <div className="flex gap-px" role="tablist" aria-label={t('flow.diagramType')}>
-                <DiagramTab active={diagram === 'entities'} onClick={() => setDiagram('entities')}>
-                  <UI_ICONS.entities size={13} aria-hidden />
-                  {t('flow.entities')}
-                </DiagramTab>
-                <DiagramTab active={diagram === 'sequence'} onClick={() => setDiagram('sequence')}>
-                  <UI_ICONS.sequence size={13} aria-hidden />
-                  {t('flow.sequence')}
-                </DiagramTab>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-px" role="tablist" aria-label={t('flow.diagramType')}>
+                  <DiagramTab active={diagram === 'entities'} onClick={() => setDiagram('entities')}>
+                    <UI_ICONS.entities size={13} aria-hidden />
+                    {t('flow.entities')}
+                  </DiagramTab>
+                  <DiagramTab active={diagram === 'sequence'} onClick={() => setDiagram('sequence')}>
+                    <UI_ICONS.sequence size={13} aria-hidden />
+                    {t('flow.sequence')}
+                  </DiagramTab>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFullscreen((open) => !open)}
+                  aria-pressed={fullscreen}
+                  aria-label={fullscreen ? t('flow.exitFullscreen') : t('flow.fullscreen')}
+                  title={fullscreen ? t('flow.exitFullscreen') : t('flow.fullscreen')}
+                  className="inline-flex items-center gap-1.5 border border-rule bg-surface px-2 py-1.5 font-mono text-[11px] uppercase tracking-widest text-muted hover:border-ink hover:text-ink"
+                >
+                  {fullscreen ? <Minimize2 size={13} aria-hidden /> : <Maximize2 size={13} aria-hidden />}
+                  <span className="hidden sm:inline">
+                    {fullscreen ? t('flow.exitFullscreen') : t('flow.fullscreen')}
+                  </span>
+                </button>
               </div>
             </div>
             {diagram === 'entities' ? (
-              <EntityFlowDiagram flow={flow} selectedStep={selected} onSelectStep={selectStep} />
+              <EntityFlowDiagram
+                flow={flow}
+                selectedStep={selected}
+                onSelectStep={selectStep}
+                fill={fullscreen}
+              />
             ) : (
-              <>
-                <p className="mb-3 font-mono text-[10px] text-muted">{t('flow.clickStep')}</p>
-                <FlowCanvas flow={flow} selectedStep={selected} onSelectStep={selectStep} />
-              </>
+              <div className={fullscreen ? 'flex min-h-0 flex-1 flex-col' : undefined}>
+                <p className="mb-3 shrink-0 font-mono text-[10px] text-muted">{t('flow.clickStep')}</p>
+                <FlowCanvas
+                  flow={flow}
+                  selectedStep={selected}
+                  onSelectStep={selectStep}
+                  fill={fullscreen}
+                />
+              </div>
             )}
             {flowMessages.length > 0 && (
-              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-rule-soft pt-3">
+              <div className="mt-3 flex shrink-0 flex-wrap items-center gap-1.5 border-t border-rule-soft pt-3">
                 <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-muted">{t('flow.messages')}</span>
                 {flowMessages.map((short) => {
                   const first = flow.steps.find((s) => s.messageShort === short);

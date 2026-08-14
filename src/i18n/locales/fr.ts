@@ -157,6 +157,8 @@ export const fr: MessageTree = {
     diagramType: 'Type de diagramme',
     entities: 'Entités',
     clickStep: 'Cliquez une étape, ou tabulez puis Entrée',
+    fullscreen: 'Plein écran',
+    exitFullscreen: 'Quitter le plein écran',
     apiHop: 'Saut API',
     clearingHop: 'Saut compensation',
     clickArrow: 'Cliquez une flèche pour inspecter le saut',

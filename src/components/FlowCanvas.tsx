@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import type { ActorId, Flow, FlowStep } from '@/types';
-import { ACTORS } from '@/data/flows';
 import { ACTOR_ICON } from '@/lib/iconMeta';
-import { ACTORS_FR, useI18n } from '@/i18n';
+import { ACTOR_LEGEND, useI18n } from '@/i18n';
+import { ZoomPanViewport } from '@/components/ZoomPanViewport';
 
 interface Props {
   flow: Flow;
   selectedStep: number;
   onSelectStep: (n: number) => void;
+  fill?: boolean;
 }
 
 const LANE_WIDTH = 152;
@@ -38,9 +39,9 @@ const ACTOR_SVG_PATH: Record<ActorId, string> = {
  * Payments people read swimlanes: who sent what to whom, in order, with the
  * layer boundary visible. A force-directed blob would lose all of that.
  */
-export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
+export function FlowCanvas({ flow, selectedStep, onSelectStep, fill = false }: Props) {
   const { locale } = useI18n();
-  const actorCopy = locale === 'fr' ? ACTORS_FR : ACTORS;
+  const actorLegend = ACTOR_LEGEND[locale];
   const lanes = flow.actors;
   const laneX = useMemo(() => {
     const map = new Map<ActorId, number>();
@@ -57,7 +58,7 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
   const xOf = (actor: ActorId) => laneX.get(actor) ?? PADDING_X + LANE_WIDTH / 2 + (lanes.length - 1) * LANE_WIDTH;
 
   return (
-    <div className="overflow-x-auto scroll-paper">
+    <ZoomPanViewport contentWidth={width} contentHeight={height} fill={fill}>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         width={width}
@@ -91,7 +92,7 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
 
         {/* Lane headers with icons */}
         {lanes.map((id) => {
-          const actor = actorCopy[id] ?? ACTORS[id];
+          const caption = actorLegend[id];
           const meta = ACTOR_ICON[id];
           const x = xOf(id);
           return (
@@ -117,18 +118,18 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
                 fontSize="12"
                 fontWeight="600"
               >
-                {actor.label}
+                {caption.term}
               </text>
               <text
                 x={x}
                 y={56}
                 textAnchor="middle"
                 fill="var(--color-muted-dark)"
-                fontFamily="var(--font-mono)"
-                fontSize="7.5"
-                letterSpacing="0.06em"
+                fontFamily="var(--font-sans)"
+                fontSize="8"
+                fontWeight="300"
               >
-                {meta.label.toUpperCase()}
+                {caption.short}
               </text>
             </g>
           );
@@ -261,7 +262,7 @@ export function FlowCanvas({ flow, selectedStep, onSelectStep }: Props) {
           );
         })}
       </svg>
-    </div>
+    </ZoomPanViewport>
   );
 }
 

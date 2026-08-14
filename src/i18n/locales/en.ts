@@ -154,6 +154,8 @@ export const en: MessageTree = {
     diagramType: 'Diagram type',
     entities: 'Entities',
     clickStep: 'Click a step, or tab to it and press enter',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit fullscreen',
     apiHop: 'API hop',
     clearingHop: 'Clearing hop',
     clickArrow: 'Click an arrow to inspect the hop',

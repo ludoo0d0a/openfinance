@@ -44,17 +44,6 @@ export const ACTORS_FR: Record<string, { label: string; sublabel: string }> = {
   scheme: { label: 'Wero', sublabel: 'Schéma de paiement EPI' },
 };
 
-export const ENTITY_LABEL_FR: Record<string, { title: string; role: string }> = {
-  psu: { title: 'Utilisateur', role: 'PSU' },
-  tpp: { title: 'TPP', role: 'AISP / PISP' },
-  aspsp: { title: 'Banque débitrice', role: 'ASPSP' },
-  sca: { title: 'SCA', role: 'Auth' },
-  csm: { title: 'CSM', role: 'Compensation' },
-  beneficiary: { title: 'Banque créancière', role: 'Bénéficiaire' },
-  rail: { title: 'Rail SIC', role: 'RTGS / IP' },
-  scheme: { title: 'Schéma', role: 'Wero / EPI' },
-};
-
 export const FLOWS_FR: Record<string, FlowI18n> = {
   'bg-ais-consent-redirect': {
     name: 'Accès aux comptes avec SCA redirect',
