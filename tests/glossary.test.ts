@@ -7,7 +7,7 @@ import {
   localizeGlossaryEntry,
 } from '../src/data/glossary';
 import { ISO_MESSAGES } from '../src/data/iso20022';
-import { createIndex } from '../src/lib/search';
+import { applySearchQueryToHref, createIndex, searchCatalog } from '../src/lib/search';
 
 describe('glossary', () => {
   it('includes Verification of Payee with French copy', () => {
@@ -111,9 +111,21 @@ describe('glossary', () => {
     expect(ac01?.action).toMatch(/Data fix/i);
   });
 
-  it('search finds VoP as a glossary term', () => {
-    const hits = createIndex().search('VoP');
-    expect(hits.some((h) => String(h.id) === 'term:vop')).toBe(true);
+  it('keeps the search query on glossary result hrefs', () => {
+    const href = applySearchQueryToHref('/glossary?id=vop', 'term', 'VoP');
+    expect(href).toContain('id=vop');
+    expect(href).toContain('q=VoP');
+  });
+
+  it('searchCatalog ranks glossary terms ahead of other hits', () => {
+    const index = createIndex();
+    const hits = searchCatalog(index, 'VoP');
+    expect(hits[0]?.id).toBe('term:vop');
+    expect(hits[0]?.kind).toBe('term');
+    const firstNonTerm = hits.findIndex((h) => h.kind !== 'term');
+    if (firstNonTerm >= 0) {
+      expect(hits.slice(0, firstNonTerm).every((h) => h.kind === 'term')).toBe(true);
+    }
   });
 
   it('search finds Instant Payment, Wero, Payconiq, TIPS and Data Connect', () => {

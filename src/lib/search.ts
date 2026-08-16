@@ -4,7 +4,7 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
 import { ALL_SAMPLES } from '@/data/samples';
 import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/data/glossary';
-import { extractPayloadTags } from '@/lib/payloadTags';
+import { extractPayloadTags, looksLikeIsoTag } from '@/lib/payloadTags';
 
 export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint' | 'term';
 
@@ -167,12 +167,29 @@ export interface SearchHit {
   score: number;
 }
 
-/** Glossary matches first (same matcher as the glossary page), then the MiniSearch catalog. */
+/** Keep the typed query on glossary links; also pin ISO tags onto message/sample pages. */
+export function applySearchQueryToHref(href: string, kind: ResultKind, query: string): string {
+  const q = query.trim();
+  if (!q) return href;
+  const url = new URL(href, 'https://local');
+  if (looksLikeIsoTag(q) && (kind === 'sample' || kind === 'message')) {
+    url.searchParams.set('q', q);
+  }
+  if (url.pathname === '/glossary') {
+    url.searchParams.set('q', q);
+  }
+  const qs = url.searchParams.toString();
+  return qs ? `${url.pathname}?${qs}` : url.pathname;
+}
+
+/** Glossary terms first, then codes, then the MiniSearch catalog. */
 export function searchCatalog(index: MiniSearch<IndexedDoc>, query: string): SearchHit[] {
   const q = query.trim();
   if (q.length < 2) return [];
 
   const glossaryHits = searchGlossary(q).map((e, i) => glossaryHit(e, 10_000 - i));
+  const terms = glossaryHits.filter((h) => h.kind === 'term');
+  const codes = glossaryHits.filter((h) => h.kind === 'code');
   const seen = new Set(glossaryHits.map((h) => h.id));
   const catalogHits: SearchHit[] = [];
   for (const r of index.search(q)) {
@@ -189,7 +206,7 @@ export function searchCatalog(index: MiniSearch<IndexedDoc>, query: string): Sea
       score: r.score,
     });
   }
-  return [...glossaryHits, ...catalogHits].slice(0, 40);
+  return [...terms, ...codes, ...catalogHits].slice(0, 40);
 }
 
 function glossaryHit(e: GlossaryEntry, score: number): SearchHit {

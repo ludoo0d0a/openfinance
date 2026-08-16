@@ -1,15 +1,8 @@
-import { useMemo, useState } from 'react';
-import { createIndex, type IndexedDoc, type ResultKind } from '@/lib/search';
+import { useMemo } from 'react';
+import { createIndex, searchCatalog, type SearchHit } from '@/lib/search';
+import { useSearchQuery } from './SearchQueryContext';
 
-export interface SearchHit {
-  id: string;
-  kind: ResultKind;
-  title: string;
-  subtitle: string;
-  body: string;
-  href: string;
-  score: number;
-}
+export type { SearchHit };
 
 /**
  * The index is built once per session. It is small enough (a few hundred docs)
@@ -17,21 +10,9 @@ export interface SearchHit {
  */
 export function useSearchIndex() {
   const index = useMemo(() => createIndex(), []);
-  const [query, setQuery] = useState('');
+  const { query, setQuery, clearQuery } = useSearchQuery();
 
-  const results = useMemo<SearchHit[]>(() => {
-    const q = query.trim();
-    if (q.length < 2) return [];
-    return index.search(q).slice(0, 40).map((r) => ({
-      id: r.id as string,
-      kind: (r as unknown as IndexedDoc).kind,
-      title: (r as unknown as IndexedDoc).title,
-      subtitle: (r as unknown as IndexedDoc).subtitle,
-      body: (r as unknown as IndexedDoc).body,
-      href: (r as unknown as IndexedDoc).href,
-      score: r.score,
-    }));
-  }, [index, query]);
+  const results = useMemo(() => searchCatalog(index, query), [index, query]);
 
-  return { query, setQuery, results };
+  return { query, setQuery, clearQuery, results };
 }

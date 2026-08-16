@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import { useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import {
   CODE_FAMILIES,
@@ -14,6 +14,10 @@ import {
 import { cn } from '@/lib/cn';
 import { useI18n, useT } from '@/i18n';
 import type { CodeFamily } from '@/types';
+import { useSearchIndex } from '@/hooks/useSearchIndex';
+import { applySearchQueryToHref, type SearchHit } from '@/lib/search';
+import { SearchHitList } from '@/components/SearchHitList';
+import { SearchInput } from '@/components/SearchInput';
 
 const CATEGORIES = Object.keys(GLOSSARY_CATEGORY_LABELS) as GlossaryCategory[];
 
@@ -27,11 +31,16 @@ const severityDot: Record<NonNullable<GlossaryEntry['severity']>, string> = {
 export function GlossaryView() {
   const t = useT();
   const { locale } = useI18n();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const query = params.get('q') ?? '';
+  const { query, setQuery, results } = useSearchIndex();
   const category = (params.get('category') as GlossaryCategory | null) || null;
   const family = (params.get('family') as CodeFamily | null) || null;
   const activeId = params.get('id') ?? 'vop';
+  const [cursor, setCursor] = useState(0);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const prevUrlQ = useRef<string | null>(null);
+  const urlQ = params.get('q') ?? '';
 
   const localized = useMemo(
     () => GLOSSARY.map((e) => localizeGlossaryEntry(e, locale)),
@@ -52,8 +61,33 @@ export function GlossaryView() {
     return counts;
   }, [localized]);
 
-  const hasQuery = query.trim().length > 0;
-  const listOpen = hasQuery || Boolean(category) || Boolean(family);
+  useEffect(() => {
+    if (prevUrlQ.current === null) {
+      prevUrlQ.current = urlQ;
+      if (urlQ) setQuery(urlQ);
+      else if (query) {
+        const merged = new URLSearchParams(params);
+        merged.set('q', query);
+        setParams(merged, { replace: true });
+        prevUrlQ.current = query;
+      }
+      return;
+    }
+    if (urlQ !== prevUrlQ.current) {
+      prevUrlQ.current = urlQ;
+      if (urlQ !== query) setQuery(urlQ);
+      return;
+    }
+    if (query !== urlQ) {
+      prevUrlQ.current = query;
+      const merged = new URLSearchParams(params);
+      if (!query) merged.delete('q');
+      else merged.set('q', query);
+      setParams(merged, { replace: true });
+    }
+  }, [urlQ, query, params, setParams, setQuery]);
+
+  useEffect(() => setCursor(0), [query]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -77,9 +111,8 @@ export function GlossaryView() {
   }, [localized, query, category, family]);
 
   const active =
-    filtered.find((e) => e.id === activeId) ??
+    localized.find((e) => e.id === activeId) ??
     filtered[0] ??
-    localized.find((e) => e.id === 'vop') ??
     localized[0];
 
   function update(next: Record<string, string | null>) {
@@ -93,6 +126,38 @@ export function GlossaryView() {
 
   function select(entry: GlossaryEntry) {
     update({ id: entry.id });
+  }
+
+  function pickSuggestion(hit: SearchHit) {
+    setSuggestOpen(false);
+    const href = applySearchQueryToHref(hit.href, hit.kind, query);
+    const url = new URL(href, 'https://local');
+    if (url.pathname === '/glossary') {
+      update({
+        id: url.searchParams.get('id'),
+        q: url.searchParams.get('q'),
+        category: url.searchParams.get('category') ?? category,
+        family: url.searchParams.get('category') === 'code' ? family : null,
+      });
+      return;
+    }
+    navigate(href);
+  }
+
+  function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (!suggestOpen || query.trim().length < 2) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setCursor((c) => Math.min(c + 1, Math.max(results.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setCursor((c) => Math.max(c - 1, 0));
+    } else if (e.key === 'Enter' && results[cursor]) {
+      e.preventDefault();
+      pickSuggestion(results[cursor]);
+    } else if (e.key === 'Escape') {
+      setSuggestOpen(false);
+    }
   }
 
   const showFamilies = category === 'code' || Boolean(family);
@@ -128,14 +193,41 @@ export function GlossaryView() {
       </header>
 
       <div className="mt-7 space-y-3">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => update({ q: e.target.value })}
-          placeholder={t('glossary.placeholder')}
-          aria-label={t('glossary.filterAria')}
-          className="w-full border border-rule bg-surface px-3 py-2.5 font-mono text-sm focus:border-ink focus:outline-none"
-        />
+        <div
+          className="relative"
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setSuggestOpen(false);
+          }}
+        >
+          <div className="flex border border-rule bg-surface px-3 py-2.5 focus-within:border-ink">
+            <SearchInput
+              value={query}
+              onChange={(next) => {
+                setQuery(next);
+                setSuggestOpen(next.trim().length >= 2);
+              }}
+              onFocus={() => {
+                if (query.trim().length >= 2) setSuggestOpen(true);
+              }}
+              onKeyDown={onSearchKeyDown}
+              placeholder={t('glossary.placeholder')}
+              ariaLabel={t('glossary.filterAria')}
+            />
+          </div>
+          {suggestOpen && query.trim().length >= 2 && (
+            <div className="absolute z-20 mt-1 w-full border border-ink bg-surface">
+              <div className="scroll-paper max-h-[40vh] overflow-y-auto">
+                <SearchHitList
+                  results={results}
+                  query={query}
+                  cursor={cursor}
+                  onHover={setCursor}
+                  onPick={pickSuggestion}
+                />
+              </div>
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-1.5">
           <FilterBtn active={!category && !family} onClick={() => update({ category: null, family: null })}>
             {t('glossary.all', { count: GLOSSARY.length })}
@@ -167,13 +259,10 @@ export function GlossaryView() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
         <ul className="panel divide-y divide-rule-soft lg:max-h-[70vh] lg:overflow-y-auto">
-          {!listOpen && (
-            <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.pickFilter')}</li>
-          )}
-          {listOpen && filtered.length === 0 && (
+          {filtered.length === 0 && (
             <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.empty')}</li>
           )}
-          {listOpen && filtered.map((e) => (
+          {filtered.map((e) => (
             <li key={e.id}>
               <button
                 type="button"

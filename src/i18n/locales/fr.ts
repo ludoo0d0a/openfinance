@@ -56,6 +56,7 @@ export const fr: MessageTree = {
     emptyShort: 'Saisissez au moins deux caractères.',
     emptyNone:
       'Aucun résultat. Essayez une balise ISO (DbtrAgt), un code, un identifiant de message ou un standard.',
+    clear: 'Effacer la recherche',
     move: '↑↓ naviguer',
     open: '↵ ouvrir',
     results: '{{count}} résultats',
@@ -128,7 +129,6 @@ export const fr: MessageTree = {
     filterAria: 'Filtrer le glossaire',
     all: 'Tous {{count}}',
     empty: 'Aucun résultat. Essayez SCT, TIPS, VoP, AC01, ou un fragment comme « consent ».',
-    pickFilter: 'Recherchez ou choisissez une catégorie pour lister les termes.',
     alsoCalled: 'Aussi appelé',
     seeAlso: 'Voir aussi',
     explore: 'Explorer dans le catalogue',

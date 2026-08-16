@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Search, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
+import { useSearchQuery } from '@/hooks/SearchQueryContext';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
@@ -13,6 +14,7 @@ import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
 export function AppShell() {
   const t = useT();
   const { locale } = useI18n();
+  const { query, clearQuery } = useSearchQuery();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const navTitleId = useId();
@@ -127,39 +129,54 @@ export function AppShell() {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur">
-        <div className="flex items-center gap-3 px-4 py-2.5 lg:gap-4 lg:px-6">
+        <div className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 lg:gap-4 lg:px-6">
           <button
             type="button"
             onClick={() => setNavOpen(true)}
             aria-expanded={navOpen}
             aria-controls="mobile-nav"
-            className="inline-flex items-center gap-1 border border-rule px-2 py-1 font-mono text-[11px] lg:hidden"
+            aria-label={t('nav.menu')}
+            className="inline-flex shrink-0 items-center gap-1 border border-rule px-2 py-2 font-mono text-[11px] lg:hidden"
           >
-            <Menu size={14} aria-hidden />
-            {t('nav.menu')}
+            <Menu size={16} aria-hidden />
+            <span className="hidden min-[400px]:inline">{t('nav.menu')}</span>
           </button>
 
-          <NavLink to="/" className="flex items-center gap-2.5">
-            <span className="inline-flex h-7 w-7 items-center justify-center border border-ink bg-ink text-white">
+          <NavLink to="/" className="flex shrink-0 items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center border border-ink bg-ink text-white sm:h-7 sm:w-7">
               <UI_ICONS.overview size={15} aria-hidden />
             </span>
-            <span className="font-display text-[17px] font-bold tracking-tight">OpenFinance</span>
-            <span className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-muted sm:inline">
+            <span className="hidden font-display text-[17px] font-bold tracking-tight sm:inline">OpenFinance</span>
+            <span className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-muted lg:inline">
               {t('brand.tagline')}
             </span>
           </NavLink>
 
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="ml-auto flex min-w-0 items-center gap-3 border border-rule bg-surface px-3 py-1.5 text-left text-xs text-muted hover:border-ink sm:min-w-[240px]"
-          >
-            <Search size={14} aria-hidden />
-            <span className="truncate font-mono">{t('nav.search')}</span>
-            <kbd className="ml-auto hidden shrink-0 border border-rule px-1.5 py-0.5 font-mono text-[10px] sm:inline">
+          <div className="ml-auto flex min-h-10 min-w-[9.5rem] flex-1 items-center gap-2 border border-rule bg-surface px-3 py-1 hover:border-ink sm:min-h-0 sm:min-w-[240px] sm:max-w-xl lg:max-w-2xl">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="flex min-w-0 flex-1 items-center gap-2 py-1.5 text-left text-muted"
+            >
+              <Search size={16} className="shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1 truncate font-mono text-sm">
+                {query.trim() || t('nav.search')}
+              </span>
+            </button>
+            {query.trim().length > 0 && (
+              <button
+                type="button"
+                onClick={clearQuery}
+                aria-label={t('search.clear')}
+                className="shrink-0 p-0.5 text-muted hover:text-ink"
+              >
+                <X size={16} aria-hidden />
+              </button>
+            )}
+            <kbd className="hidden shrink-0 border border-rule px-1.5 py-0.5 font-mono text-[10px] sm:inline">
               ⌘K
             </kbd>
-          </button>
+          </div>
 
           <LocaleSwitcher className="shrink-0" />
         </div>
