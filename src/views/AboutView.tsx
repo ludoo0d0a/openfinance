@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Info } from 'lucide-react';
 import { GLOSSARY, GLOSSARY_SOURCES } from '@/data/glossary';
 import { useT } from '@/i18n';
+import { PageAd } from '@/components/PageAd';
 
 export function AboutView() {
   const t = useT();
@@ -16,6 +17,8 @@ export function AboutView() {
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('about.title')}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('about.lead')}</p>
       </header>
+
+      <PageAd placement="mid" />
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold">{t('about.glossaryTitle')}</h2>

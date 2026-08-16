@@ -5,6 +5,9 @@ export const en: MessageTree = {
   brand: {
     tagline: 'Payment Explorer',
   },
+  ad: {
+    label: 'Advertisement',
+  },
   nav: {
     menu: 'Menu',
     close: 'Close',

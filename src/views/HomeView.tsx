@@ -6,6 +6,7 @@ import { GLOSSARY_CODES } from '@/data/glossary';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { useI18n, useT } from '@/i18n';
 import { CommandPalette } from '@/components/CommandPalette';
+import { PageAd } from '@/components/PageAd';
 import { useEffect, useState } from 'react';
 
 const POPULAR = [
@@ -69,6 +70,8 @@ export function HomeView() {
           ))}
         </ul>
       </section>
+
+      <PageAd placement="mid" />
 
       <section className="mt-10">
         <h2 className="eyebrow mb-3">{t('home.popular')}</h2>

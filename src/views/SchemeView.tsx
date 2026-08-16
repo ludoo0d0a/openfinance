@@ -5,6 +5,7 @@ import { relatedTo, parseEntityRef } from '@/data/relations';
 import { paymentById } from '@/data/payments';
 import { useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
+import { PageAd } from '@/components/PageAd';
 
 export function SchemeView() {
   const t = useT();
@@ -29,6 +30,7 @@ export function SchemeView() {
       <h1 className="mt-2 text-3xl font-bold">{scheme.name[locale]}</h1>
       <p className="mt-2 text-[13px] text-muted">{scheme.operator}</p>
       <p className="mt-4 text-[15px] leading-relaxed text-muted">{scheme.summary[locale]}</p>
+      <PageAd placement="mid" />
       {payment && (
         <Link
           to={`/payment/${payment.id}`}

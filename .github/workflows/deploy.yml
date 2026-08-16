@@ -25,6 +25,12 @@ jobs:
     name: Verify before deploy
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      VITE_ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+      VITE_ADSENSE_SLOT: ${{ vars.ADSENSE_SLOT }}
+      VITE_ADSENSE_SLOT_INTRO: ${{ vars.ADSENSE_SLOT_INTRO }}
+      VITE_ADSENSE_SLOT_MID: ${{ vars.ADSENSE_SLOT_MID }}
+      VITE_ADSENSE_SLOT_END: ${{ vars.ADSENSE_SLOT_END }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -89,4 +95,9 @@ jobs:
           # Deep-link refresh must serve the SPA shell (not a bare 404).
           deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
           [ "$deep" = "200" ] || { echo "SPA deep link returned $deep"; exit 1; }
+
+          if [ -n "${{ vars.ADSENSE_CLIENT }}" ]; then
+            ads=$(curl -s -o /dev/null -w '%{http_code}' "$URL/ads.txt" || true)
+            [ "$ads" = "200" ] || { echo "ads.txt returned $ads"; exit 1; }
+          fi
           echo "Deployment healthy."

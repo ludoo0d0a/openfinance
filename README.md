@@ -97,6 +97,19 @@ Cloudflare Pages project with Functions in `functions/`.
 1. Create a Pages project named `openfinance` (or change `--project-name` in the workflows).
 2. Add secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 3. Optionally bind KV (`PSD2_STATE`) as documented in `wrangler.toml`.
+4. For AdSense, add **repository variables** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Example | Role |
+| --- | --- | --- |
+| `ADSENSE_CLIENT` | `ca-pub-1234567890123456` | Publisher id (required to show ads) |
+| `ADSENSE_SLOT` | `1234567890` | Default display unit (used when a placement has no override) |
+| `ADSENSE_SLOT_INTRO` | | Optional top banner unit |
+| `ADSENSE_SLOT_MID` | | Optional in-article unit |
+| `ADSENSE_SLOT_END` | | Optional footer rectangle |
+
+Create the units in AdSense as **Display** (responsive) and optionally **In-article**. Enable **Privacy & messaging** for the EEA. The production build writes `/ads.txt` and injects `adsbygoogle.js`. Ads remount on each catalog URL (payment, scheme, message, flow, …) and when the glossary term or message version changes. They stay off on `/try`.
+
+Local preview: `VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run build`.
 
 | Workflow | Trigger |
 | --- | --- |

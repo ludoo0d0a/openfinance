@@ -16,5 +16,6 @@
     "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["functions", "src/data/**/*.ts", "src/lib/**/*.ts", "src/types/**/*.ts"]
+  "include": ["functions", "src/data/**/*.ts", "src/lib/**/*.ts", "src/types/**/*.ts"],
+  "exclude": ["src/lib/ads.ts"]
 }

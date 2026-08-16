@@ -4,5 +4,6 @@
 # (white screen + MIME errors).
 /api/*        /api/:splat     200
 /assets/*     /assets/:splat  200
+/ads.txt      /ads.txt        200
 /favicon.svg  /favicon.svg    200
 /*            /               200

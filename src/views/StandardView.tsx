@@ -5,6 +5,7 @@ import { samplesForStandard } from '@/data/samples';
 import { MethodLabel, Tag } from '@/components/Chips';
 import { useT, useI18n, localizeFlows } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
+import { PageAd } from '@/components/PageAd';
 
 export function StandardView() {
   const t = useT();
@@ -40,6 +41,8 @@ export function StandardView() {
         </div>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">{standard.summary}</p>
       </header>
+
+      <PageAd placement="mid" />
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2">
         <div className="panel p-4">

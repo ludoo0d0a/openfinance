@@ -18,6 +18,7 @@ import { messageIdFromPayload, namespaceFor, parseMessageId } from '@/lib/messag
 import { cn } from '@/lib/cn';
 import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
+import { PageAd } from '@/components/PageAd';
 
 const DIRECTION_KEYS: Record<string, string> = {
   'customer-to-bank': 'message.dirCustomerBank',
@@ -149,6 +150,8 @@ export function MessageView() {
           </div>
         )}
       </header>
+
+      <PageAd placement="mid" />
 
       {versions.length > 1 && (
         <section className="mt-8 max-w-4xl">

@@ -11,6 +11,7 @@ import { EntityPanel } from '@/components/EntityPanel';
 import { useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 import { cn } from '@/lib/cn';
+import { PageAd } from '@/components/PageAd';
 
 const LEVEL_KEY = 'openfinance.explorerLevel';
 
@@ -213,6 +214,8 @@ export function PaymentExplorerView() {
           </div>
         </div>
       )}
+
+      <PageAd placement="mid" />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <PaymentTimeline

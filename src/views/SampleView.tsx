@@ -5,6 +5,7 @@ import { standardById } from '@/data/standards';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
+import { PageAd } from '@/components/PageAd';
 
 export function SampleView() {
   const t = useT();
@@ -42,6 +43,8 @@ export function SampleView() {
           )}
         </div>
       </header>
+
+      <PageAd placement="mid" />
 
       <div className="h-[74vh] min-h-[540px]">
         <PayloadInspector

@@ -22,6 +22,7 @@ describe('i18n', () => {
       'nav.glossary',
       'nav.about',
       'home.title1',
+      'ad.label',
       'locale.fr',
       'flow.entities',
       'flow.fullscreen',

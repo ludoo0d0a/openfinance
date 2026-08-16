@@ -1,10 +1,34 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
 
+function adsenseAssets(): Plugin {
+  const client = () => String(process.env.VITE_ADSENSE_CLIENT ?? '').trim();
+
+  return {
+    name: 'adsense-assets',
+    transformIndexHtml(html) {
+      const id = client();
+      if (!id) return html;
+      const src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(id)}`;
+      const tag = `<script async src="${src}" crossorigin="anonymous"></script>`;
+      return html.replace('</head>', `    ${tag}\n  </head>`);
+    },
+    generateBundle() {
+      const match = client().match(/^(?:ca-)?(pub-\d+)$/);
+      if (!match) return;
+      this.emitFile({
+        type: 'asset',
+        fileName: 'ads.txt',
+        source: `google.com, ${match[1]}, DIRECT, f08c47fec0942fa0\n`,
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), adsenseAssets()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

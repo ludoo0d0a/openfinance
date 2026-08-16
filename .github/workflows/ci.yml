@@ -18,6 +18,12 @@ jobs:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      VITE_ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+      VITE_ADSENSE_SLOT: ${{ vars.ADSENSE_SLOT }}
+      VITE_ADSENSE_SLOT_INTRO: ${{ vars.ADSENSE_SLOT_INTRO }}
+      VITE_ADSENSE_SLOT_MID: ${{ vars.ADSENSE_SLOT_MID }}
+      VITE_ADSENSE_SLOT_END: ${{ vars.ADSENSE_SLOT_END }}
     steps:
       - uses: actions/checkout@v5
 

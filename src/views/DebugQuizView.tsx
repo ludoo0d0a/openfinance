@@ -4,6 +4,7 @@ import { sampleById } from '@/data/samples';
 import { codeByValue } from '@/data/glossary';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { useT } from '@/i18n';
+import { PageAd } from '@/components/PageAd';
 
 const REASONS = ['AC01', 'AM04', 'AG01', 'AB05'] as const;
 
@@ -27,6 +28,8 @@ export function DebugQuizView() {
       <p className="eyebrow">{t('quiz.eyebrow')}</p>
       <h1 className="mt-2 text-3xl font-bold">{t('quiz.title')}</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('quiz.lead')}</p>
+
+      <PageAd placement="mid" />
 
       <section className="mt-8">
         <p className="eyebrow mb-2">{t('quiz.prompt')}</p>
