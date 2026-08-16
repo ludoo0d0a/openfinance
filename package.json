@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Browse, search and replay PSD2 / Open Finance / SIC / Wero flows and ISO 20022 messages.",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "engines": {
     "node": ">=20.11"
   },

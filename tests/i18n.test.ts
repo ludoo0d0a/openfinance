@@ -27,6 +27,7 @@ describe('i18n', () => {
       'ad.label',
       'footer.version',
       'footer.copyright',
+      'footer.license',
       'locale.fr',
       'flow.entities',
       'flow.fullscreen',

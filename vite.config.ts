@@ -1,7 +1,12 @@
 import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
+
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string };
 
 function adsenseAssets(): Plugin {
   const client = () => String(process.env.VITE_ADSENSE_CLIENT ?? '').trim();
@@ -28,6 +33,9 @@ function adsenseAssets(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   plugins: [react(), tailwindcss(), adsenseAssets()],
   resolve: {
     alias: {

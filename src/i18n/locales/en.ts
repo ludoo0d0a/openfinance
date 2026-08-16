@@ -11,6 +11,7 @@ export const en: MessageTree = {
   footer: {
     version: 'v{{version}}',
     copyright: '© {{year}} GeoKing',
+    license: 'GPL-3.0',
   },
   nav: {
     menu: 'Menu',

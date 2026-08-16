@@ -365,6 +365,8 @@ function SiteFooter() {
         <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
         <span aria-hidden>·</span>
         <span>{t('footer.copyright', { year: 2026 })}</span>
+        <span aria-hidden>·</span>
+        <span>{t('footer.license')}</span>
       </p>
     </footer>
   );

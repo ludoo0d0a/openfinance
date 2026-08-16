@@ -151,4 +151,4 @@ The same citations live on `/about` and on each glossary entry that maps onto th
 
 ## Licence
 
-MIT. All IBANs, BICs, names and identifiers are synthetic.
+[GPL-3.0](LICENSE). Copyright (C) 2026 GeoKing. All IBANs, BICs, names and identifiers are synthetic.
