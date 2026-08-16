@@ -128,6 +128,7 @@ export const fr: MessageTree = {
     filterAria: 'Filtrer le glossaire',
     all: 'Tous {{count}}',
     empty: 'Aucun résultat. Essayez SCT, TIPS, VoP, AC01, ou un fragment comme « consent ».',
+    pickFilter: 'Recherchez ou choisissez une catégorie pour lister les termes.',
     alsoCalled: 'Aussi appelé',
     seeAlso: 'Voir aussi',
     explore: 'Explorer dans le catalogue',

@@ -667,7 +667,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     sources: ['konsentus'],
     links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
   }),
-  g('pain', 'pain', 'concept', { en: 'Payments Initiation (pain)', fr: 'Initiation des paiements (pain)' }, {
+  g('pain', 'pain', 'message', { en: 'Payments Initiation (pain)', fr: 'Initiation des paiements (pain)' }, {
     en: 'ISO 20022 business area for customer-to-bank instructions: pain.001 credit, pain.008 direct debit, pain.013 request-to-pay.',
     fr: 'Domaine ISO 20022 des instructions client-banque : pain.001 virement, pain.008 prélèvement, pain.013 request-to-pay.',
   }, {
@@ -675,7 +675,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['pacs', 'iso-20022', 'camt', 'acmt', 'pain-001', 'pain-008', 'pain-013'],
     links: [{ label: 'pain.001', href: '/messages/pain.001' }],
   }),
-  g('pacs', 'pacs', 'concept', { en: 'Payments Clearing & Settlement (pacs)', fr: 'Compensation et règlement (pacs)' }, {
+  g('pacs', 'pacs', 'message', { en: 'Payments Clearing & Settlement (pacs)', fr: 'Compensation et règlement (pacs)' }, {
     en: 'ISO 20022 interbank clearing area. pacs.008 is the customer credit transfer; pacs.002 is the status/ack.',
     fr: 'Domaine ISO 20022 de compensation interbancaire. pacs.008 est le virement client ; pacs.002 le statut/ack.',
   }, {
@@ -683,14 +683,14 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['pain', 'camt', 'csm', 'iso-20022', 'pacs-008', 'pacs-002'],
     links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
   }),
-  g('camt', 'camt', 'concept', { en: 'Cash Management (camt)', fr: 'Gestion de trésorerie (camt)' }, {
+  g('camt', 'camt', 'message', { en: 'Cash Management (camt)', fr: 'Gestion de trésorerie (camt)' }, {
     en: 'ISO 20022 cash-management area: statements (camt.053), notifications (camt.054), recalls (camt.056) and investigations.',
     fr: 'Domaine ISO 20022 de cash management : relevés (camt.053), notifications (camt.054), rappels (camt.056) et investigations.',
   }, {
     aliases: { en: ['Cash Management'], fr: ['gestion de trésorerie'] },
     seeAlso: ['pacs', 'iso-20022', 'pain', 'camt-053', 'camt-054', 'camt-056'],
   }),
-  g('acmt', 'acmt', 'concept', { en: 'Account Management (acmt)', fr: 'Gestion de compte (acmt)' }, {
+  g('acmt', 'acmt', 'message', { en: 'Account Management (acmt)', fr: 'Gestion de compte (acmt)' }, {
     en: 'ISO 20022 account-management area. VoP uses acmt.023 (request) and acmt.024 (report).',
     fr: 'Domaine ISO 20022 de gestion de compte. La VoP utilise acmt.023 (demande) et acmt.024 (rapport).',
   }, {

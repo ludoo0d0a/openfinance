@@ -6,7 +6,6 @@ import {
   CODE_FAMILIES,
   GLOSSARY,
   GLOSSARY_CATEGORY_LABELS,
-  GLOSSARY_CODES,
   GLOSSARY_SOURCES,
   localizeGlossaryEntry,
   type GlossaryCategory,
@@ -38,6 +37,23 @@ export function GlossaryView() {
     () => GLOSSARY.map((e) => localizeGlossaryEntry(e, locale)),
     [locale],
   );
+
+  const categoryCounts = useMemo(() => {
+    const counts = Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<GlossaryCategory, number>;
+    for (const e of localized) counts[e.category] += 1;
+    return counts;
+  }, [localized]);
+
+  const familyCounts = useMemo(() => {
+    const counts = Object.fromEntries(CODE_FAMILIES.map((f) => [f, 0])) as Record<CodeFamily, number>;
+    for (const e of localized) {
+      if (e.family) counts[e.family] += 1;
+    }
+    return counts;
+  }, [localized]);
+
+  const hasQuery = query.trim().length > 0;
+  const listOpen = hasQuery || Boolean(category) || Boolean(family);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -130,9 +146,7 @@ export function GlossaryView() {
               active={category === c && !family}
               onClick={() => update({ category: c, family: null })}
             >
-              {c === 'code'
-                ? `${GLOSSARY_CATEGORY_LABELS[c][locale]} (${GLOSSARY_CODES.length})`
-                : GLOSSARY_CATEGORY_LABELS[c][locale]}
+              {`${GLOSSARY_CATEGORY_LABELS[c][locale]} (${categoryCounts[c]})`}
             </FilterBtn>
           ))}
         </div>
@@ -144,7 +158,7 @@ export function GlossaryView() {
                 active={family === f}
                 onClick={() => update({ category: 'code', family: family === f ? null : f })}
               >
-                {t(`family.${f}`)}
+                {`${t(`family.${f}`)} (${familyCounts[f]})`}
               </FilterBtn>
             ))}
           </div>
@@ -153,10 +167,13 @@ export function GlossaryView() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
         <ul className="panel divide-y divide-rule-soft lg:max-h-[70vh] lg:overflow-y-auto">
-          {filtered.length === 0 && (
+          {!listOpen && (
+            <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.pickFilter')}</li>
+          )}
+          {listOpen && filtered.length === 0 && (
             <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.empty')}</li>
           )}
-          {filtered.map((e) => (
+          {listOpen && filtered.map((e) => (
             <li key={e.id}>
               <button
                 type="button"

@@ -70,8 +70,10 @@ describe('glossary', () => {
       expect(e, m.short).toBeDefined();
       expect(e!.category).toBe('message');
     }
-    expect(glossaryById('pain')?.category).toBe('concept');
-    expect(glossaryById('pacs')?.category).toBe('concept');
+    expect(glossaryById('pain')?.category).toBe('message');
+    expect(glossaryById('pacs')?.category).toBe('message');
+    expect(glossaryById('camt')?.category).toBe('message');
+    expect(glossaryById('acmt')?.category).toBe('message');
   });
 
   it('every entry has EN and FR name + definition', () => {

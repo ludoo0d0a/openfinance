@@ -125,6 +125,7 @@ export const en: MessageTree = {
     filterAria: 'Filter glossary',
     all: 'All {{count}}',
     empty: 'Nothing matched. Try SCT, TIPS, VoP, AC01, or a fragment like "consent".',
+    pickFilter: 'Search or pick a category to list terms.',
     alsoCalled: 'Also called',
     seeAlso: 'See also',
     explore: 'Explore in the catalog',
