@@ -7,8 +7,8 @@ import type { ActorId } from '../src/types';
 
 describe('i18n', () => {
   it('resolves nested keys in both locales', () => {
-    expect(resolveMessage(en, 'nav.overview')).toBe('Overview');
-    expect(resolveMessage(fr, 'nav.overview')).toBe('Vue d’ensemble');
+    expect(resolveMessage(en, 'nav.overview')).toBe('Payment Explorer');
+    expect(resolveMessage(fr, 'nav.overview')).toBe('Payment Explorer');
   });
 
   it('interpolates placeholders', () => {

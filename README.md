@@ -2,9 +2,7 @@
 
 **Live:** [openfinance.geoking.fr](https://openfinance.geoking.fr) ([pages.dev](https://openfinance.pages.dev))
 
-Browse PSD2 and Open Finance API standards, Swiss SIC / euroSIC / SIC IP rails, Wero (EPI),
-trace end-to-end payments across the API and clearing layers, inspect ISO 20022 messages, and
-look up status or reason codes.
+Browse **Payment Explorer**: understand European payments — actors, infrastructures, ISO 20022 messages and schemes — then drill into PSD2 / SIC / Wero technical traces.
 
 Built with React 19, Vite, Tailwind v4 and Cytoscape on the front, Cloudflare Pages Functions on
 the back, deployed by GitHub Actions.
@@ -24,6 +22,7 @@ SIC Instant, Wero) and exception paths (reject, recall, instant timeout, payment
 
 | Feature | Where |
 | --- | --- |
+| Payment Explorer (SCT, SCT Inst, Wero) | `/` · `/payment/:id` |
 | API standards (Berlin Group, STET, UK OB, PolishAPI, Czech OBS, Swiss SPS/SIC, Wero) | `src/data/standards.ts` |
 | End-to-end flows as SVG sequence diagrams | `src/data/flows.ts` + `FlowCanvas` |
 | Cytoscape interop map (standards × messages × rails) | `/map` · `InteropGraph` |

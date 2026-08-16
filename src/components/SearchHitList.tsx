@@ -10,6 +10,9 @@ const kindColor: Record<ResultKind, string> = {
   sample: 'text-ochre',
   endpoint: 'text-muted',
   term: 'text-ochre',
+  payment: 'text-jade',
+  scheme: 'text-signal',
+  infrastructure: 'text-violet',
 };
 
 export function SearchHitList({
@@ -37,9 +40,17 @@ export function SearchHitList({
 
   return (
     <ul>
-      {results.map((r, i) => (
-        <li key={r.id}>
-          <button
+      {results.map((r, i) => {
+        const prevKind = i > 0 ? results[i - 1].kind : null;
+        const showGroup = r.kind !== prevKind && ['payment', 'message', 'scheme', 'infrastructure'].includes(r.kind);
+        return (
+          <li key={r.id}>
+            {showGroup && (
+              <p className="border-b border-rule-soft bg-paper-raised px-4 py-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+                {t(`kind.${r.kind}`)}
+              </p>
+            )}
+            <button
             type="button"
             onMouseEnter={() => onHover(i)}
             onClick={() => onPick(r)}
@@ -55,9 +66,10 @@ export function SearchHitList({
               <span className="block truncate font-mono text-[13px] font-medium">{r.title}</span>
               <span className="block truncate text-xs text-muted">{r.subtitle}</span>
             </span>
-          </button>
-        </li>
-      ))}
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

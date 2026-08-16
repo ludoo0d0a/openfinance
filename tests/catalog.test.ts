@@ -4,6 +4,10 @@ import { ISO_MESSAGES } from '../src/data/iso20022';
 import { ALL_SAMPLES, SAMPLES, samplesForMessage } from '../src/data/samples';
 import { FLOWS_FR } from '../src/i18n/flowsFr';
 import { STANDARDS } from '../src/data/standards';
+import { PAYMENTS } from '../src/data/payments';
+import { SCHEMES } from '../src/data/schemes';
+import { INFRASTRUCTURES } from '../src/data/infrastructures';
+import { RELATIONS } from '../src/data/relations';
 import { CODES } from '../src/data/codes';
 import { codeByValue, GLOSSARY, GLOSSARY_CODES, GLOSSARY_MESSAGES } from '../src/data/glossary';
 import { DOCUMENTS, createIndex } from '../src/lib/search';
@@ -175,6 +179,41 @@ describe('referential integrity', () => {
       seen.add(e.id);
     }
   });
+
+  it('payments point at real schemes, rails, messages, flows and samples', () => {
+    const schemeIds = new Set(SCHEMES.map((s) => s.id));
+    const infraIds = new Set(INFRASTRUCTURES.map((i) => i.id));
+    const shorts = new Set(ISO_MESSAGES.map((m) => m.short));
+    const flowIds = new Set(FLOWS.map((f) => f.id));
+    const sampleIds = new Set(SAMPLES.map((s) => s.id));
+    for (const p of PAYMENTS) {
+      expect(schemeIds, p.id).toContain(p.schemeId);
+      expect(infraIds, p.id).toContain(p.defaultRailId);
+      for (const id of p.infrastructureIds) expect(infraIds, `${p.id} rail ${id}`).toContain(id);
+      for (const short of p.messageShorts) expect(shorts, `${p.id} ${short}`).toContain(short);
+      for (const flowId of p.relatedFlowIds) expect(flowIds, `${p.id} ${flowId}`).toContain(flowId);
+      for (const hop of p.hops) {
+        if (hop.messageShort) expect(shorts, `${p.id} hop ${hop.id}`).toContain(hop.messageShort);
+        if (hop.flowId) expect(flowIds, `${p.id} hop ${hop.id}`).toContain(hop.flowId);
+        if (hop.sampleId) expect(sampleIds, `${p.id} hop ${hop.id}`).toContain(hop.sampleId);
+      }
+    }
+  });
+
+  it('relations resolve to known entities', () => {
+    const known = new Set<string>([
+      ...PAYMENTS.map((p) => `payment:${p.id}`),
+      ...SCHEMES.map((s) => `scheme:${s.id}`),
+      ...INFRASTRUCTURES.map((i) => `infrastructure:${i.id}`),
+      ...ISO_MESSAGES.map((m) => `message:${m.short}`),
+    ]);
+    for (const r of RELATIONS) {
+      if (r.to.startsWith('organization:')) continue;
+      if (r.from.startsWith('organization:')) continue;
+      expect(known.has(r.from) || r.from.startsWith('organization:'), r.from).toBe(true);
+      expect(known.has(r.to) || r.to.startsWith('organization:'), r.to).toBe(true);
+    }
+  });
 });
 
 describe('search index', () => {
@@ -202,5 +241,10 @@ describe('search index', () => {
 
   it('finds flows by concept rather than exact title', () => {
     expect(index.search('recall').some((h) => h.id === 'flow:clearing-recall')).toBe(true);
+  });
+
+  it('finds Payment Explorer journeys', () => {
+    const hits = index.search('SEPA Instant');
+    expect(hits.some((h) => h.id === 'payment:sepa-instant')).toBe(true);
   });
 });

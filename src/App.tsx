@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '@/components/AppShell';
 import { HomeView } from '@/views/HomeView';
 import { StandardView } from '@/views/StandardView';
@@ -10,6 +10,9 @@ import { TryEditorView } from '@/views/TryEditorView';
 import { GlossaryView } from '@/views/GlossaryView';
 import { AboutView } from '@/views/AboutView';
 import { NotFoundView } from '@/views/NotFoundView';
+import { PaymentExplorerView } from '@/views/PaymentExplorerView';
+import { SchemeView } from '@/views/SchemeView';
+import { InfrastructureView } from '@/views/InfrastructureView';
 import { codeByValue } from '@/data/glossary';
 
 export default function App() {
@@ -17,6 +20,11 @@ export default function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<HomeView />} />
+        <Route path="payment/:paymentId" element={<PaymentExplorerView />} />
+        <Route path="scheme/:schemeId" element={<SchemeView />} />
+        <Route path="infrastructure/:infrastructureId" element={<InfrastructureView />} />
+        <Route path="wero" element={<Navigate to="/payment/wero" replace />} />
+        <Route path="message/:slug" element={<MessageAlias />} />
         <Route path="map" element={<MapView />} />
         <Route path="try" element={<TryEditorView />} />
         <Route path="glossary" element={<GlossaryView />} />
@@ -32,6 +40,12 @@ export default function App() {
       </Route>
     </Routes>
   );
+}
+
+function MessageAlias() {
+  const { slug } = useParams();
+  const short = (slug ?? '').replace(/-/g, '.');
+  return <Navigate to={`/messages/${short}`} replace />;
 }
 
 function PreserveQuery({ to }: { to: string }) {

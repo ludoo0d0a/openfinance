@@ -7,6 +7,9 @@ import { useSearchQuery } from '@/hooks/SearchQueryContext';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
+import { PAYMENTS } from '@/data/payments';
+import { SCHEMES } from '@/data/schemes';
+import { INFRASTRUCTURES } from '@/data/infrastructures';
 import { cn } from '@/lib/cn';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
@@ -55,14 +58,51 @@ export function AppShell() {
     <>
       <NavSection title={t('nav.start')}>
         <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact onNavigate={() => setNavOpen(false)} />
-        <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
+        {PAYMENTS.map((p) => (
+          <NavItem
+            key={p.id}
+            to={`/payment/${p.id}`}
+            label={p.name[locale]}
+            icon={<UI_ICONS.instant size={14} />}
+            onNavigate={() => setNavOpen(false)}
+          />
+        ))}
         <NavItem
           to="/glossary"
           label={t('nav.glossary')}
           icon={<UI_ICONS.glossary size={14} />}
           onNavigate={() => setNavOpen(false)}
         />
+      </NavSection>
+
+      <NavSection title={t('nav.schemes')}>
+        {SCHEMES.map((s) => (
+          <NavItem
+            key={s.id}
+            to={`/scheme/${s.id}`}
+            label={s.name[locale]}
+            icon={<UI_ICONS.standard size={14} />}
+            onNavigate={() => setNavOpen(false)}
+          />
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.infrastructure')}>
+        {INFRASTRUCTURES.map((i) => (
+          <NavItem
+            key={i.id}
+            to={`/infrastructure/${i.id}`}
+            label={i.name[locale]}
+            hint={i.operator}
+            icon={<UI_ICONS.map size={14} />}
+            onNavigate={() => setNavOpen(false)}
+          />
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.tools')}>
+        <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem
           to="/about"
           label={t('nav.about')}

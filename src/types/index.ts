@@ -210,3 +210,95 @@ export interface ValidationIssue {
   rule: string;
   message: string;
 }
+
+/** Short bilingual catalog string (payments / schemes / infrastructures). */
+export type LocalizedText = Record<Locale, string>;
+
+export type RelationType =
+  | 'uses_message'
+  | 'settles_on'
+  | 'defined_by'
+  | 'initiated_via'
+  | 'related_message'
+  | 'variant_of';
+
+export type CatalogEntityKind = 'payment' | 'scheme' | 'infrastructure' | 'message' | 'organization';
+
+/** `kind:id` e.g. payment:sepa-instant, message:pacs.008 */
+export type EntityRef = `${CatalogEntityKind}:${string}`;
+
+export interface CatalogRelation {
+  type: RelationType;
+  from: EntityRef;
+  to: EntityRef;
+}
+
+export type PaymentKind = 'credit-transfer' | 'instant' | 'wallet';
+export type InitiationChannel = 'bank' | 'pisp' | 'wero';
+export type PaymentOutcome = 'happy' | 'reject' | 'timeout';
+export type ExplorerLevel = 'simple' | 'expert';
+export type PaymentActorId = 'payer' | 'bankA' | 'csm' | 'bankB' | 'beneficiary' | 'scheme';
+
+export interface SourceRef {
+  name: string;
+  url: string;
+  lastUpdated: string;
+}
+
+export interface PaymentHop {
+  id: string;
+  from: PaymentActorId;
+  to: PaymentActorId;
+  messageShort?: string;
+  simpleText: LocalizedText;
+  expertLabel: LocalizedText;
+  tOffset?: LocalizedText;
+  sla?: LocalizedText;
+  flowId?: string;
+  step?: number;
+  sampleId?: string;
+  outcomes: PaymentOutcome[];
+  rails?: string[];
+  initiation?: InitiationChannel[];
+}
+
+export interface Payment {
+  id: string;
+  kind: PaymentKind;
+  name: LocalizedText;
+  summary: LocalizedText;
+  schemeId: string;
+  infrastructureIds: string[];
+  defaultRailId: string;
+  messageShorts: string[];
+  actors: PaymentActorId[];
+  hops: PaymentHop[];
+  relatedFlowIds: string[];
+  initiationChannels: InitiationChannel[];
+  comparePaymentId?: string;
+  sources: SourceRef[];
+  disclaimer: LocalizedText;
+}
+
+export interface Scheme {
+  id: string;
+  name: LocalizedText;
+  operator: string;
+  summary: LocalizedText;
+  explorePaymentId: string;
+  sources: SourceRef[];
+}
+
+export interface Infrastructure {
+  id: string;
+  name: LocalizedText;
+  operator: string;
+  region: string;
+  currency: string;
+  summary: LocalizedText;
+  usedFor: LocalizedText;
+  relatedMessageShorts: string[];
+  /** Node on /map when set */
+  mapFlowHref?: string;
+  sources: SourceRef[];
+}

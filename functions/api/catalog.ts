@@ -3,6 +3,9 @@ import { ISO_MESSAGES } from '../../src/data/iso20022';
 import { FLOWS } from '../../src/data/flows';
 import { ALL_SAMPLES } from '../../src/data/samples';
 import { GLOSSARY, GLOSSARY_CODES } from '../../src/data/glossary';
+import { PAYMENTS } from '../../src/data/payments';
+import { SCHEMES } from '../../src/data/schemes';
+import { INFRASTRUCTURES } from '../../src/data/infrastructures';
 
 /**
  * The catalog as data, so the same content can back a CLI, a CI check or
@@ -65,10 +68,16 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
             codes: GLOSSARY_CODES.length,
             samples: ALL_SAMPLES.length,
             glossary: GLOSSARY.length,
+            payments: PAYMENTS.length,
+            schemes: SCHEMES.length,
+            infrastructures: INFRASTRUCTURES.length,
           },
           standards: STANDARDS.map((s) => ({ id: s.id, name: s.name, region: s.region, version: s.version })),
           flows: FLOWS.map((f) => ({ id: f.id, name: f.name, category: f.category, steps: f.steps.length })),
           messages: ISO_MESSAGES.map((m) => ({ short: m.short, id: m.id, name: m.name })),
+          payments: PAYMENTS.map((p) => ({ id: p.id, name: p.name.en })),
+          schemes: SCHEMES.map((s) => ({ id: s.id, name: s.name.en })),
+          infrastructures: INFRASTRUCTURES.map((i) => ({ id: i.id, name: i.name.en })),
           glossary: GLOSSARY.map((e) => ({ id: e.id, term: e.term, category: e.category })),
           sections: ['standards', 'messages', 'flows', 'codes', 'samples', 'glossary'],
         },

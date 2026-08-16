@@ -4,9 +4,22 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { FLOWS } from '@/data/flows';
 import { ALL_SAMPLES } from '@/data/samples';
 import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/data/glossary';
+import { PAYMENTS } from '@/data/payments';
+import { SCHEMES } from '@/data/schemes';
+import { INFRASTRUCTURES } from '@/data/infrastructures';
 import { extractPayloadTags, looksLikeIsoTag } from '@/lib/payloadTags';
 
-export type ResultKind = 'standard' | 'message' | 'flow' | 'code' | 'sample' | 'endpoint' | 'term';
+export type ResultKind =
+  | 'standard'
+  | 'message'
+  | 'flow'
+  | 'code'
+  | 'sample'
+  | 'endpoint'
+  | 'term'
+  | 'payment'
+  | 'scheme'
+  | 'infrastructure';
 
 export interface IndexedDoc {
   id: string;
@@ -24,6 +37,45 @@ export interface IndexedDoc {
 
 function buildDocuments(): IndexedDoc[] {
   const docs: IndexedDoc[] = [];
+
+  for (const p of PAYMENTS) {
+    docs.push({
+      id: `payment:${p.id}`,
+      kind: 'payment',
+      title: p.name.en,
+      subtitle: p.name.fr,
+      body: `${p.summary.en} ${p.summary.fr}`,
+      href: `/payment/${p.id}`,
+      keywords: [p.kind, p.schemeId, ...p.infrastructureIds, ...p.messageShorts].join(' '),
+      tags: p.messageShorts.join(' '),
+    });
+  }
+
+  for (const s of SCHEMES) {
+    docs.push({
+      id: `scheme:${s.id}`,
+      kind: 'scheme',
+      title: s.name.en,
+      subtitle: s.operator,
+      body: `${s.summary.en} ${s.summary.fr}`,
+      href: `/scheme/${s.id}`,
+      keywords: [s.id, s.operator, s.explorePaymentId].join(' '),
+      tags: '',
+    });
+  }
+
+  for (const i of INFRASTRUCTURES) {
+    docs.push({
+      id: `infrastructure:${i.id}`,
+      kind: 'infrastructure',
+      title: i.name.en,
+      subtitle: `${i.operator} · ${i.region}`,
+      body: `${i.summary.en} ${i.summary.fr} ${i.usedFor.en}`,
+      href: `/infrastructure/${i.id}`,
+      keywords: [i.id, i.operator, i.currency, ...i.relatedMessageShorts].join(' '),
+      tags: i.relatedMessageShorts.join(' '),
+    });
+  }
 
   for (const s of STANDARDS) {
     docs.push({
@@ -206,8 +258,27 @@ export function searchCatalog(index: MiniSearch<IndexedDoc>, query: string): Sea
       score: r.score,
     });
   }
+  catalogHits.sort((a, b) => {
+    const da = CATALOG_KIND_ORDER.indexOf(a.kind);
+    const db = CATALOG_KIND_ORDER.indexOf(b.kind);
+    const ia = da === -1 ? 99 : da;
+    const ib = db === -1 ? 99 : db;
+    if (ia !== ib) return ia - ib;
+    return b.score - a.score;
+  });
   return [...terms, ...codes, ...catalogHits].slice(0, 40);
 }
+
+const CATALOG_KIND_ORDER: ResultKind[] = [
+  'payment',
+  'message',
+  'scheme',
+  'infrastructure',
+  'flow',
+  'standard',
+  'sample',
+  'endpoint',
+];
 
 function glossaryHit(e: GlossaryEntry, score: number): SearchHit {
   const isCode = e.category === 'code';
@@ -230,4 +301,7 @@ export const KIND_LABELS: Record<ResultKind, string> = {
   sample: 'Sample',
   endpoint: 'Endpoint',
   term: 'Term',
+  payment: 'Payment',
+  scheme: 'Scheme',
+  infrastructure: 'Infrastructure',
 };

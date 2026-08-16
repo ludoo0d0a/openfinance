@@ -9,6 +9,8 @@ import {
 } from '@/data/iso20022';
 import { samplesForMessage } from '@/data/samples';
 import { usagesOfMessage } from '@/data/flows';
+import { paymentsUsingMessage } from '@/data/relations';
+import { paymentById } from '@/data/payments';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { Tag } from '@/components/Chips';
@@ -118,6 +120,23 @@ export function MessageView() {
                     <span className="font-mono text-[10px] text-muted">
                       {steps.map((s) => String(s.n).padStart(2, '0')).join(' · ')}
                     </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {paymentsUsingMessage(message.short).length > 0 && (
+          <div className="mt-4">
+            <p className="eyebrow mb-2">{t('explorer.usedBy')}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {paymentsUsingMessage(message.short).map((id) => (
+                <li key={id}>
+                  <Link
+                    to={`/payment/${id}`}
+                    className="border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                  >
+                    {paymentById(id)?.name[locale] ?? id}
                   </Link>
                 </li>
               ))}

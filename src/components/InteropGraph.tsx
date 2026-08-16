@@ -4,15 +4,22 @@ import { useNavigate } from 'react-router-dom';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
+import { INFRASTRUCTURES } from '@/data/infrastructures';
 
-const RAILS = [
-  { id: 'rail:sepa', label: 'SEPA SCT', href: '/flows/clearing-sct-happy-path' },
-  { id: 'rail:sctinst', label: 'SCT Inst / TIPS', href: '/flows/sct-inst-happy-path' },
-  { id: 'rail:wero', label: 'Wero / EPI', href: '/flows/wero-a2a-payment' },
+const EXTRA_RAILS = [
   { id: 'rail:sic', label: 'SIC CHF', href: '/flows/sic-chf-credit' },
   { id: 'rail:eurosic', label: 'euroSIC', href: '/flows/eurosic-eur-credit' },
   { id: 'rail:sicip', label: 'SIC IP', href: '/flows/sic-ip-instant' },
 ] as const;
+
+const RAILS = [
+  ...INFRASTRUCTURES.map((i) => ({
+    id: `rail:${i.id}`,
+    label: i.name.en,
+    href: `/infrastructure/${i.id}`,
+  })),
+  ...EXTRA_RAILS,
+];
 
 const AREA_ORDER = ['pain', 'pacs', 'camt', 'acmt'] as const;
 
@@ -43,10 +50,11 @@ function railForFlow(flow: (typeof FLOWS)[number]): string | null {
   if (tags.some((t) => t.includes('sic-ip') || t === 'sic-ip')) return 'rail:sicip';
   if (tags.some((t) => t.includes('eurosic'))) return 'rail:eurosic';
   if (tags.some((t) => t === 'sic' || t.includes('chf'))) return 'rail:sic';
-  if (tags.some((t) => t.includes('wero') || t.includes('epi'))) return 'rail:wero';
-  if (tags.some((t) => t.includes('sct-inst') || t.includes('tips') || t === 'instant')) return 'rail:sctinst';
+  if (tags.some((t) => t.includes('wero') || t.includes('epi'))) return 'rail:wero-platform';
+  if (tags.some((t) => t.includes('rt1'))) return 'rail:rt1';
+  if (tags.some((t) => t.includes('sct-inst') || t.includes('tips') || t === 'instant')) return 'rail:tips';
   if (flow.category === 'clearing' || flow.category === 'exception' || flow.category === 'payment-initiation') {
-    return 'rail:sepa';
+    return 'rail:step2';
   }
   return null;
 }
