@@ -96,8 +96,10 @@ jobs:
           deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
           [ "$deep" = "200" ] || { echo "SPA deep link returned $deep"; exit 1; }
 
-          if [ -n "${{ vars.ADSENSE_CLIENT }}" ]; then
-            ads=$(curl -s -o /dev/null -w '%{http_code}' "$URL/ads.txt" || true)
-            [ "$ads" = "200" ] || { echo "ads.txt returned $ads"; exit 1; }
-          fi
+          ads_body=$(curl -s "$URL/ads.txt" || true)
+          echo "$ads_body" | grep -q 'google.com, pub-' || {
+            echo "ads.txt is missing or is the SPA shell"
+            echo "$ads_body" | head -c 200
+            exit 1
+          }
           echo "Deployment healthy."
