@@ -256,9 +256,13 @@ export function AppShell() {
           </button>
 
           <NavLink to="/" className="flex shrink-0 items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center border border-ink bg-ink text-white sm:h-7 sm:w-7">
-              <UI_ICONS.overview size={15} aria-hidden />
-            </span>
+            <img
+              src="/logo.png"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 sm:h-7 sm:w-7"
+            />
             <span className="hidden font-display text-[17px] font-bold tracking-tight sm:inline">OpenFinance</span>
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-muted lg:inline">
               {t('brand.tagline')}

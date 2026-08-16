@@ -6,4 +6,5 @@
 /assets/*     /assets/:splat  200
 /ads.txt      /ads.txt        200
 /favicon.svg  /favicon.svg    200
+/logo.png     /logo.png       200
 /*            /               200

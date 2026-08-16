@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/api/*"],
-  "exclude": ["/assets/*", "/favicon.svg", "/ads.txt"]
+  "exclude": ["/assets/*", "/favicon.svg", "/logo.png", "/ads.txt"]
 }
