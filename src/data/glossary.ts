@@ -49,6 +49,15 @@ const CODE_OVERLAYS: Record<string, Partial<GlossaryEntry>> = {
     },
     seeAlso: ['vop', 'mtch', 'cmtc'],
   },
+  rr04: {
+    name: { en: 'Regulatory reason', fr: 'Motif réglementaire' },
+    aliases: { en: ['RegulatoryReason', 'RR04'], fr: ['motif réglementaire', 'RR04'] },
+    definition: {
+      en: 'Refused for a regulatory reason — sanctions screening, embargo, or a reporting requirement not met. Do not automate a retry; route to compliance.',
+      fr: 'Refus pour motif réglementaire — criblage sanctions, embargo, ou obligation déclarative non satisfaite. Ne pas relancer automatiquement ; aiguiller vers la conformité.',
+    },
+    seeAlso: ['sanctions-screening', 'embargo', 'aml', 'ms03'],
+  },
 };
 
 export function slugCodeId(code: string): string {

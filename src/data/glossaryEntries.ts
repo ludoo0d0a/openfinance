@@ -123,7 +123,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Paiement qui déplace des fonds entre comptes de paiement (virement / instantané / wallet sur instantané) plutôt que sur des rails carte. Wero, Payconiq et le checkout SCT Inst sont de l’A2A ; le PIIS/CBPII reste souvent devant une carte.',
   }, {
     aliases: { en: ['account-to-account', 'A2A payment', 'account to account'], fr: ['compte à compte', 'paiement A2A'] },
-    seeAlso: ['sct-inst', 'wero', 'payconiq', 'ip', 'pis'],
+    seeAlso: ['sct-inst', 'wero', 'payconiq', 'ideal', 'bancontact', 'bizum', 'twint', 'pix', 'upi', 'ip', 'pis'],
     links: [{ label: 'Wero A2A flow', href: '/flows/wero-a2a-payment' }],
   }),
   g('ip', 'IP', 'concept', { en: 'Instant Payment', fr: 'Paiement instantané' }, {
@@ -134,7 +134,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       en: ['Instant Payment', 'instant payments', 'real-time payment', 'RTP', 'INST', 'SCT Inst', 'SIC IP'],
       fr: ['paiement instantané', 'virement instantané', 'temps réel', 'INST', 'SCT Inst', 'SIC IP'],
     },
-    seeAlso: ['sct-inst', 'ipr', 'tips', 'sic-ip', 'wero', 'payconiq', 'ach'],
+    seeAlso: ['sct-inst', 'ipr', 'tips', 'sic-ip', 'wero', 'payconiq', 'swish', 'blik', 'pix', 'upi', 'ach'],
     links: [
       { label: 'SCT Inst', href: '/standards/sct-inst' },
       { label: 'SIC IP flow', href: '/flows/sic-ip-instant' },
@@ -145,7 +145,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Schéma de paiement retail pan-européen compte-à-compte de l’European Payments Initiative (EPI). L’UX wallet (alias proxy, intent commerçant, statut) est au-dessus ; le règlement reste sur des rails instantanés tels que SCT Inst. Déboguez à la fois le statut schéma et le pacs.002 sous-jacent.',
   }, {
     aliases: { en: ['Wero', 'EPI', 'European Payments Initiative', 'EPI wallet'], fr: ['Wero', 'EPI', 'European Payments Initiative', 'portefeuille EPI'] },
-    seeAlso: ['a2a', 'ip', 'sct-inst', 'payconiq', 'epi'],
+    seeAlso: ['a2a', 'ip', 'sct-inst', 'payconiq', 'epi', 'visa', 'mastercard', 'paypal'],
     links: [
       { label: 'Standard', href: '/standards/wero' },
       { label: 'Wero A2A flow', href: '/flows/wero-a2a-payment' },
@@ -163,8 +163,171 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Marque de paiement mobile / QR compte-à-compte du Benelux (Belgique et Luxembourg ; historiquement aussi les Pays-Bas). Souvent présentée comme Payconiq by Bancontact. Le PSU scanne ou ouvre un deep link ; l’argent circule en débit/crédit A2A plutôt que sur des rails carte.',
   }, {
     aliases: { en: ['Payconiq', 'Payconiq by Bancontact', 'Bancontact Payconiq', 'PQ'], fr: ['Payconiq', 'Payconiq by Bancontact', 'PQ'] },
-    seeAlso: ['wero', 'a2a', 'ip', 'sct-inst'],
+    seeAlso: ['bancontact', 'wero', 'a2a', 'ip', 'sct-inst'],
     links: [{ label: 'Interop map', href: '/map' }],
+  }),
+  g('card-scheme', 'Card scheme', 'scheme', { en: 'Card scheme', fr: 'Schéma carte' }, {
+    en: 'Network that sets the rules for card payments: PAN BIN ranges, authorisation, clearing and settlement between issuer and acquirer. Four-party schemes (Visa, Mastercard, UnionPay, CB) sit between issuer and acquirer; three-party schemes (Amex, some Discover) are issuer and acquirer of record. Distinct vocabulary from ISO 20022 pacs.',
+    fr: 'Réseau qui fixe les règles des paiements par carte : BIN du PAN, autorisation, compensation et règlement entre émetteur et acquéreur. Les schémas à quatre parties (Visa, Mastercard, UnionPay, CB) s’intercalent entre émetteur et acquéreur ; les schémas à trois parties (Amex, parfois Discover) sont émetteur et acquéreur. Vocabulaire distinct des pacs ISO 20022.',
+  }, {
+    aliases: {
+      en: ['card network', 'card brand', 'four-party scheme', 'three-party scheme'],
+      fr: ['réseau carte', 'schéma de cartes', 'schéma à quatre parties', 'schéma à trois parties'],
+    },
+    seeAlso: ['visa', 'mastercard', 'amex', 'cartes-bancaires', 'unionpay', '3ds', 'cbpii'],
+    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+  }),
+  g('visa', 'Visa', 'scheme', { en: 'Visa', fr: 'Visa' }, {
+    en: 'Global four-party card scheme (credit, debit, prepaid). Authorisation, clearing and settlement run on VisaNet; consumer brands include Visa Debit and historically V PAY in Europe. EMV 3-D Secure is the usual SCA path at checkout. Distinct from A2A schemes such as Wero or SCT Inst.',
+    fr: 'Schéma carte mondial à quatre parties (crédit, débit, prepaid). Autorisation, compensation et règlement sur VisaNet ; marques grand public dont Visa Debit et, historiquement, V PAY en Europe. EMV 3-D Secure est le chemin SCA habituel en checkout. Distinct des schémas A2A tels que Wero ou SCT Inst.',
+  }, {
+    aliases: { en: ['Visa', 'Visa Debit', 'VisaNet', 'V PAY', 'VPAY'], fr: ['Visa', 'Visa Debit', 'VisaNet', 'V PAY'] },
+    seeAlso: ['card-scheme', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'apple-pay'],
+    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+  }),
+  g('mastercard', 'Mastercard', 'scheme', { en: 'Mastercard', fr: 'Mastercard' }, {
+    en: 'Global four-party card scheme (credit, debit, prepaid). Maestro is the historic debit brand in several European markets. Clearing via the Mastercard network; 3-D Secure at e-commerce. Do not confuse the card scheme with Mastercard Open Finance US (Data Connect) in this glossary.',
+    fr: 'Schéma carte mondial à quatre parties (crédit, débit, prepaid). Maestro est la marque débit historique dans plusieurs marchés européens. Compensation via le réseau Mastercard ; 3-D Secure en e-commerce. Ne pas confondre le schéma carte avec Mastercard Open Finance US (Data Connect) dans ce glossaire.',
+  }, {
+    aliases: { en: ['Mastercard', 'MasterCard', 'Maestro', 'Mastercard Debit'], fr: ['Mastercard', 'Maestro', 'Mastercard Debit'] },
+    seeAlso: ['card-scheme', 'visa', 'amex', 'cartes-bancaires', '3ds', 'data-connect'],
+    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+  }),
+  g('amex', 'Amex', 'scheme', { en: 'American Express', fr: 'American Express' }, {
+    en: 'Mostly three-party card scheme: American Express is typically both issuer and acquirer of record, with a closed network and a merchant-acquiring arm. Cards still use EMV and 3-D Secure; PAN ranges and settlement are not Visa/Mastercard. Often listed separately in PSP checkout because of different fees and acceptance.',
+    fr: 'Schéma carte surtout à trois parties : American Express est en général à la fois émetteur et acquéreur, réseau fermé plus une branche acquiring. Les cartes restent EMV et 3-D Secure ; les BIN et le règlement ne sont pas Visa/Mastercard. Souvent une option à part en checkout PSP (frais et acceptation différents).',
+  }, {
+    aliases: { en: ['American Express', 'Amex', 'AMEX'], fr: ['American Express', 'Amex', 'AMEX'] },
+    seeAlso: ['card-scheme', 'visa', 'mastercard', 'discover', '3ds'],
+  }),
+  g('cartes-bancaires', 'CB', 'scheme', { en: 'Cartes Bancaires', fr: 'Cartes Bancaires' }, {
+    en: 'French domestic four-party card scheme (Groupement des Cartes Bancaires CB). Most French debit cards are co-badged CB + Visa or CB + Mastercard: domestic acquiring often prefers the CB rail; cross-border uses the international brand. Interoperates with Paylib for wallet use cases.',
+    fr: 'Schéma carte domestique français à quatre parties (Groupement des Cartes Bancaires CB). La plupart des cartes de débit françaises sont co-badgées CB + Visa ou CB + Mastercard : l’acquiring domestique privilégie souvent le rail CB ; le transfrontalier passe par la marque internationale. Interopère avec Paylib côté wallet.',
+  }, {
+    aliases: {
+      en: ['CB', 'Cartes Bancaires', 'Groupement des Cartes Bancaires', 'Paylib'],
+      fr: ['CB', 'Cartes Bancaires', 'Groupement des Cartes Bancaires CB', 'carte bleue', 'Paylib'],
+    },
+    seeAlso: ['visa', 'mastercard', 'card-scheme', '3ds', 'stet'],
+  }),
+  g('unionpay', 'UnionPay', 'scheme', { en: 'UnionPay', fr: 'UnionPay' }, {
+    en: 'Chinese four-party card scheme (China UnionPay), widely accepted in Asia and at many European acquirers for inbound travel spend. Brand also appears as UnionPay QuickPass for contactless.',
+    fr: 'Schéma carte chinois à quatre parties (China UnionPay), largement accepté en Asie et chez beaucoup d’acquéreurs européens pour les dépenses de voyage. Marque aussi UnionPay QuickPass en sans contact.',
+  }, {
+    aliases: { en: ['UnionPay', 'China UnionPay', 'CUP', 'QuickPass'], fr: ['UnionPay', 'China UnionPay', 'CUP', 'QuickPass'] },
+    seeAlso: ['card-scheme', 'visa', 'alipay', 'wechat-pay'],
+  }),
+  g('jcb', 'JCB', 'scheme', { en: 'JCB', fr: 'JCB' }, {
+    en: 'Japanese card scheme (Japan Credit Bureau), accepted internationally via alliances with other networks. Common as a checkout brand alongside Visa, Mastercard and Amex for inbound Japanese cards.',
+    fr: 'Schéma carte japonais (Japan Credit Bureau), accepté à l’international via des alliances. Marque de checkout fréquente à côté de Visa, Mastercard et Amex pour les cartes japonaises.',
+  }, {
+    aliases: { en: ['JCB', 'Japan Credit Bureau'], fr: ['JCB', 'Japan Credit Bureau'] },
+    seeAlso: ['card-scheme', 'visa', 'amex'],
+  }),
+  g('discover', 'Discover', 'scheme', { en: 'Discover', fr: 'Discover' }, {
+    en: 'US card network (Discover Financial). Diners Club is under the same group for many international acceptance marks. Three-party roots; in Europe often processed through partner networks rather than a local Discover issuing base.',
+    fr: 'Réseau carte US (Discover Financial). Diners Club est dans le même groupe pour beaucoup de marques d’acceptation internationales. Racines à trois parties ; en Europe souvent traité via des réseaux partenaires plutôt que par une base d’émission Discover locale.',
+  }, {
+    aliases: { en: ['Discover', 'Diners Club', 'Diners'], fr: ['Discover', 'Diners Club', 'Diners'] },
+    seeAlso: ['card-scheme', 'amex', 'visa'],
+  }),
+  g('apple-pay', 'Apple Pay', 'scheme', { en: 'Apple Pay', fr: 'Apple Pay' }, {
+    en: 'Device wallet: the PAN is tokenised (DPAN) and the token rides an existing card scheme (Visa, Mastercard, Amex, CB…). Not an A2A rail. SCA is typically device biometrics plus the scheme’s 3-D Secure or token cryptogram.',
+    fr: 'Wallet appareil : le PAN est tokénisé (DPAN) et le jeton circule sur un schéma carte existant (Visa, Mastercard, Amex, CB…). Pas un rail A2A. La SCA est en général biométrie appareil plus 3-D Secure du schéma ou cryptogramme du jeton.',
+  }, {
+    aliases: { en: ['Apple Pay', 'ApplePay'], fr: ['Apple Pay', 'ApplePay'] },
+    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds'],
+  }),
+  g('google-pay', 'Google Pay', 'scheme', { en: 'Google Pay', fr: 'Google Pay' }, {
+    en: 'Google wallet for cards (and in some markets bank accounts). Like Apple Pay, card credentials are tokenised onto Visa/Mastercard/Amex rails rather than moving as a pacs credit transfer.',
+    fr: 'Wallet Google pour cartes (et dans certains marchés des comptes bancaires). Comme Apple Pay, les credentials carte sont tokénisés sur les rails Visa/Mastercard/Amex plutôt que de circuler en virement pacs.',
+  }, {
+    aliases: { en: ['Google Pay', 'GPay', 'GooglePay'], fr: ['Google Pay', 'GPay', 'GooglePay'] },
+    seeAlso: ['apple-pay', 'visa', 'mastercard', 'paypal'],
+  }),
+  g('paypal', 'PayPal', 'scheme', { en: 'PayPal', fr: 'PayPal' }, {
+    en: 'Wallet / PSP: the customer pays from a PayPal balance, a linked card or a bank account. The merchant often sees PayPal as the acquirer of record, not Visa or SCT. Funding may still hit card schemes or A2A behind the wallet.',
+    fr: 'Wallet / PSP : le client paie depuis un solde PayPal, une carte liée ou un compte. Le commerçant voit souvent PayPal comme acquéreur, pas Visa ni un SCT. Le funding peut quand même taper schémas carte ou A2A derrière le wallet.',
+  }, {
+    aliases: { en: ['PayPal', 'Pay Pal'], fr: ['PayPal'] },
+    seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'emi'],
+  }),
+  g('alipay', 'Alipay', 'scheme', { en: 'Alipay', fr: 'Alipay' }, {
+    en: 'Ant Group wallet dominant in mainland China (QR, in-app). European acquirers offer it for inbound Chinese spend; settlement to the merchant is usually in local currency via an acquirer, not a SEPA pacs from the consumer.',
+    fr: 'Wallet Ant Group dominant en Chine continentale (QR, in-app). Les acquéreurs européens le proposent pour la dépense chinoise inbound ; le règlement commerçant est en général en devise locale via un acquéreur, pas un pacs SEPA depuis le consommateur.',
+  }, {
+    aliases: { en: ['Alipay', 'Alipay+', 'Ant Group'], fr: ['Alipay', 'Alipay+', 'Ant Group'] },
+    seeAlso: ['wechat-pay', 'unionpay', 'paypal'],
+  }),
+  g('wechat-pay', 'WeChat Pay', 'scheme', { en: 'WeChat Pay', fr: 'WeChat Pay' }, {
+    en: 'Tencent wallet inside WeChat (Weixin). Same inbound-travel pattern as Alipay at European merchants: QR or in-app, acquired locally, not SCT.',
+    fr: 'Wallet Tencent dans WeChat (Weixin). Même schéma de voyage inbound qu’Alipay chez les commerçants européens : QR ou in-app, acquired localement, pas du SCT.',
+  }, {
+    aliases: { en: ['WeChat Pay', 'Weixin Pay', 'WeChat'], fr: ['WeChat Pay', 'Weixin Pay', 'WeChat'] },
+    seeAlso: ['alipay', 'unionpay', 'paypal'],
+  }),
+  g('bancontact', 'Bancontact', 'scheme', { en: 'Bancontact', fr: 'Bancontact' }, {
+    en: 'Belgian domestic debit scheme (historically Bancontact/Mister Cash). Cards are often co-badged with Maestro or Visa Debit. Payconiq by Bancontact is the QR / mobile A2A brand on top of Belgian accounts.',
+    fr: 'Schéma de débit belge (historiquement Bancontact/Mister Cash). Cartes souvent co-badgées Maestro ou Visa Debit. Payconiq by Bancontact est la marque QR / mobile A2A au-dessus des comptes belges.',
+  }, {
+    aliases: { en: ['Bancontact', 'Mister Cash', 'Bancontact/Mister Cash'], fr: ['Bancontact', 'Mister Cash'] },
+    seeAlso: ['payconiq', 'ideal', 'visa', 'mastercard', 'a2a'],
+  }),
+  g('ideal', 'iDEAL', 'scheme', { en: 'iDEAL', fr: 'iDEAL' }, {
+    en: 'Dutch account-to-account checkout scheme: the PSU is redirected to their bank to authorise a credit transfer to the merchant. Now operated in the EPI/Wero orbit for the Netherlands, still the default Dutch e-commerce rail.',
+    fr: 'Schéma de checkout compte-à-compte néerlandais : le PSU est redirigé vers sa banque pour autoriser un virement vers le commerçant. Désormais dans l’orbite EPI/Wero pour les Pays-Bas, toujours le rail e-commerce néerlandais par défaut.',
+  }, {
+    aliases: { en: ['iDEAL', 'iDeal', 'ideal'], fr: ['iDEAL', 'iDeal'] },
+    seeAlso: ['wero', 'epi', 'bancontact', 'a2a', 'sct-inst'],
+  }),
+  g('twint', 'TWINT', 'scheme', { en: 'TWINT', fr: 'TWINT' }, {
+    en: 'Swiss mobile A2A / wallet scheme. P2P and merchant QR; funding from Swiss bank accounts, with settlement in the SIC world rather than SEPA. Dominant domestic alternative to cards in Switzerland.',
+    fr: 'Schéma suisse mobile A2A / wallet. P2P et QR commerçant ; funding depuis des comptes suisses, règlement dans le monde SIC plutôt que SEPA. Alternative domestique dominante aux cartes en Suisse.',
+  }, {
+    aliases: { en: ['TWINT', 'Twint'], fr: ['TWINT', 'Twint'] },
+    seeAlso: ['sic', 'sic-ip', 'wero', 'a2a', 'paypal'],
+  }),
+  g('swish', 'Swish', 'scheme', { en: 'Swish', fr: 'Swish' }, {
+    en: 'Swedish mobile P2P and merchant payments on Bankgirot / instant Swedish rails, addressed by phone number. The Nordic pattern that Vipps MobilePay and Wero also chase: alias + instant A2A.',
+    fr: 'Paiements mobiles suédois P2P et commerçant sur Bankgirot / rails instantanés suédois, adressés par numéro de téléphone. Le modèle nordique que Vipps MobilePay et Wero visent aussi : alias + A2A instantané.',
+  }, {
+    aliases: { en: ['Swish'], fr: ['Swish'] },
+    seeAlso: ['vipps-mobilepay', 'wero', 'a2a', 'ip'],
+  }),
+  g('vipps-mobilepay', 'Vipps MobilePay', 'scheme', { en: 'Vipps MobilePay', fr: 'Vipps MobilePay' }, {
+    en: 'Merged Nordic mobile wallet (Vipps in Norway, MobilePay in Denmark and Finland). P2P and checkout on local instant / account rails, not card schemes.',
+    fr: 'Wallet mobile nordique fusionné (Vipps en Norvège, MobilePay au Danemark et en Finlande). P2P et checkout sur rails instantanés / compte locaux, pas sur schémas carte.',
+  }, {
+    aliases: { en: ['Vipps', 'MobilePay', 'Vipps MobilePay'], fr: ['Vipps', 'MobilePay', 'Vipps MobilePay'] },
+    seeAlso: ['swish', 'wero', 'a2a', 'ip'],
+  }),
+  g('blik', 'BLIK', 'scheme', { en: 'BLIK', fr: 'BLIK' }, {
+    en: 'Polish mobile payments: a short-lived code (or in-app confirm) debits the PSU’s bank account. Standard at Polish e-commerce and ATMs; A2A rather than card.',
+    fr: 'Paiements mobiles polonais : un code éphémère (ou une confirmation in-app) débite le compte du PSU. Standard de l’e-commerce et des DAB polonais ; de l’A2A plutôt que de la carte.',
+  }, {
+    aliases: { en: ['BLIK', 'Blik'], fr: ['BLIK', 'Blik'] },
+    seeAlso: ['a2a', 'ip', 'wero', 'ideal'],
+  }),
+  g('bizum', 'Bizum', 'scheme', { en: 'Bizum', fr: 'Bizum' }, {
+    en: 'Spanish P2P and merchant payments via mobile number, settled between participating banks (instant where the rail allows). The Spanish household name for A2A, analogous to Wero/Payconiq elsewhere.',
+    fr: 'Paiements P2P et commerçant espagnols via numéro de mobile, réglés entre banques participantes (instantané selon le rail). Le nom usuel de l’A2A en Espagne, analogue à Wero/Payconiq ailleurs.',
+  }, {
+    aliases: { en: ['Bizum'], fr: ['Bizum'] },
+    seeAlso: ['wero', 'a2a', 'sct-inst', 'payconiq'],
+  }),
+  g('pix', 'Pix', 'scheme', { en: 'Pix', fr: 'Pix' }, {
+    en: 'Brazilian instant payment scheme run by the central bank (BCB). Alias keys (CPF, phone, email, random) resolve to an account; settlement in seconds, 24/7. Often cited as the template for successful domestic instant A2A.',
+    fr: 'Schéma de paiement instantané brésilien opéré par la banque centrale (BCB). Des alias (CPF, téléphone, e-mail, clé aléatoire) résolvent vers un compte ; règlement en secondes, 24/7. Souvent cité comme modèle d’A2A instantané domestique réussi.',
+  }, {
+    aliases: { en: ['Pix', 'PIX'], fr: ['Pix', 'PIX'] },
+    seeAlso: ['upi', 'ip', 'a2a', 'sct-inst'],
+  }),
+  g('upi', 'UPI', 'scheme', { en: 'Unified Payments Interface', fr: 'Unified Payments Interface' }, {
+    en: 'Indian instant A2A scheme (NPCI). VPA aliases (name@bank) and QR via apps such as PhonePe, Google Pay India and Paytm. Volumes dwarf most European A2A schemes.',
+    fr: 'Schéma A2A instantané indien (NPCI). Alias VPA (nom@banque) et QR via des apps telles que PhonePe, Google Pay India et Paytm. Les volumes éclipsent la plupart des schémas A2A européens.',
+  }, {
+    aliases: { en: ['UPI', 'Unified Payments Interface', 'NPCI'], fr: ['UPI', 'Unified Payments Interface', 'NPCI'] },
+    seeAlso: ['pix', 'google-pay', 'ip', 'a2a'],
   }),
   g('ais', 'AIS', 'concept', { en: 'Account Information Service', fr: 'Service d’information sur les comptes' }, {
     en: 'PSD2 service that, with PSU consent, reads payment-account data (accounts, balances, transactions) held at an ASPSP. Provided by an AISP. Under FiDA the broader analogue is a FISP.',
@@ -328,7 +491,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Protocole d’authentification carte (EMV 3-D Secure). Parallèle à la SCA sur les rails A2A : les cartes utilisent 3DS ; le compte-à-compte utilise la SCA de l’ASPSP.',
   }, {
     aliases: { en: ['3-D Secure', 'EMV 3DS', '3D Secure'], fr: ['3-D Secure', 'EMV 3DS'] },
-    seeAlso: ['sca', 'cbpii', 'a2a'],
+    seeAlso: ['sca', 'cbpii', 'a2a', 'visa', 'mastercard', 'amex', 'cartes-bancaires'],
     sources: ['konsentus', 'ravelin'],
   }),
   g('psd2', 'PSD2', 'regulation', { en: 'Second Payment Services Directive', fr: 'Deuxième directive sur les services de paiement' }, {
@@ -468,28 +631,228 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     sources: ['ukob', 'konsentus'],
   }),
   g('aml', 'AML', 'regulation', { en: 'Anti-Money Laundering', fr: 'Lutte contre le blanchiment' }, {
-    en: 'Controls to detect and prevent money laundering. PSPs combine AML with CFT and KYC/KYB onboarding.',
-    fr: 'Dispositifs de détection et de prévention du blanchiment. Les PSP les combinent avec CFT et KYC/KYB.',
+    en: 'Controls to detect and prevent money laundering: onboarding (KYC/KYB), name and sanctions screening on payments, transaction monitoring, and reporting of suspicions. In the EU this sits with CFT as AML/CFT; in French practice the pair is LCB-FT.',
+    fr: 'Dispositifs de détection et de prévention du blanchiment : onboarding (KYC/KYB), criblage nominatif et sanctions sur les paiements, surveillance des transactions, et déclarations de soupçon. En UE on parle d’AML/CFT ; en pratique française, de LCB-FT.',
   }, {
-    aliases: { en: ['anti-money laundering', 'AML framework'], fr: ['lutte contre le blanchiment', 'LCB'] },
-    seeAlso: ['cft', 'kyc'],
+    aliases: {
+      en: ['anti-money laundering', 'AML', 'AML framework', 'AML/CFT', 'money laundering', 'laundering'],
+      fr: ['AML', 'lutte contre le blanchiment', 'LCB', 'LCB-FT', 'LCBFT', 'blanchiment', 'blanchiment d’argent', 'anti-blanchiment'],
+    },
+    seeAlso: ['cft', 'kyc', 'cdd', 'sanctions-screening', 'transaction-monitoring', 'str', 'fatf', 'amld', 'amlr'],
     sources: ['konsentus'],
   }),
   g('cft', 'CFT', 'regulation', { en: 'Counter-Financing of Terrorism', fr: 'Lutte contre le financement du terrorisme' }, {
-    en: 'Terrorist-financing controls, usually paired with AML in PSP compliance programmes.',
-    fr: 'Contrôles du financement du terrorisme, généralement couplés à l’AML dans les programmes de conformité PSP.',
+    en: 'Terrorist-financing controls, usually paired with AML in PSP compliance programmes. Screening covers listed persons, entities and, where required, related payment corridors.',
+    fr: 'Contrôles du financement du terrorisme, généralement couplés à l’AML dans les programmes de conformité PSP. Le criblage couvre personnes et entités listées et, le cas échéant, les corridors de paiement concernés.',
   }, {
-    aliases: { en: ['counter-terrorist financing', 'CTF'], fr: ['lutte contre le financement du terrorisme', 'LFT'] },
-    seeAlso: ['aml', 'kyc'],
+    aliases: {
+      en: ['counter-terrorist financing', 'CTF', 'CFT/AML', 'terrorist financing'],
+      fr: ['lutte contre le financement du terrorisme', 'LFT', 'FT', 'financement du terrorisme'],
+    },
+    seeAlso: ['aml', 'kyc', 'sanctions-screening', 'embargo', 'fatf'],
     sources: ['konsentus'],
   }),
   g('kyc', 'KYC', 'concept', { en: 'Know Your Customer / Business', fr: 'Connaissance du client / de l’entreprise' }, {
-    en: 'Identity-verification processes for onboarding PSUs and, for KYB, firms (TPP accreditation, directory listings). Often requires LEI for legal entities.',
-    fr: 'Vérification d’identité à l’onboarding des PSU et, pour le KYB, des sociétés (accréditation TPP, annuaires). Souvent un LEI pour les personnes morales.',
+    en: 'Identity-verification processes for onboarding PSUs and, for KYB, firms (TPP accreditation, directory listings). Often requires LEI for legal entities. Feeds CDD and later name screening on payments.',
+    fr: 'Vérification d’identité à l’onboarding des PSU et, pour le KYB, des sociétés (accréditation TPP, annuaires). Souvent un LEI pour les personnes morales. Alimente la vigilance clientèle et le criblage nominatif des paiements.',
   }, {
     aliases: { en: ['Know Your Customer', 'Know Your Business', 'KYB', 'KYC/KYB'], fr: ['connaissance du client', 'KYB', 'KYC'] },
-    seeAlso: ['lei', 'aml', 'tpp'],
+    seeAlso: ['lei', 'aml', 'tpp', 'cdd', 'ubo', 'pep'],
     sources: ['konsentus', 'ravelin'],
+  }),
+  g('cdd', 'CDD', 'concept', { en: 'Customer Due Diligence', fr: 'Vigilance à l’égard de la clientèle' }, {
+    en: 'Ongoing identification and risk assessment of the customer: identity, nature of the relationship, expected activity, and beneficial owners. Higher-risk cases (PEP, high-risk country, correspondent banking) trigger enhanced due diligence (EDD); low-risk cases may use simplified due diligence (SDD).',
+    fr: 'Identification et évaluation du risque client en continu : identité, nature de la relation, activité attendue, bénéficiaires effectifs. Les cas à risque élevé (PPE, pays à risque, banque correspondante) déclenchent une vigilance renforcée (EDD) ; le risque faible peut rester en vigilance simplifiée (SDD).',
+  }, {
+    aliases: {
+      en: ['customer due diligence', 'enhanced due diligence', 'EDD', 'simplified due diligence', 'SDD'],
+      fr: ['vigilance à l’égard de la clientèle', 'devoir de vigilance', 'vigilance renforcée', 'EDD', 'vigilance simplifiée'],
+    },
+    seeAlso: ['kyc', 'ubo', 'pep', 'aml', 'correspondent-banking'],
+  }),
+  g('ubo', 'UBO', 'concept', { en: 'Ultimate Beneficial Owner', fr: 'Bénéficiaire effectif' }, {
+    en: 'Natural person who ultimately owns or controls a legal entity (typically ≥25% ownership or control by other means). KYB/CDD must identify UBOs; EU member states keep beneficial-ownership registers used in AML checks.',
+    fr: 'Personne physique qui possède ou contrôle in fine une personne morale (souvent ≥25 % du capital ou contrôle par d’autres moyens). Le KYB/CDD doit identifier les bénéficiaires effectifs ; les États membres tiennent des registres exploités dans les contrôles LCB-FT.',
+  }, {
+    aliases: {
+      en: ['ultimate beneficial owner', 'beneficial owner', 'BO'],
+      fr: ['bénéficiaire effectif', 'BE', 'bénéficiaire ultime', 'registre des bénéficiaires effectifs'],
+    },
+    seeAlso: ['kyc', 'cdd', 'aml', 'lei'],
+  }),
+  g('pep', 'PEP', 'concept', { en: 'Politically Exposed Person', fr: 'Personne politiquement exposée' }, {
+    en: 'Individual entrusted with a prominent public function, plus often family members and close associates. PEP status is not a ban: it raises residual risk and typically requires EDD, senior approval and closer transaction monitoring.',
+    fr: 'Personne exerçant une fonction publique importante, plus souvent les membres de la famille et les proches. Le statut PPE n’est pas une interdiction : il relève le risque résiduel et impose en général une vigilance renforcée, un visa hiérarchique et une surveillance plus serrée des flux.',
+  }, {
+    aliases: {
+      en: ['politically exposed person', 'PEP list', 'RCA', 'close associate'],
+      fr: ['personne politiquement exposée', 'PPE', 'liste PPE', 'proche d’une PPE'],
+    },
+    seeAlso: ['cdd', 'name-screening', 'watchlist', 'aml', 'transaction-monitoring'],
+  }),
+  g('sanctions-screening', 'Sanctions screening', 'concept', { en: 'Sanctions screening', fr: 'Criblage sanctions' }, {
+    en: 'Real-time or batch check of parties and payment messages (SWIFT MT/MX, pacs, names, BICs, countries) against sanctions, embargo and internal lists before the payment is released. A hit typically holds the message for compliance review (four-eyes release or reject). False positives are expected; never auto-retry a regulatory reject (e.g. RR04).',
+    fr: 'Contrôle temps réel ou par lot des parties et des messages de paiement (SWIFT MT/MX, pacs, noms, BIC, pays) contre les listes de sanctions, d’embargo et internes, avant libération du paiement. Un hit met en général le message en attente pour revue conformité (libération en double contrôle ou rejet). Les faux positifs sont attendus ; ne jamais relancer automatiquement un rejet réglementaire (ex. RR04).',
+  }, {
+    aliases: {
+      en: [
+        'sanctions filtering',
+        'payment filtering',
+        'message filtering',
+        'AML filtering',
+        'watchlist screening',
+        'list screening',
+      ],
+      fr: [
+        'filtrage sanctions',
+        'filtrage des paiements',
+        'filtrage des messages',
+        'criblage LCB-FT',
+        'filtrage AML',
+        'criblage listes',
+      ],
+    },
+    seeAlso: ['watchlist', 'name-screening', 'embargo', 'ofac', 'aml', 'cft', 'pep', 'rr04'],
+  }),
+  g('watchlist', 'Watchlist', 'concept', { en: 'Watchlist', fr: 'Liste de surveillance' }, {
+    en: 'Curated lists used by screening engines: UN, EU, OFAC and other national sanctions, PEP and adverse-media lists, plus the institution’s own blacklist/whitelist. Quality of list updates and fuzzy-match thresholds drive hit volume.',
+    fr: 'Listes alimentant les moteurs de criblage : ONU, UE, OFAC et autres sanctions nationales, listes PPE et de presse négative, plus listes noires/blanches internes. La fraîcheur des mises à jour et les seuils de rapprochement flou déterminent le volume de hits.',
+  }, {
+    aliases: {
+      en: ['watch list', 'sanctions list', 'blacklist', 'whitelist', 'denied party list'],
+      fr: ['liste de surveillance', 'liste de sanctions', 'liste noire', 'liste blanche', 'parties interdites'],
+    },
+    seeAlso: ['sanctions-screening', 'name-screening', 'pep', 'ofac', 'embargo'],
+  }),
+  g('name-screening', 'Name screening', 'concept', { en: 'Name screening', fr: 'Criblage nominatif' }, {
+    en: 'Matching customer and payment-party names (and often addresses, dates of birth, BIC) against watchlists. Uses exact and fuzzy algorithms; alert queues are triaged as true hit, false positive or needs investigation. Distinct from VoP, which only checks name vs IBAN holder.',
+    fr: 'Appariement des noms clients et des parties au paiement (et souvent adresses, dates de naissance, BIC) contre les watchlists. Algorithmes exacts et flous ; les files d’alertes sont tranchées en hit avéré, faux positif ou à investiguer. Distinct de la VoP, qui ne compare que le nom au titulaire de l’IBAN.',
+  }, {
+    aliases: {
+      en: ['name matching', 'fuzzy matching', 'customer screening', 'party screening'],
+      fr: ['criblage de noms', 'rapprochement flou', 'criblage client', 'criblage des parties'],
+    },
+    seeAlso: ['sanctions-screening', 'watchlist', 'pep', 'vop', 'aml'],
+  }),
+  g('transaction-monitoring', 'Transaction monitoring', 'concept', { en: 'Transaction monitoring', fr: 'Surveillance des transactions' }, {
+    en: 'Rules and models that look at payment behaviour after onboarding: unusual amounts, structuring, high-risk corridors, rapid in-and-out, deviation from the expected KYC profile. Alerts feed investigation and, if needed, a suspicious-transaction report. Complements pre-release sanctions filtering.',
+    fr: 'Règles et modèles qui observent le comportement des paiements après l’onboarding : montants atypiques, fractionnement, corridors à risque, allers-retours rapides, écart au profil KYC. Les alertes alimentent l’investigation puis, si besoin, une déclaration de soupçon. Complète le filtrage sanctions avant libération.',
+  }, {
+    aliases: {
+      en: ['TM', 'AML monitoring', 'behavioural monitoring', 'transaction surveillance'],
+      fr: ['surveillance des opérations', 'monitoring AML', 'monitoring transactionnel', 'surveillance comportementale'],
+    },
+    seeAlso: ['kyt', 'aml', 'str', 'kyc', 'sanctions-screening'],
+  }),
+  g('kyt', 'KYT', 'concept', { en: 'Know Your Transaction', fr: 'Connaissance de la transaction' }, {
+    en: 'Understanding a payment in context — parties, purpose, corridor, correspondent chain — not only the customer file. Used in screening and monitoring so a technically valid pacs.008 can still be held if the pattern or a nested correspondent looks wrong.',
+    fr: 'Comprendre un paiement dans son contexte — parties, motif, corridor, chaîne de correspondants — pas seulement le dossier client. Sert au criblage et à la surveillance : un pacs.008 techniquement valide peut rester bloqué si le schéma ou un correspondant imbriqué cloche.',
+  }, {
+    aliases: {
+      en: ['Know Your Transaction', 'know-your-transaction'],
+      fr: ['connaissance de la transaction', 'KYT'],
+    },
+    seeAlso: ['transaction-monitoring', 'sanctions-screening', 'correspondent-banking', 'aml'],
+  }),
+  g('str', 'STR', 'concept', { en: 'Suspicious Transaction Report', fr: 'Déclaration de soupçon' }, {
+    en: 'Confidential report to the national financial intelligence unit when a payment or relationship looks like money laundering or terrorist financing. Known as SAR in some jurisdictions. Do not tip off the customer; do not retry the payment to “clear” the alert.',
+    fr: 'Déclaration confidentielle à la cellule de renseignement financier lorsqu’un paiement ou une relation ressemble à du blanchiment ou du financement du terrorisme (DOS en France, vers Tracfin). Pas de tipping-off au client ; ne pas relancer le paiement pour « éteindre » l’alerte.',
+  }, {
+    aliases: {
+      en: ['suspicious transaction report', 'suspicious activity report', 'SAR', 'SMR'],
+      fr: ['déclaration de soupçon', 'DOS', 'déclaration de transactions suspectes'],
+    },
+    seeAlso: ['fiu', 'aml', 'cft', 'transaction-monitoring'],
+  }),
+  g('fiu', 'FIU', 'concept', { en: 'Financial Intelligence Unit', fr: 'Cellule de renseignement financier' }, {
+    en: 'National body that receives STRs/SARs and disseminates financial-intelligence to law enforcement. In France this is Tracfin.',
+    fr: 'Organisme national qui reçoit les déclarations de soupçon et diffuse le renseignement financier aux autorités. En France : Tracfin.',
+  }, {
+    aliases: {
+      en: ['financial intelligence unit', 'FIU.net'],
+      fr: ['cellule de renseignement financier', 'CRF', 'Tracfin'],
+    },
+    seeAlso: ['str', 'aml', 'fatf'],
+  }),
+  g('embargo', 'Embargo', 'regulation', { en: 'Embargo', fr: 'Embargo' }, {
+    en: 'Country, sector or goods restriction that can block a payment even when no named person hits a list — e.g. dual-use goods, territorial sanctions, or a corridor that is simply not permitted. Screening engines apply country and purpose codes as well as names.',
+    fr: 'Restriction pays, secteur ou marchandises qui peut bloquer un paiement même sans hit nominatif — ex. biens à double usage, sanctions territoriales, ou corridor tout simplement interdit. Les moteurs de criblage appliquent aussi codes pays et motifs, pas seulement les noms.',
+  }, {
+    aliases: {
+      en: ['trade embargo', 'country sanctions', 'sectoral sanctions', 'dual-use'],
+      fr: ['embargo commercial', 'sanctions pays', 'sanctions sectorielles', 'biens à double usage'],
+    },
+    seeAlso: ['sanctions-screening', 'ofac', 'cft', 'aml'],
+  }),
+  g('ofac', 'OFAC', 'regulation', { en: 'Office of Foreign Assets Control', fr: 'Office of Foreign Assets Control' }, {
+    en: 'US Treasury office that publishes SDN and other sanctions programmes. Extra-territorial in practice for any USD or US-touching payment: correspondent banks will screen OFAC even on a euro pacs if a US dollar nostro or a US entity sits in the chain.',
+    fr: 'Bureau du Trésor US qui publie la liste SDN et d’autres programmes de sanctions. Extraterritorial en pratique pour tout paiement en USD ou touchant les US : les correspondants criblent l’OFAC même sur un pacs en euro si un nostro dollar ou une entité US est dans la chaîne.',
+  }, {
+    aliases: {
+      en: ['Office of Foreign Assets Control', 'SDN', 'OFAC SDN'],
+      fr: ['OFAC', 'liste SDN', 'sanctions OFAC'],
+    },
+    seeAlso: ['sanctions-screening', 'watchlist', 'embargo', 'nostro', 'correspondent-banking'],
+  }),
+  g('fatf', 'FATF', 'regulation', { en: 'Financial Action Task Force', fr: 'GAFI' }, {
+    en: 'Inter-governmental standard-setter for AML/CFT (40 Recommendations). Grey/black lists drive country risk in CDD; correspondent banks expect FATF-aligned screening and monitoring from respondents.',
+    fr: 'Instance intergouvernementale qui fixe les standards LCB-FT (40 recommandations). Les listes grise/noire pèsent sur le risque pays en CDD ; les correspondants attendent des répondants un criblage et une surveillance alignés GAFI.',
+  }, {
+    aliases: {
+      en: ['Financial Action Task Force', 'FATF Recommendations', 'grey list', 'black list'],
+      fr: ['GAFI', 'Groupe d’action financière', 'liste grise', 'liste noire GAFI'],
+    },
+    seeAlso: ['aml', 'cft', 'amld', 'correspondent-banking', 'fiu'],
+  }),
+  g('amld', 'AMLD', 'regulation', { en: 'Anti-Money Laundering Directive', fr: 'Directive anti-blanchiment' }, {
+    en: 'EU directives on AML/CFT (now the sixth, Directive (EU) 2024/1640) that member states transpose: CDD, UBO registers, FIU cooperation, and obligations on PSPs and crypto-asset service providers. Read together with the directly applicable AMLR.',
+    fr: 'Directives UE LCB-FT (aujourd’hui la sixième, directive (UE) 2024/1640) transposées par les États membres : vigilance clientèle, registres des bénéficiaires effectifs, coopération des CRF, obligations des PSP et des prestataires crypto. À lire avec le règlement AMLR d’application directe.',
+  }, {
+    aliases: {
+      en: ['AMLD6', '6AMLD', '6th AML Directive', 'Directive (EU) 2024/1640', 'AML directive'],
+      fr: ['6e directive anti-blanchiment', 'AMLD6', 'directive (UE) 2024/1640', 'directive LCB-FT'],
+    },
+    seeAlso: ['amlr', 'aml', 'cdd', 'ubo', 'fiu'],
+  }),
+  g('amlr', 'AMLR', 'regulation', { en: 'Anti-Money Laundering Regulation', fr: 'Règlement anti-blanchiment' }, {
+    en: 'Regulation (EU) 2024/1624: directly applicable EU AML/CFT rulebook (CDD, PEP, UBO, correspondent banking, internal controls). Sits beside AMLD6 and the new EU AML Authority (AMLA).',
+    fr: 'Règlement (UE) 2024/1624 : corpus LCB-FT d’application directe (vigilance, PPE, bénéficiaires effectifs, banque correspondante, contrôles internes). S’articule avec AMLD6 et la nouvelle autorité européenne AMLA.',
+  }, {
+    aliases: {
+      en: ['AML Regulation', 'Regulation (EU) 2024/1624', 'AMLA'],
+      fr: ['règlement LCB-FT', 'règlement (UE) 2024/1624', 'AMLA'],
+    },
+    seeAlso: ['amld', 'aml', 'cdd', 'pep', 'correspondent-banking'],
+  }),
+  g('correspondent-banking', 'Correspondent banking', 'concept', { en: 'Correspondent banking', fr: 'Banque correspondante' }, {
+    en: 'One bank (correspondent) holds accounts and executes payments for another (respondent), typically cross-border. Nested correspondent chains and cover payments are AML/CFT high-risk: you must know who sits behind the respondent and screen the whole party set, not only the next BIC.',
+    fr: 'Une banque (correspondant) tient des comptes et exécute des paiements pour une autre (répondant), surtout à l’international. Les chaînes imbriquées et les cover payments sont à risque LCB-FT élevé : il faut savoir qui se trouve derrière le répondant et cribler toutes les parties, pas seulement le BIC suivant.',
+  }, {
+    aliases: {
+      en: ['correspondent bank', 'respondent bank', 'nested correspondent', 'cover payment'],
+      fr: ['banque correspondante', 'banque répondante', 'correspondant imbriqué', 'cover payment', 'paiement de couverture'],
+    },
+    seeAlso: ['nostro', 'vostro', 'cbpr-plus', 'aml', 'kyt', 'sanctions-screening'],
+  }),
+  g('nostro', 'Nostro', 'concept', { en: 'Nostro account', fr: 'Compte nostro' }, {
+    en: '“Our” account: a bank’s account held with a correspondent, in the correspondent’s books, usually in foreign currency. Used to settle cross-border credits and debits (nostro reconciliation against camt.053/054 and the correspondent’s statements). The other side of the same relationship is a vostro.',
+    fr: 'Compte « nôtre » : compte d’une banque tenu chez un correspondant, dans les livres de celui-ci, souvent en devise. Sert à régler les crédits et débits transfrontières (rapprochement nostro contre camt.053/054 et relevés du correspondant). L’autre face de la même relation est un vostro.',
+  }, {
+    aliases: {
+      en: ['nostro account', 'nostro', 'our account', 'nostro reconciliation'],
+      fr: ['compte nostro', 'nostro', 'compte chez le correspondant', 'rapprochement nostro'],
+    },
+    seeAlso: ['vostro', 'correspondent-banking', 'cbpr-plus', 'camt-053', 'camt-054', 'ofac'],
+  }),
+  g('vostro', 'Vostro', 'concept', { en: 'Vostro account', fr: 'Compte vostro' }, {
+    en: '“Your” account: a correspondent account you hold on your books for a respondent bank. The same account is a nostro from the respondent’s point of view. Vostro ledgers are where incoming correspondent credits land before on-payment.',
+    fr: 'Compte « vôtre » : compte de correspondant que vous tenez dans vos livres pour une banque répondante. Le même compte est un nostro du point de vue du répondant. Les écritures vostro reçoivent les crédits correspondants avant réacheminement.',
+  }, {
+    aliases: {
+      en: ['vostro account', 'vostro', 'loro', 'your account'],
+      fr: ['compte vostro', 'vostro', 'loro', 'compte du correspondant'],
+    },
+    seeAlso: ['nostro', 'correspondent-banking', 'cbpr-plus'],
   }),
   g('eba', 'EBA', 'regulation', { en: 'European Banking Authority', fr: 'Autorité bancaire européenne' }, {
     en: 'EU supervisory authority for banking and payments technical standards (RTS/ITS), including the SCA RTS that Open Banking APIs implement.',
@@ -739,7 +1102,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'SWIFT Cross-Border Payments and Reporting Plus — lignes directrices ISO 20022 pour la banque correspondante. Les versions de schéma suivent les fenêtres CBPR+, pas les IG SEPA.',
   }, {
     aliases: { en: ['CBPR+', 'Cross-Border Payments and Reporting Plus'], fr: ['CBPR+'] },
-    seeAlso: ['iso-20022', 'pacs'],
+    seeAlso: ['iso-20022', 'pacs', 'correspondent-banking', 'nostro'],
   }),
   g('ach', 'ACH', 'scheme', { en: 'Automated Clearing House', fr: 'Chambre de compensation automatisée' }, {
     en: 'Batch retail clearing (US ACH, and loosely any next-batch credit). Instant payments are defined against this: seconds, not next window. Mastercard Partner Linked often fetches ACH routing for US payouts.',

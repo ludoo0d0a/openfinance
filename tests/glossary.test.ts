@@ -29,6 +29,51 @@ describe('glossary', () => {
     }
   });
 
+  it('covers nostro / correspondent banking and AML screening', () => {
+    for (const id of [
+      'nostro',
+      'vostro',
+      'correspondent-banking',
+      'aml',
+      'cft',
+      'sanctions-screening',
+      'watchlist',
+      'pep',
+      'name-screening',
+      'transaction-monitoring',
+      'str',
+      'ubo',
+      'cdd',
+    ]) {
+      expect(glossaryById(id), id).toBeDefined();
+    }
+    expect(glossaryById('nostro')!.name.fr).toMatch(/nostro/i);
+    expect(glossaryById('aml')!.aliases.fr).toEqual(
+      expect.arrayContaining(['LCB-FT', 'blanchiment', 'anti-blanchiment']),
+    );
+  });
+
+  it('covers well-known card and A2A schemes', () => {
+    for (const id of [
+      'visa',
+      'mastercard',
+      'amex',
+      'cartes-bancaires',
+      'wero',
+      'paypal',
+      'apple-pay',
+      'ideal',
+      'bancontact',
+      'twint',
+      'pix',
+      'upi',
+    ]) {
+      expect(glossaryById(id), id).toBeDefined();
+    }
+    expect(glossaryById('visa')!.category).toBe('scheme');
+    expect(glossaryById('cartes-bancaires')!.aliases.fr).toEqual(expect.arrayContaining(['CB', 'carte bleue']));
+  });
+
   it('includes Mastercard Open Finance US terms', () => {
     for (const id of ['data-connect', 'finbanks', 'access-token', 'permissioning', 'partner-linked', 'app-key']) {
       const e = glossaryById(id);
@@ -135,5 +180,13 @@ describe('glossary', () => {
     expect(index.search('Payconiq').some((h) => String(h.id) === 'term:payconiq')).toBe(true);
     expect(index.search('TIPS').some((h) => String(h.id) === 'term:tips')).toBe(true);
     expect(index.search('Data Connect').some((h) => String(h.id) === 'term:data-connect')).toBe(true);
+  });
+
+  it('puts AML first when searching the thesaurus for AML', () => {
+    expect(glossaryById('aml')?.term).toBe('AML');
+    const index = createIndex();
+    const hits = searchCatalog(index, 'AML');
+    expect(hits[0]?.id).toBe('term:aml');
+    expect(hits[0]?.kind).toBe('term');
   });
 });

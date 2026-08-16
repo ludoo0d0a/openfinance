@@ -15,6 +15,7 @@ const POPULAR = [
   { href: '/payment/sepa-instant', label: 'SEPA Instant' },
   { href: '/payment/wero', label: 'Wero' },
   { href: '/glossary?id=ipr', label: 'IPR / PSD2' },
+  { href: '/glossary?id=aml', label: 'AML' },
 ];
 
 export function HomeView() {

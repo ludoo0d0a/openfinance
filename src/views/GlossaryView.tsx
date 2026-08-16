@@ -8,6 +8,7 @@ import {
   GLOSSARY_CATEGORY_LABELS,
   GLOSSARY_SOURCES,
   localizeGlossaryEntry,
+  searchGlossary,
   type GlossaryCategory,
   type GlossaryEntry,
 } from '@/data/glossary';
@@ -90,29 +91,24 @@ export function GlossaryView() {
   useEffect(() => setCursor(0), [query]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return localized.filter((e) => {
+    const byFacet = (e: (typeof localized)[number]) => {
       if (family && e.family !== family) return false;
       if (category && e.category !== category) return false;
-      if (!q) return true;
-      const hay = [
-        e.term,
-        e.displayName,
-        e.displayDefinition,
-        e.action ?? '',
-        e.family ?? '',
-        ...e.displayAliases,
-        ...(e.aliases.en ?? []),
-      ]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(q);
-    });
+      return true;
+    };
+    const faceted = localized.filter(byFacet);
+    const q = query.trim();
+    if (!q) return faceted;
+    const allowed = new Set(faceted.map((e) => e.id));
+    return searchGlossary(q)
+      .filter((e) => allowed.has(e.id))
+      .map((e) => faceted.find((x) => x.id === e.id)!);
   }, [localized, query, category, family]);
 
   const active =
-    localized.find((e) => e.id === activeId) ??
+    filtered.find((e) => e.id === activeId) ??
     filtered[0] ??
+    localized.find((e) => e.id === activeId) ??
     localized[0];
 
   function update(next: Record<string, string | null>) {

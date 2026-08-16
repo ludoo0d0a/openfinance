@@ -11,6 +11,7 @@ const TERMS: { pattern: RegExp; id: string }[] = [
   { pattern: /\bSTEP2\b/g, id: 'step2' },
   { pattern: /\bCSM\b/g, id: 'csm' },
   { pattern: /\bSEPA\b/g, id: 'sepa' },
+  { pattern: /\bAML\b/g, id: 'aml' },
 ];
 
 /** Link known payment jargon to the glossary. Safe to nest outside a <button>. */
