@@ -200,6 +200,29 @@ describe('referential integrity', () => {
     }
   });
 
+  it('every hop with a flowId points at a real flow step', () => {
+    for (const p of PAYMENTS) {
+      for (const hop of p.hops) {
+        if (!hop.flowId) continue;
+        const flow = FLOWS.find((f) => f.id === hop.flowId);
+        expect(flow, `${p.id}/${hop.id} → ${hop.flowId}`).toBeDefined();
+        if (hop.step != null) {
+          expect(
+            flow!.steps.some((s) => s.n === hop.step),
+            `${p.id}/${hop.id} step ${hop.step}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('keeps TIPS and RT1 as distinct infrastructures', () => {
+    expect(INFRASTRUCTURES.some((i) => i.id === 'tips')).toBe(true);
+    expect(INFRASTRUCTURES.some((i) => i.id === 'rt1')).toBe(true);
+    expect(INFRASTRUCTURES.find((i) => i.id === 'tips')!.name.en).toBe('TIPS');
+    expect(INFRASTRUCTURES.find((i) => i.id === 'rt1')!.name.en).toBe('RT1');
+  });
+
   it('relations resolve to known entities', () => {
     const known = new Set<string>([
       ...PAYMENTS.map((p) => `payment:${p.id}`),
@@ -208,10 +231,9 @@ describe('referential integrity', () => {
       ...ISO_MESSAGES.map((m) => `message:${m.short}`),
     ]);
     for (const r of RELATIONS) {
-      if (r.to.startsWith('organization:')) continue;
-      if (r.from.startsWith('organization:')) continue;
-      expect(known.has(r.from) || r.from.startsWith('organization:'), r.from).toBe(true);
-      expect(known.has(r.to) || r.to.startsWith('organization:'), r.to).toBe(true);
+      if (r.to.startsWith('organization:') || r.from.startsWith('organization:')) continue;
+      expect(known.has(r.from), r.from).toBe(true);
+      expect(known.has(r.to), r.to).toBe(true);
     }
   });
 });

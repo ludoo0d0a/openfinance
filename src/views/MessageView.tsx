@@ -104,7 +104,12 @@ export function MessageView() {
           <p className="mt-3 border-l-2 border-jade pl-3 text-[13px] leading-relaxed">{t('message.ackNote')}</p>
         )}
         {message.short === 'pacs.008' && (
-          <p className="mt-3 border-l-2 border-signal pl-3 text-[13px] leading-relaxed">{t('message.build008')}</p>
+          <p className="mt-3 border-l-2 border-signal pl-3 text-[13px] leading-relaxed">
+            {t('message.build008')}{' '}
+            <Link to="/compare/pacs.008" className="text-signal hover:underline">
+              {t('nav.compareVersions')} →
+            </Link>
+          </p>
         )}
         {usages.length > 0 && (
           <div className="mt-5">

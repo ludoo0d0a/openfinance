@@ -24,6 +24,12 @@ const SRC_EPI = {
   lastUpdated: '2026-08-16',
 };
 
+const SRC_SIX = {
+  name: 'SIX — SIC',
+  url: 'https://www.six-group.com/en/products-services/banking-services/payment-standardization.html',
+  lastUpdated: '2026-08-16',
+};
+
 export const INFRASTRUCTURES: Infrastructure[] = [
   {
     id: 'step2',
@@ -36,10 +42,10 @@ export const INFRASTRUCTURES: Infrastructure[] = [
       fr: 'Chambre de compensation paneuropéenne pour virements et prélèvements SEPA. Cycles de lots, pas de l’instantané.',
     },
     usedFor: {
-      en: 'SEPA Credit Transfer settlement in batches (typically next TARGET business day).',
-      fr: 'Règlement des virements SEPA par lots (souvent le jour TARGET suivant).',
+      en: 'SEPA Credit Transfer and SDD settlement in batches (typically next TARGET business day).',
+      fr: 'Règlement SCT et SDD par lots (souvent le jour TARGET suivant).',
     },
-    relatedMessageShorts: ['pacs.008', 'pacs.002', 'pain.001'],
+    relatedMessageShorts: ['pacs.008', 'pacs.002', 'pain.001', 'pain.008'],
     mapFlowHref: '/flows/clearing-sct-happy-path',
     sources: [SRC_EBA_STEP2],
   },
@@ -50,12 +56,12 @@ export const INFRASTRUCTURES: Infrastructure[] = [
     region: 'SEPA / EEA',
     currency: 'EUR',
     summary: {
-      en: 'TARGET Instant Payment Settlement: 24/7/365 instant settlement in central-bank money.',
-      fr: 'TARGET Instant Payment Settlement : règlement instantané 24/7/365 en monnaie de banque centrale.',
+      en: 'TARGET Instant Payment Settlement: 24/7/365 instant settlement in central-bank money. Separate from RT1.',
+      fr: 'TARGET Instant Payment Settlement : règlement instantané 24/7/365 en monnaie de banque centrale. Distinct de RT1.',
     },
     usedFor: {
-      en: 'SEPA Instant and other euro instant credit transfers that clear on TIPS.',
-      fr: 'Virements SEPA Instant et autres virements euro instantanés compensés sur TIPS.',
+      en: 'SEPA Instant when banks clear on TIPS (not RT1).',
+      fr: 'SEPA Instant lorsque les banques compensent sur TIPS (pas RT1).',
     },
     relatedMessageShorts: ['pacs.008', 'pacs.002', 'pacs.028'],
     mapFlowHref: '/flows/sct-inst-happy-path',
@@ -68,8 +74,8 @@ export const INFRASTRUCTURES: Infrastructure[] = [
     region: 'SEPA',
     currency: 'EUR',
     summary: {
-      en: 'Pan-European instant payment system operated by EBA Clearing. Alternative CSM to TIPS for SCT Inst.',
-      fr: 'Système paneuropéen de paiements instantanés opéré par EBA Clearing. CSM alternatif à TIPS pour le SCT Inst.',
+      en: 'EBA Clearing instant CSM. Alternative to TIPS for SCT Inst — keep the two names separate.',
+      fr: 'CSM instantané EBA Clearing. Alternative à TIPS pour le SCT Inst — gardez les deux noms distincts.',
     },
     usedFor: {
       en: 'SEPA Instant when the banks’ chosen CSM is RT1 rather than TIPS.',
@@ -96,6 +102,88 @@ export const INFRASTRUCTURES: Infrastructure[] = [
     relatedMessageShorts: ['pacs.008', 'pacs.002'],
     mapFlowHref: '/flows/wero-a2a-payment',
     sources: [SRC_EPI],
+  },
+  {
+    id: 'sic',
+    name: { en: 'SIC', fr: 'SIC' },
+    operator: 'SIX',
+    region: 'Switzerland',
+    currency: 'CHF',
+    summary: {
+      en: 'Swiss Interbank Clearing for CHF. Domestic Swiss Payment Standards, not SEPA.',
+      fr: 'Compensation interbancaire suisse pour le CHF. Swiss Payment Standards domestiques, pas le SEPA.',
+    },
+    usedFor: {
+      en: 'Domestic CHF credit transfers (batch SIC and SIC Instant).',
+      fr: 'Virements CHF domestiques (SIC de lot et SIC Instant).',
+    },
+    relatedMessageShorts: ['pacs.008', 'pacs.002', 'pain.001'],
+    mapFlowHref: '/flows/sic-chf-credit',
+    sources: [SRC_SIX],
+  },
+  {
+    id: 'eurosic',
+    name: { en: 'euroSIC', fr: 'euroSIC' },
+    operator: 'SIX',
+    region: 'Switzerland / EUR',
+    currency: 'EUR',
+    summary: {
+      en: 'EUR clearing for Swiss participants via SIX — parallel to STEP2/TIPS for banks that route EUR through Switzerland.',
+      fr: 'Compensation EUR pour participants suisses via SIX — parallèle à STEP2/TIPS pour les banques qui routent l’EUR via la Suisse.',
+    },
+    usedFor: {
+      en: 'EUR credit transfers involving Swiss PSPs on euroSIC.',
+      fr: 'Virements EUR impliquant des PSP suisses sur euroSIC.',
+    },
+    relatedMessageShorts: ['pacs.008', 'pacs.002'],
+    mapFlowHref: '/flows/eurosic-eur-credit',
+    sources: [SRC_SIX],
+  },
+  {
+    id: 'card-schemes',
+    name: { en: 'Card schemes', fr: 'Schémas cartes' },
+    operator: 'Scheme networks',
+    region: 'Global',
+    currency: 'Multi',
+    summary: {
+      en: 'Card authorization, clearing and settlement networks (Visa, Mastercard, …) — not ISO 20022 pacs rails.',
+      fr: 'Réseaux d’autorisation, compensation et règlement carte (Visa, Mastercard, …) — pas des rails pacs ISO 20022.',
+    },
+    usedFor: {
+      en: 'Card payments: auth → clearing files → settlement.',
+      fr: 'Paiements carte : auth → fichiers de compensation → règlement.',
+    },
+    relatedMessageShorts: [],
+    sources: [
+      {
+        name: 'European Central Bank — Card payments',
+        url: 'https://www.ecb.europa.eu/paym/integration/retail/html/index.en.html',
+        lastUpdated: '2026-08-16',
+      },
+    ],
+  },
+  {
+    id: 'swift-cbpr',
+    name: { en: 'SWIFT CBPR+', fr: 'SWIFT CBPR+' },
+    operator: 'SWIFT',
+    region: 'Global',
+    currency: 'Multi',
+    summary: {
+      en: 'Cross-border payments and reporting on SWIFT ISO 20022 (MX). Different version baseline than SEPA .08.',
+      fr: 'Paiements et reporting transfrontaliers sur SWIFT ISO 20022 (MX). Baseline de version différente du SEPA .08.',
+    },
+    usedFor: {
+      en: 'Cross-border FI-to-FI customer credit transfers (pacs.008) under CBPR+.',
+      fr: 'Virements client FI-to-FI transfrontaliers (pacs.008) sous CBPR+.',
+    },
+    relatedMessageShorts: ['pacs.008', 'pacs.002', 'pacs.009'],
+    sources: [
+      {
+        name: 'SWIFT — ISO 20022',
+        url: 'https://www.swift.com/standards/iso-20022',
+        lastUpdated: '2026-08-16',
+      },
+    ],
   },
 ];
 

@@ -12,6 +12,12 @@ const SRC_EPI = {
   lastUpdated: '2026-08-16',
 };
 
+const SRC_SWIFT = {
+  name: 'SWIFT',
+  url: 'https://www.swift.com/standards/iso-20022',
+  lastUpdated: '2026-08-16',
+};
+
 export const SCHEMES: Scheme[] = [
   {
     id: 'sct',
@@ -45,6 +51,39 @@ export const SCHEMES: Scheme[] = [
     },
     explorePaymentId: 'wero',
     sources: [SRC_EPI],
+  },
+  {
+    id: 'sdd',
+    name: { en: 'SEPA Direct Debit', fr: 'Prélèvement SEPA' },
+    operator: 'European Payments Council',
+    summary: {
+      en: 'EPC schemes for euro direct debits (Core / B2B). Creditor initiates with pain.008; R-transactions follow mandate rules.',
+      fr: 'Schémas EPC de prélèvement euro (Core / B2B). Le créancier initie avec pain.008 ; les R-transactions suivent les règles de mandat.',
+    },
+    explorePaymentId: 'sepa-direct-debit',
+    sources: [SRC_EPC],
+  },
+  {
+    id: 'card',
+    name: { en: 'Card payment', fr: 'Paiement par carte' },
+    operator: 'Card schemes',
+    summary: {
+      en: 'Four-party card model: authorization, clearing, settlement. Distinct vocabulary from ISO 20022 pacs.',
+      fr: 'Modèle carte à quatre parties : autorisation, compensation, règlement. Vocabulaire distinct des pacs ISO 20022.',
+    },
+    explorePaymentId: 'card-payment',
+    sources: [SRC_EPC],
+  },
+  {
+    id: 'cbpr-plus',
+    name: { en: 'CBPR+', fr: 'CBPR+' },
+    operator: 'SWIFT',
+    summary: {
+      en: 'Cross-border payments and reporting on SWIFT ISO 20022. Version baselines differ from SEPA usage guidelines.',
+      fr: 'Paiements et reporting transfrontaliers sur SWIFT ISO 20022. Les baselines de version diffèrent des usage guidelines SEPA.',
+    },
+    explorePaymentId: 'swift-credit-transfer',
+    sources: [SRC_SWIFT],
   },
 ];
 

@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Menu, Search, X } from 'lucide-react';
+import { ChevronDown, Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { useSearchQuery } from '@/hooks/SearchQueryContext';
 import { STANDARDS } from '@/data/standards';
@@ -14,13 +14,42 @@ import { cn } from '@/lib/cn';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
 
+const THEME_KEY = 'openfinance.theme';
+
+function readTheme(): 'light' | 'dark' {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    if (v === 'dark' || v === 'light') return v;
+  } catch {
+    /* ignore */
+  }
+  return 'light';
+}
+
+function applyTheme(theme: 'light' | 'dark') {
+  document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : '';
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function AppShell() {
   const t = useT();
   const { locale } = useI18n();
   const { query, clearQuery } = useSearchQuery();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    typeof document !== 'undefined' ? readTheme() : 'light',
+  );
   const navTitleId = useId();
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -54,11 +83,16 @@ export function AppShell() {
   const localizedFlows = localizeFlows(FLOWS, locale);
   const flowsByCategory = groupBy(localizedFlows, (f) => f.category);
 
+  const primaryPayments = PAYMENTS.filter((p) =>
+    ['sepa-credit-transfer', 'sepa-instant', 'wero'].includes(p.id),
+  );
+  const morePayments = PAYMENTS.filter((p) => !primaryPayments.includes(p));
+
   const navBody = (
     <>
       <NavSection title={t('nav.start')}>
         <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact onNavigate={() => setNavOpen(false)} />
-        {PAYMENTS.map((p) => (
+        {primaryPayments.map((p) => (
           <NavItem
             key={p.id}
             to={`/payment/${p.id}`}
@@ -67,6 +101,22 @@ export function AppShell() {
             onNavigate={() => setNavOpen(false)}
           />
         ))}
+        {morePayments.map((p) => (
+          <NavItem
+            key={p.id}
+            to={`/payment/${p.id}`}
+            label={p.name[locale]}
+            icon={<UI_ICONS.flow size={14} />}
+            onNavigate={() => setNavOpen(false)}
+          />
+        ))}
+        <NavItem to="/quiz/debug-reject" label={t('nav.quiz')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem
+          to="/compare/pacs.008"
+          label={t('nav.compareVersions')}
+          icon={<UI_ICONS.xml size={14} />}
+          onNavigate={() => setNavOpen(false)}
+        />
         <NavItem
           to="/glossary"
           label={t('nav.glossary')}
@@ -88,16 +138,18 @@ export function AppShell() {
       </NavSection>
 
       <NavSection title={t('nav.infrastructure')}>
-        {INFRASTRUCTURES.map((i) => (
-          <NavItem
-            key={i.id}
-            to={`/infrastructure/${i.id}`}
-            label={i.name[locale]}
-            hint={i.operator}
-            icon={<UI_ICONS.map size={14} />}
-            onNavigate={() => setNavOpen(false)}
-          />
-        ))}
+        {INFRASTRUCTURES.filter((i) => ['step2', 'tips', 'rt1', 'sic', 'eurosic', 'wero-platform'].includes(i.id)).map(
+          (i) => (
+            <NavItem
+              key={i.id}
+              to={`/infrastructure/${i.id}`}
+              label={i.name[locale]}
+              hint={i.operator}
+              icon={<UI_ICONS.map size={14} />}
+              onNavigate={() => setNavOpen(false)}
+            />
+          ),
+        )}
       </NavSection>
 
       <NavSection title={t('nav.tools')}>
@@ -111,58 +163,78 @@ export function AppShell() {
         />
       </NavSection>
 
-      <NavSection title={t('nav.standards')}>
-        {STANDARDS.map((s) => (
-          <NavItem
-            key={s.id}
-            to={`/standards/${s.id}`}
-            label={s.name}
-            hint={s.region}
-            icon={<UI_ICONS.standard size={14} />}
-            onNavigate={() => setNavOpen(false)}
+      <section className="mb-6">
+        <button
+          type="button"
+          onClick={() => setCatalogOpen((v) => !v)}
+          className="mb-2 flex w-full items-center justify-between pl-2 text-left"
+          aria-expanded={catalogOpen}
+        >
+          <span className="eyebrow">{t('nav.catalog')}</span>
+          <ChevronDown
+            size={14}
+            className={cn('text-muted transition-transform', catalogOpen && 'rotate-180')}
+            aria-hidden
           />
-        ))}
-      </NavSection>
-
-      <NavSection title={t('nav.flows')}>
-        {Object.entries(flowsByCategory).map(([category, flows]) => (
-          <div key={category} className="mb-2">
-            <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-              {t(`category.${category}`)}
-            </p>
-            {flows.map((f) => (
-              <NavItem
-                key={f.id}
-                to={`/flows/${f.id}`}
-                label={f.name}
-                icon={<UI_ICONS.flow size={14} />}
-                onNavigate={() => setNavOpen(false)}
-              />
-            ))}
+        </button>
+        {catalogOpen && (
+          <div className="space-y-4">
+            <div>
+              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.standards')}</p>
+              {STANDARDS.map((s) => (
+                <NavItem
+                  key={s.id}
+                  to={`/standards/${s.id}`}
+                  label={s.name}
+                  hint={s.region}
+                  icon={<UI_ICONS.standard size={14} />}
+                  onNavigate={() => setNavOpen(false)}
+                />
+              ))}
+            </div>
+            <div>
+              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.flows')}</p>
+              {Object.entries(flowsByCategory).map(([category, flows]) => (
+                <div key={category} className="mb-2">
+                  <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+                    {t(`category.${category}`)}
+                  </p>
+                  {flows.map((f) => (
+                    <NavItem
+                      key={f.id}
+                      to={`/flows/${f.id}`}
+                      label={f.name}
+                      icon={<UI_ICONS.flow size={14} />}
+                      onNavigate={() => setNavOpen(false)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.messages')}</p>
+              {Object.entries(messagesByArea).map(([area, messages]) => (
+                <div key={area} className="mb-2">
+                  <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+                    {area}
+                  </p>
+                  {messages.map((m) => (
+                    <NavItem
+                      key={m.short}
+                      to={`/messages/${m.short}`}
+                      label={m.short}
+                      hint={m.name}
+                      mono
+                      icon={<UI_ICONS.xml size={14} />}
+                      onNavigate={() => setNavOpen(false)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </NavSection>
-
-      <NavSection title={t('nav.messages')}>
-        {Object.entries(messagesByArea).map(([area, messages]) => (
-          <div key={area} className="mb-2">
-            <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-              {area} · {t(`area.${area}`)}
-            </p>
-            {messages.map((m) => (
-              <NavItem
-                key={m.short}
-                to={`/messages/${m.short}`}
-                label={m.short}
-                hint={m.name}
-                mono
-                icon={<UI_ICONS.xml size={14} />}
-                onNavigate={() => setNavOpen(false)}
-              />
-            ))}
-          </div>
-        ))}
-      </NavSection>
+        )}
+      </section>
     </>
   );
 
@@ -218,12 +290,20 @@ export function AppShell() {
             </kbd>
           </div>
 
+          <button
+            type="button"
+            onClick={() => setTheme((th) => (th === 'dark' ? 'light' : 'dark'))}
+            className="inline-flex shrink-0 items-center justify-center border border-rule p-2 text-muted hover:border-ink hover:text-ink"
+            aria-label={theme === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
+          >
+            {theme === 'dark' ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
+          </button>
+
           <LocaleSwitcher className="shrink-0" />
         </div>
       </header>
 
       <div className="lg:grid lg:grid-cols-[248px_1fr]">
-        {/* Desktop sidebar */}
         <nav
           aria-label="Primary"
           className="scroll-paper hidden border-r border-rule bg-paper-raised px-4 py-5 lg:sticky lg:top-[53px] lg:block lg:h-[calc(100dvh-53px)] lg:overflow-y-auto"
@@ -236,7 +316,6 @@ export function AppShell() {
         </main>
       </div>
 
-      {/* Mobile overlay menu */}
       {navOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="presentation">
           <button
@@ -346,7 +425,6 @@ function isApplePlatform(): boolean {
   return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 }
 
-/** ⌘K on Apple, Ctrl+K elsewhere. Capture-phase so the browser does not steal ⌘K. */
 function isSearchToggleHotkey(e: KeyboardEvent): boolean {
   const isK = e.code === 'KeyK' || e.key.toLowerCase() === 'k';
   if (!isK || e.altKey || e.shiftKey) return false;

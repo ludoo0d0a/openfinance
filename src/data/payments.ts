@@ -1,4 +1,5 @@
 import type {
+  CountryId,
   InitiationChannel,
   LocalizedText,
   Payment,
@@ -49,6 +50,7 @@ function hop(
     outcomes?: PaymentOutcome[];
     rails?: string[];
     initiation?: InitiationChannel[];
+    countries?: CountryId[];
   },
 ): PaymentHop {
   return {
@@ -66,6 +68,7 @@ function hop(
     outcomes: opts.outcomes ?? ['happy', 'reject'],
     rails: opts.rails,
     initiation: opts.initiation,
+    countries: opts.countries,
   };
 }
 
@@ -329,6 +332,8 @@ const weroHops: PaymentHop[] = [
     messageShort: 'pacs.008',
     simple: L('Instant rail delivers the credit to the beneficiary’s bank.', 'Le rail instantané livre le crédit à la banque du bénéficiaire.'),
     expert: L('pacs.008 to creditor PSP', 'pacs.008 vers PSP créancier'),
+    flowId: 'wero-a2a-payment',
+    step: 4,
     sampleId: 'pacs-008-sct-inst',
   }),
   hop('wero-002', 'bankB', 'csm', {
@@ -343,12 +348,119 @@ const weroHops: PaymentHop[] = [
   hop('wero-done', 'scheme', 'beneficiary', {
     simple: L('The beneficiary (or merchant) is paid.', 'Le bénéficiaire (ou le commerçant) est payé.'),
     expert: L('Wero completion + SCT Inst credit', 'Fin Wero + crédit SCT Inst'),
+    flowId: 'wero-a2a-payment',
+    step: 5,
     outcomes: ['happy'],
   }),
   hop('wero-rjct', 'bankB', 'csm', {
     messageShort: 'pacs.002',
     simple: L('Instant settlement is refused; Wero marks the intent failed.', 'Le règlement instantané est refusé ; Wero marque l’intention en échec.'),
     expert: L('pacs.002 RJCT; scheme status failed', 'pacs.002 RJCT ; statut schéma failed'),
+    flowId: 'sct-inst-reject',
+    step: 2,
+    sampleId: 'pacs-002-sct-inst-reject',
+    outcomes: ['reject'],
+  }),
+];
+
+const sddHops: PaymentHop[] = [
+  hop('sdd-pain', 'beneficiary', 'bankB', {
+    messageShort: 'pain.008',
+    simple: L('The creditor sends a €100 collection instruction with the mandate reference.', 'Le créancier envoie une instruction de prélèvement de 100 € avec la référence de mandat.'),
+    expert: L('pain.008 SDD Core / B2B with MndtId and SeqTp', 'pain.008 SDD Core / B2B avec MndtId et SeqTp'),
+    tOffset: L('Before collection date', 'Avant la date de prélèvement'),
+    sampleId: 'pain-008-sdd',
+    initiation: ['creditor'],
+  }),
+  hop('sdd-out', 'bankB', 'csm', {
+    messageShort: 'pain.008',
+    simple: L('The creditor’s bank submits the collection into SEPA clearing (STEP2).', 'La banque du créancier soumet le prélèvement dans la compensation SEPA (STEP2).'),
+    expert: L('CSM collection batch (STEP2 SDD)', 'Lot de prélèvement CSM (STEP2 SDD)'),
+    sla: L('Scheme collection cycle', 'Cycle de prélèvement du schéma'),
+  }),
+  hop('sdd-in', 'csm', 'bankA', {
+    simple: L('Clearing presents the debit to the payer’s bank.', 'La compensation présente le débit à la banque du payeur.'),
+    expert: L('Debtor PSP receives collection', 'Le PSP débiteur reçoit le prélèvement'),
+  }),
+  hop('sdd-debit', 'bankA', 'payer', {
+    simple: L('€100 leaves the payer’s account under the mandate.', '100 € quittent le compte du payeur sous le mandat.'),
+    expert: L('Account debit; camt.054 debit notification may follow', 'Débit compte ; camt.054 débit peut suivre'),
+    sampleId: 'camt-054-credit',
+    outcomes: ['happy'],
+  }),
+  hop('sdd-return', 'bankA', 'csm', {
+    messageShort: 'pacs.004',
+    simple: L('The payer’s bank returns the collection (R-transaction).', 'La banque du payeur retourne le prélèvement (R-transaction).'),
+    expert: L('pacs.004 return / reverse with reason code', 'pacs.004 retour / reverse avec motif'),
+    sampleId: 'pacs-002-rejected',
+    outcomes: ['reject'],
+  }),
+];
+
+const cardHops: PaymentHop[] = [
+  hop('card-auth', 'payer', 'merchant', {
+    simple: L('The payer presents a card at checkout for €100.', 'Le payeur présente une carte au checkout pour 100 €.'),
+    expert: L('Card present / e-com authorization request', 'Demande d’autorisation carte présente / e-com'),
+    tOffset: L('t+0', 't+0'),
+    initiation: ['merchant'],
+  }),
+  hop('card-acq', 'merchant', 'acquirer', {
+    simple: L('The merchant’s acquirer forwards the authorization.', 'L’acquéreur du commerçant relaie l’autorisation.'),
+    expert: L('Acquirer → scheme authorization', 'Acquéreur → autorisation schéma'),
+  }),
+  hop('card-scheme', 'acquirer', 'scheme', {
+    simple: L('The card scheme routes to the issuer bank.', 'Le schéma carte route vers la banque émettrice.'),
+    expert: L('Scheme switch / network authorization', 'Commutateur schéma / autorisation réseau'),
+  }),
+  hop('card-issuer', 'scheme', 'bankA', {
+    simple: L('The issuer approves and holds €100.', 'L’émetteur approuve et réserve 100 €.'),
+    expert: L('Issuer auth response (approve / decline)', 'Réponse auth émetteur (approuvé / refusé)'),
+    outcomes: ['happy', 'reject'],
+  }),
+  hop('card-clear', 'acquirer', 'scheme', {
+    simple: L('Later, clearing files move the transaction for settlement.', 'Plus tard, les fichiers de compensation préparent le règlement.'),
+    expert: L('Clearing batch (not ISO 20022 pacs)', 'Lot de clearing (pas des pacs ISO 20022)'),
+    tOffset: L('D or D+1', 'J ou J+1'),
+    outcomes: ['happy'],
+  }),
+  hop('card-settle', 'scheme', 'bankB', {
+    simple: L('Settlement credits the merchant side.', 'Le règlement crédite le côté commerçant.'),
+    expert: L('Scheme settlement to acquirer / merchant bank', 'Règlement schéma vers acquéreur / banque commerçant'),
+    outcomes: ['happy'],
+  }),
+];
+
+const swiftHops: PaymentHop[] = [
+  hop('swift-init', 'payer', 'bankA', {
+    messageShort: 'pain.001',
+    simple: L('The payer instructs a cross-border credit transfer.', 'Le payeur donne instruction d’un virement transfrontalier.'),
+    expert: L('Customer initiation (pain.001 or bank channel)', 'Initiation client (pain.001 ou canal banque)'),
+    initiation: ['bank'],
+  }),
+  hop('swift-008', 'bankA', 'csm', {
+    messageShort: 'pacs.008',
+    simple: L('The payer’s bank sends an ISO 20022 credit transfer over SWIFT CBPR+.', 'La banque du payeur envoie un virement ISO 20022 sur SWIFT CBPR+.'),
+    expert: L('pacs.008 CBPR+ (often .001.10 / .001.13 — not SEPA .08)', 'pacs.008 CBPR+ (souvent .001.10 / .001.13 — pas le SEPA .08)'),
+    sampleId: 'pacs-008-sct',
+    sla: L('Correspondent / HVPS windows', 'Fenêtres correspondant / HVPS'),
+  }),
+  hop('swift-mid', 'csm', 'bankB', {
+    messageShort: 'pacs.008',
+    simple: L('Correspondents or the market infrastructure deliver to the beneficiary’s bank.', 'Correspondants ou infrastructure de marché livrent à la banque du bénéficiaire.'),
+    expert: L('FI-to-FI path; cover may use pacs.009', 'Chemin FI-to-FI ; cover possible via pacs.009'),
+  }),
+  hop('swift-002', 'bankB', 'csm', {
+    messageShort: 'pacs.002',
+    simple: L('Status comes back — settled or rejected.', 'Le statut revient — réglé ou rejeté.'),
+    expert: L('pacs.002; pair schema version with the pacs.008', 'pacs.002 ; aligner la version de schéma sur le pacs.008'),
+    sampleId: 'pacs-002-accepted',
+    outcomes: ['happy'],
+  }),
+  hop('swift-rjct', 'bankB', 'csm', {
+    messageShort: 'pacs.002',
+    simple: L('The transfer is rejected with a reason code.', 'Le virement est rejeté avec un motif.'),
+    expert: L('pacs.002 RJCT + reason', 'pacs.002 RJCT + motif'),
+    sampleId: 'pacs-002-rejected',
     outcomes: ['reject'],
   }),
 ];
@@ -363,7 +475,7 @@ export const PAYMENTS: Payment[] = [
       'Un virement euro non urgent : banque du payeur, STEP2 (ou équivalent), banque du bénéficiaire.',
     ),
     schemeId: 'sct',
-    infrastructureIds: ['step2'],
+    infrastructureIds: ['step2', 'eurosic'],
     defaultRailId: 'step2',
     messageShorts: ['pain.001', 'pacs.008', 'pacs.002', 'camt.054'],
     actors: ['payer', 'bankA', 'csm', 'bankB', 'beneficiary'],
@@ -371,6 +483,17 @@ export const PAYMENTS: Payment[] = [
     relatedFlowIds: ['clearing-sct-happy-path', 'bg-pis-sepa-redirect', 'clearing-reject', 'clearing-recall'],
     initiationChannels: ['bank', 'pisp'],
     comparePaymentId: 'sepa-instant',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 travel from France to Germany on SCT?',
+        'Comment 100 € voyagent-ils de la France vers l’Allemagne en SCT ?',
+      ),
+    },
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
     sources: [SRC_EPC],
     disclaimer: DISCLAIMER,
   },
@@ -379,8 +502,8 @@ export const PAYMENTS: Payment[] = [
     kind: 'instant',
     name: L('SEPA Instant', 'SEPA Instant'),
     summary: L(
-      'A €100 instant euro transfer: Verification of Payee, then TIPS or RT1, funds in ≤10 seconds — or a reject inside that window.',
-      'Un virement euro instantané de 100 € : Verification of Payee, puis TIPS ou RT1, fonds en ≤10 secondes — ou un rejet dans cette fenêtre.',
+      'A €100 instant euro transfer France → Germany: Verification of Payee, then TIPS or RT1, funds in ≤10 seconds.',
+      'Un virement euro instantané de 100 € France → Allemagne : Verification of Payee, puis TIPS ou RT1, fonds en ≤10 secondes.',
     ),
     schemeId: 'sct-inst',
     infrastructureIds: ['tips', 'rt1'],
@@ -397,6 +520,17 @@ export const PAYMENTS: Payment[] = [
     ],
     initiationChannels: ['bank', 'pisp'],
     comparePaymentId: 'sepa-credit-transfer',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 travel from France to Germany?',
+        'Comment 100 € voyagent-ils de la France vers l’Allemagne ?',
+      ),
+    },
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
     sources: [SRC_EPC, SRC_ECB],
     disclaimer: DISCLAIMER,
   },
@@ -417,7 +551,79 @@ export const PAYMENTS: Payment[] = [
     relatedFlowIds: ['wero-a2a-payment', 'sct-inst-happy-path'],
     initiationChannels: ['wero'],
     comparePaymentId: 'sepa-instant',
+    countryIds: ['FR', 'DE'],
+    defaultCountryId: 'FR',
     sources: [SRC_EPI, SRC_EPC],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'sepa-direct-debit',
+    kind: 'direct-debit',
+    name: L('SEPA Direct Debit', 'Prélèvement SEPA'),
+    summary: L(
+      'A €100 euro direct debit: creditor mandate, pain.008 collection, STEP2, debit on the payer.',
+      'Un prélèvement euro de 100 € : mandat créancier, collecte pain.008, STEP2, débit chez le payeur.',
+    ),
+    schemeId: 'sdd',
+    infrastructureIds: ['step2'],
+    defaultRailId: 'step2',
+    messageShorts: ['pain.008', 'pacs.004'],
+    actors: ['payer', 'bankA', 'csm', 'bankB', 'beneficiary'],
+    hops: sddHops,
+    relatedFlowIds: [],
+    initiationChannels: ['creditor'],
+    countryIds: ['FR', 'DE'],
+    defaultCountryId: 'FR',
+    sources: [SRC_EPC],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'card-payment',
+    kind: 'card',
+    name: L('Card payment', 'Paiement par carte'),
+    summary: L(
+      'A €100 card payment: authorization through the scheme, then clearing and settlement — not pacs rails.',
+      'Un paiement carte de 100 € : autorisation via le schéma, puis compensation et règlement — pas des rails pacs.',
+    ),
+    schemeId: 'card',
+    infrastructureIds: ['card-schemes'],
+    defaultRailId: 'card-schemes',
+    messageShorts: [],
+    actors: ['payer', 'merchant', 'acquirer', 'scheme', 'bankA', 'bankB'],
+    hops: cardHops,
+    relatedFlowIds: [],
+    initiationChannels: ['merchant'],
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
+    sources: [SRC_ECB],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'swift-credit-transfer',
+    kind: 'cross-border',
+    name: L('SWIFT / CBPR+', 'SWIFT / CBPR+'),
+    summary: L(
+      'A cross-border credit transfer on SWIFT ISO 20022 — watch the pacs.008 version (.10 / .13 vs SEPA .08).',
+      'Un virement transfrontalier sur SWIFT ISO 20022 — attention à la version pacs.008 (.10 / .13 vs SEPA .08).',
+    ),
+    schemeId: 'cbpr-plus',
+    infrastructureIds: ['swift-cbpr'],
+    defaultRailId: 'swift-cbpr',
+    messageShorts: ['pain.001', 'pacs.008', 'pacs.002', 'pacs.009'],
+    actors: ['payer', 'bankA', 'csm', 'bankB', 'beneficiary'],
+    hops: swiftHops,
+    relatedFlowIds: ['clearing-sct-happy-path'],
+    initiationChannels: ['bank'],
+    comparePaymentId: 'sepa-credit-transfer',
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
+    sources: [
+      {
+        name: 'SWIFT',
+        url: 'https://www.swift.com/standards/iso-20022',
+        lastUpdated: '2026-08-16',
+      },
+    ],
     disclaimer: DISCLAIMER,
   },
 ];

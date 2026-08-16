@@ -6,6 +6,13 @@ import { SearchQueryProvider } from '@/hooks/SearchQueryContext';
 import App from './App';
 import './styles/index.css';
 
+try {
+  const theme = localStorage.getItem('openfinance.theme');
+  if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
+} catch {
+  /* ignore */
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

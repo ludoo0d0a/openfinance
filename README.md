@@ -22,7 +22,8 @@ SIC Instant, Wero) and exception paths (reject, recall, instant timeout, payment
 
 | Feature | Where |
 | --- | --- |
-| Payment Explorer (SCT, SCT Inst, Wero) | `/` · `/payment/:id` |
+| Payment Explorer (SCT, SCT Inst, Wero, SDD, Card, SWIFT) | `/` · `/payment/:id` |
+| Country context FR/DE/CH · version compare · debug quiz | `/payment/sepa-instant?from=FR` · `/compare/pacs.008` · `/quiz/debug-reject` |
 | API standards (Berlin Group, STET, UK OB, PolishAPI, Czech OBS, Swiss SPS/SIC, Wero) | `src/data/standards.ts` |
 | End-to-end flows as SVG sequence diagrams | `src/data/flows.ts` + `FlowCanvas` |
 | Cytoscape interop map (standards × messages × rails) | `/map` · `InteropGraph` |

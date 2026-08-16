@@ -7,8 +7,6 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
 
 const EXTRA_RAILS = [
-  { id: 'rail:sic', label: 'SIC CHF', href: '/flows/sic-chf-credit' },
-  { id: 'rail:eurosic', label: 'euroSIC', href: '/flows/eurosic-eur-credit' },
   { id: 'rail:sicip', label: 'SIC IP', href: '/flows/sic-ip-instant' },
 ] as const;
 

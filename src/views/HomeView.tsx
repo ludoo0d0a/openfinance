@@ -47,7 +47,14 @@ export function HomeView() {
 
       <section className="mt-12">
         <h2 className="eyebrow mb-3">{t('home.explorePayment')}</h2>
-        <ul className="grid gap-3 sm:grid-cols-3">
+        <Link
+          to="/payment/sepa-instant"
+          className="mb-4 block border border-jade bg-jade-soft px-4 py-3 hover:border-ink"
+        >
+          <p className="font-mono text-[11px] uppercase tracking-widest text-jade">{t('home.storyEyebrow')}</p>
+          <p className="mt-1 text-[16px] font-semibold">{t('home.storyHeadline')}</p>
+        </Link>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PAYMENTS.map((p) => (
             <li key={p.id}>
               <Link

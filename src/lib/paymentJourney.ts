@@ -1,5 +1,13 @@
-import type { ExplorerLevel, InitiationChannel, Locale, Payment, PaymentOutcome } from '@/types';
+import type {
+  CountryId,
+  ExplorerLevel,
+  InitiationChannel,
+  Locale,
+  Payment,
+  PaymentOutcome,
+} from '@/types';
 import { paymentById, PAYMENTS } from '@/data/payments';
+import { countryById } from '@/data/countries';
 
 export interface JourneyOptions {
   level: ExplorerLevel;
@@ -7,6 +15,7 @@ export interface JourneyOptions {
   rail: string;
   outcome: PaymentOutcome;
   locale: Locale;
+  country?: CountryId;
 }
 
 export interface JourneyHopView {
@@ -30,15 +39,17 @@ export interface JourneyView {
   initiation: InitiationChannel;
   outcome: PaymentOutcome;
   level: ExplorerLevel;
+  country?: CountryId;
 }
 
 function hopVisible(
   hop: Payment['hops'][number],
-  opts: Pick<JourneyOptions, 'initiation' | 'rail' | 'outcome'>,
+  opts: Pick<JourneyOptions, 'initiation' | 'rail' | 'outcome' | 'country'>,
 ): boolean {
   if (!hop.outcomes.includes(opts.outcome)) return false;
   if (hop.rails && !hop.rails.includes(opts.rail)) return false;
   if (hop.initiation && !hop.initiation.includes(opts.initiation)) return false;
+  if (hop.countries && opts.country && !hop.countries.includes(opts.country)) return false;
   return true;
 }
 
@@ -49,9 +60,20 @@ export function resolveJourneyOptions(
   const initiation = payment.initiationChannels.includes(partial.initiation as InitiationChannel)
     ? (partial.initiation as InitiationChannel)
     : payment.initiationChannels[0];
+
+  const country =
+    partial.country && payment.countryIds?.includes(partial.country)
+      ? partial.country
+      : payment.defaultCountryId;
+
+  const preferred = country ? countryById(country)?.preferredRailId : undefined;
+  const railFromCountry =
+    preferred && payment.infrastructureIds.includes(preferred) ? preferred : undefined;
+
   const rail = payment.infrastructureIds.includes(partial.rail ?? '')
     ? (partial.rail as string)
-    : payment.defaultRailId;
+    : (railFromCountry ?? payment.defaultRailId);
+
   return {
     level: partial.level === 'expert' ? 'expert' : 'simple',
     initiation,
@@ -59,6 +81,7 @@ export function resolveJourneyOptions(
     outcome:
       partial.outcome === 'reject' || partial.outcome === 'timeout' ? partial.outcome : 'happy',
     locale: partial.locale,
+    country,
   };
 }
 
@@ -79,7 +102,15 @@ export function getPaymentJourney(paymentId: string, opts: JourneyOptions): Jour
     step: h.step,
     sampleId: h.sampleId,
   }));
-  return { payment, hops, rail: resolved.rail, initiation: resolved.initiation, outcome: resolved.outcome, level: resolved.level };
+  return {
+    payment,
+    hops,
+    rail: resolved.rail,
+    initiation: resolved.initiation,
+    outcome: resolved.outcome,
+    level: resolved.level,
+    country: resolved.country,
+  };
 }
 
 export function compareJourneys(

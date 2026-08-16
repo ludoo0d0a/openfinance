@@ -13,6 +13,8 @@ import { NotFoundView } from '@/views/NotFoundView';
 import { PaymentExplorerView } from '@/views/PaymentExplorerView';
 import { SchemeView } from '@/views/SchemeView';
 import { InfrastructureView } from '@/views/InfrastructureView';
+import { VersionCompareView } from '@/views/VersionCompareView';
+import { DebugQuizView } from '@/views/DebugQuizView';
 import { codeByValue } from '@/data/glossary';
 
 export default function App() {
@@ -23,6 +25,8 @@ export default function App() {
         <Route path="payment/:paymentId" element={<PaymentExplorerView />} />
         <Route path="scheme/:schemeId" element={<SchemeView />} />
         <Route path="infrastructure/:infrastructureId" element={<InfrastructureView />} />
+        <Route path="compare/:short" element={<VersionCompareView />} />
+        <Route path="quiz/debug-reject" element={<DebugQuizView />} />
         <Route path="wero" element={<Navigate to="/payment/wero" replace />} />
         <Route path="message/:slug" element={<MessageAlias />} />
         <Route path="map" element={<MapView />} />

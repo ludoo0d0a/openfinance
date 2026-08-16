@@ -37,4 +37,13 @@ describe('getPaymentJourney', () => {
     expect(journey.hops.some((h) => h.id === 'inst-002-ok')).toBe(false);
     expect(journey.hops.some((h) => h.id === 'inst-002-rjct')).toBe(false);
   });
+
+  it('prefers TIPS for France but keeps RT1 selectable', () => {
+    const payment = paymentById('sepa-instant')!;
+    const fr = resolveJourneyOptions(payment, { locale: 'en', country: 'FR' });
+    expect(fr.rail).toBe('tips');
+    expect(payment.infrastructureIds).toContain('rt1');
+    const rt1 = resolveJourneyOptions(payment, { locale: 'en', country: 'FR', rail: 'rt1' });
+    expect(rt1.rail).toBe('rt1');
+  });
 });

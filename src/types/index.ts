@@ -233,11 +233,12 @@ export interface CatalogRelation {
   to: EntityRef;
 }
 
-export type PaymentKind = 'credit-transfer' | 'instant' | 'wallet';
-export type InitiationChannel = 'bank' | 'pisp' | 'wero';
+export type PaymentKind = 'credit-transfer' | 'instant' | 'wallet' | 'direct-debit' | 'card' | 'cross-border';
+export type InitiationChannel = 'bank' | 'pisp' | 'wero' | 'merchant' | 'creditor';
 export type PaymentOutcome = 'happy' | 'reject' | 'timeout';
 export type ExplorerLevel = 'simple' | 'expert';
-export type PaymentActorId = 'payer' | 'bankA' | 'csm' | 'bankB' | 'beneficiary' | 'scheme';
+export type PaymentActorId = 'payer' | 'bankA' | 'csm' | 'bankB' | 'beneficiary' | 'scheme' | 'merchant' | 'acquirer';
+export type CountryId = 'FR' | 'DE' | 'CH';
 
 export interface SourceRef {
   name: string;
@@ -254,12 +255,23 @@ export interface PaymentHop {
   expertLabel: LocalizedText;
   tOffset?: LocalizedText;
   sla?: LocalizedText;
+  /** Must point at a real Flow when the hop mirrors catalog clearing. */
   flowId?: string;
   step?: number;
   sampleId?: string;
   outcomes: PaymentOutcome[];
   rails?: string[];
   initiation?: InitiationChannel[];
+  /** When set, hop only appears for these payer countries. */
+  countries?: CountryId[];
+}
+
+export interface PaymentStory {
+  /** Fixed pedagogical corridor, e.g. €100 France → Germany. */
+  amountLabel: LocalizedText;
+  fromCountry: CountryId;
+  toCountry: CountryId;
+  headline: LocalizedText;
 }
 
 export interface Payment {
@@ -276,8 +288,23 @@ export interface Payment {
   relatedFlowIds: string[];
   initiationChannels: InitiationChannel[];
   comparePaymentId?: string;
+  /** Optional fixed story the timeline tells (MVP “€100 FR→DE”). */
+  story?: PaymentStory;
+  /** Countries offered in the country picker for this payment. */
+  countryIds?: CountryId[];
+  defaultCountryId?: CountryId;
   sources: SourceRef[];
   disclaimer: LocalizedText;
+}
+
+export interface CountryContext {
+  id: CountryId;
+  name: LocalizedText;
+  /** Preferred default rail when the payment allows it. */
+  preferredRailId?: string;
+  cutoffNote: LocalizedText;
+  reachabilityNote: LocalizedText;
+  exceptionNote: LocalizedText;
 }
 
 export interface Scheme {

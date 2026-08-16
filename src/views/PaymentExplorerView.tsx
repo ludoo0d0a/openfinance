@@ -3,8 +3,9 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { paymentById, PAYMENTS } from '@/data/payments';
 import { infrastructureById } from '@/data/infrastructures';
 import { schemeById } from '@/data/schemes';
+import { countryById, COUNTRIES } from '@/data/countries';
 import { compareJourneys, getPaymentJourney, resolveJourneyOptions } from '@/lib/paymentJourney';
-import type { ExplorerLevel, InitiationChannel, PaymentOutcome } from '@/types';
+import type { CountryId, ExplorerLevel, InitiationChannel, PaymentOutcome } from '@/types';
 import { PaymentTimeline } from '@/components/PaymentTimeline';
 import { EntityPanel } from '@/components/EntityPanel';
 import { useI18n, useT } from '@/i18n';
@@ -27,6 +28,7 @@ export function PaymentExplorerView() {
         initiation: params.get('via') as InitiationChannel,
         rail: params.get('rail') ?? undefined,
         outcome: params.get('outcome') as PaymentOutcome,
+        country: (params.get('from') as CountryId) || undefined,
       })
     : undefined;
 
@@ -50,6 +52,7 @@ export function PaymentExplorerView() {
   }, [journey, focus]);
 
   const selectedHop = journey?.hops.find((h) => h.id === selectedHopId);
+  const country = opts?.country ? countryById(opts.country) : undefined;
 
   useEffect(() => {
     if (!payment) return;
@@ -77,11 +80,27 @@ export function PaymentExplorerView() {
     setParam('focus', hop?.messageShort ?? id);
   }
 
+  const viaKey = (c: InitiationChannel) =>
+    c === 'bank'
+      ? 'explorer.viaBank'
+      : c === 'pisp'
+        ? 'explorer.viaPisp'
+        : c === 'wero'
+          ? 'explorer.viaWero'
+          : c === 'merchant'
+            ? 'explorer.viaMerchant'
+            : 'explorer.viaCreditor';
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
       <header className="max-w-3xl">
         <p className="eyebrow">{t('explorer.eyebrow')}</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{payment.name[locale]}</h1>
+        {payment.story && (
+          <p className="mt-3 border-l-2 border-jade pl-3 text-[15px] leading-relaxed font-medium">
+            {payment.story.headline[locale]}
+          </p>
+        )}
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{payment.summary[locale]}</p>
         {scheme && (
           <p className="mt-2 text-[13px] text-muted">
@@ -110,13 +129,26 @@ export function PaymentExplorerView() {
             setParam('level', id === 'simple' ? null : id);
           }}
         />
+        {payment.countryIds && payment.countryIds.length > 0 && (
+          <ToggleGroup
+            ariaLabel={t('explorer.country')}
+            value={opts.country ?? payment.defaultCountryId ?? payment.countryIds[0]}
+            options={payment.countryIds.map((id) => ({
+              id,
+              label: COUNTRIES.find((c) => c.id === id)?.name[locale] ?? id,
+            }))}
+            onChange={(id) =>
+              setParam('from', id === payment.defaultCountryId ? null : id)
+            }
+          />
+        )}
         {payment.initiationChannels.length > 1 && (
           <ToggleGroup
             ariaLabel={t('explorer.viaLabel')}
             value={opts.initiation}
             options={payment.initiationChannels.map((c) => ({
               id: c,
-              label: t(c === 'bank' ? 'explorer.viaBank' : c === 'pisp' ? 'explorer.viaPisp' : 'explorer.viaWero'),
+              label: t(viaKey(c)),
             }))}
             onChange={(id) => setParam('via', id === payment.initiationChannels[0] ? null : id)}
           />
@@ -164,6 +196,23 @@ export function PaymentExplorerView() {
           </button>
         )}
       </div>
+
+      {country && (
+        <div className="mt-4 panel grid gap-3 p-4 text-[13px] leading-relaxed sm:grid-cols-3">
+          <div>
+            <p className="eyebrow mb-1">{t('explorer.cutoff')}</p>
+            <p className="text-muted">{country.cutoffNote[locale]}</p>
+          </div>
+          <div>
+            <p className="eyebrow mb-1">{t('explorer.reachability')}</p>
+            <p className="text-muted">{country.reachabilityNote[locale]}</p>
+          </div>
+          <div>
+            <p className="eyebrow mb-1">{t('explorer.localException')}</p>
+            <p className="text-muted">{country.exceptionNote[locale]}</p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <PaymentTimeline
