@@ -7,8 +7,10 @@ import type { ActorId } from '../src/types';
 
 describe('i18n', () => {
   it('resolves nested keys in both locales', () => {
-    expect(resolveMessage(en, 'nav.overview')).toBe('Payment Explorer');
-    expect(resolveMessage(fr, 'nav.overview')).toBe('Payment Explorer');
+    expect(resolveMessage(en, 'nav.overview')).toBe('Home');
+    expect(resolveMessage(fr, 'nav.overview')).toBe('Accueil');
+    expect(resolveMessage(en, 'nav.start')).toBe('Payments');
+    expect(resolveMessage(fr, 'nav.start')).toBe('Paiements');
   });
 
   it('interpolates placeholders', () => {
@@ -23,6 +25,8 @@ describe('i18n', () => {
       'nav.about',
       'home.title1',
       'ad.label',
+      'footer.version',
+      'footer.copyright',
       'locale.fr',
       'flow.entities',
       'flow.fullscreen',

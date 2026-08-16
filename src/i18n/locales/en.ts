@@ -8,12 +8,16 @@ export const en: MessageTree = {
   ad: {
     label: 'Advertisement',
   },
+  footer: {
+    version: 'v{{version}}',
+    copyright: '© {{year}} GeoKing',
+  },
   nav: {
     menu: 'Menu',
     close: 'Close',
     search: 'Search payments, messages, schemes…',
-    start: 'Explore',
-    overview: 'Payment Explorer',
+    start: 'Payments',
+    overview: 'Home',
     try: 'Try editor',
     map: 'Interop map',
     glossary: 'Glossary',

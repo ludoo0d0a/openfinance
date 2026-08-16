@@ -111,19 +111,6 @@ export function AppShell() {
             onNavigate={() => setNavOpen(false)}
           />
         ))}
-        <NavItem to="/quiz/debug-reject" label={t('nav.quiz')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem
-          to="/compare/pacs.008"
-          label={t('nav.compareVersions')}
-          icon={<UI_ICONS.xml size={14} />}
-          onNavigate={() => setNavOpen(false)}
-        />
-        <NavItem
-          to="/glossary"
-          label={t('nav.glossary')}
-          icon={<UI_ICONS.glossary size={14} />}
-          onNavigate={() => setNavOpen(false)}
-        />
       </NavSection>
 
       <NavSection title={t('nav.schemes')}>
@@ -155,6 +142,19 @@ export function AppShell() {
 
       <NavSection title={t('nav.tools')}>
         <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/quiz/debug-reject" label={t('nav.quiz')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem
+          to="/compare/pacs.008"
+          label={t('nav.compareVersions')}
+          icon={<UI_ICONS.xml size={14} />}
+          onNavigate={() => setNavOpen(false)}
+        />
+        <NavItem
+          to="/glossary"
+          label={t('nav.glossary')}
+          icon={<UI_ICONS.glossary size={14} />}
+          onNavigate={() => setNavOpen(false)}
+        />
         <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem
           to="/about"
@@ -168,20 +168,19 @@ export function AppShell() {
         <button
           type="button"
           onClick={() => setCatalogOpen((v) => !v)}
-          className="mb-2 flex w-full items-center justify-between pl-2 text-left"
+          className="mb-2 flex w-full items-center justify-between gap-2 pl-2 text-left"
           aria-expanded={catalogOpen}
         >
-          <span className="eyebrow">{t('nav.catalog')}</span>
+          <span className="text-[13px] font-bold tracking-tight text-ink">{t('nav.catalog')}</span>
           <ChevronDown
             size={14}
-            className={cn('text-muted transition-transform', catalogOpen && 'rotate-180')}
+            className={cn('shrink-0 text-muted transition-transform', catalogOpen && 'rotate-180')}
             aria-hidden
           />
         </button>
         {catalogOpen && (
           <div className="space-y-4">
-            <div>
-              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.standards')}</p>
+            <NavGroup label={t('nav.standards')}>
               {STANDARDS.map((s) => (
                 <NavItem
                   key={s.id}
@@ -192,14 +191,11 @@ export function AppShell() {
                   onNavigate={() => setNavOpen(false)}
                 />
               ))}
-            </div>
-            <div>
-              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.flows')}</p>
+            </NavGroup>
+            <NavGroup label={t('nav.flows')}>
               {Object.entries(flowsByCategory).map(([category, flows]) => (
                 <div key={category} className="mb-2">
-                  <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                    {t(`category.${category}`)}
-                  </p>
+                  <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{t(`category.${category}`)}</p>
                   {flows.map((f) => (
                     <NavItem
                       key={f.id}
@@ -211,14 +207,11 @@ export function AppShell() {
                   ))}
                 </div>
               ))}
-            </div>
-            <div>
-              <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">{t('nav.messages')}</p>
+            </NavGroup>
+            <NavGroup label={t('nav.messages')}>
               {Object.entries(messagesByArea).map(([area, messages]) => (
                 <div key={area} className="mb-2">
-                  <p className="mb-1 pl-2 font-mono text-[10px] uppercase tracking-widest text-muted">
-                    {area}
-                  </p>
+                  <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{area}</p>
                   {messages.map((m) => (
                     <NavItem
                       key={m.short}
@@ -232,7 +225,7 @@ export function AppShell() {
                   ))}
                 </div>
               ))}
-            </div>
+            </NavGroup>
           </div>
         )}
       </section>
@@ -320,6 +313,7 @@ export function AppShell() {
           <PageAd placement="intro" />
           <Outlet />
           <PageAd placement="end" />
+          <SiteFooter />
         </main>
       </div>
 
@@ -363,12 +357,34 @@ export function AppShell() {
   );
 }
 
+function SiteFooter() {
+  const t = useT();
+  return (
+    <footer className="mt-16 border-t border-rule px-4 py-5 lg:px-8">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted">
+        <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
+        <span aria-hidden>·</span>
+        <span>{t('footer.copyright', { year: 2026 })}</span>
+      </p>
+    </footer>
+  );
+}
+
 function NavSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-6">
-      <h2 className="eyebrow mb-2 pl-2">{title}</h2>
+      <h2 className="mb-2 pl-2 text-[13px] font-bold tracking-tight text-ink">{title}</h2>
       <div className="space-y-px">{children}</div>
     </section>
+  );
+}
+
+function NavGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1 pl-2 text-[12px] font-bold text-ink">{label}</p>
+      <div className="space-y-px">{children}</div>
+    </div>
   );
 }
 
