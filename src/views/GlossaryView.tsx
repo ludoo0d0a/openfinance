@@ -258,7 +258,12 @@ export function GlossaryView() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
-        <ul className="panel divide-y divide-rule-soft lg:max-h-[70vh] lg:overflow-y-auto">
+        <ul
+          className={cn(
+            'panel divide-y divide-rule-soft lg:max-h-[70vh] lg:overflow-y-auto',
+            query.trim() && 'max-lg:hidden',
+          )}
+        >
           {filtered.length === 0 && (
             <li className="px-4 py-8 text-center text-sm text-muted">{t('glossary.empty')}</li>
           )}
