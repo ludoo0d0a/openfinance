@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { adsenseClient } from '@/lib/ads';
+import { adsenseClient, ensureAdsScript } from '@/lib/ads';
 import { cn } from '@/lib/cn';
 import { useT } from '@/i18n';
 
@@ -28,6 +28,7 @@ export function AdSlot({
     const ins = insRef.current;
     if (!client || !slot || !ins) return;
     if (ins.getAttribute('data-adsbygoogle-status')) return;
+    ensureAdsScript(client);
     window.adsbygoogle = window.adsbygoogle ?? [];
     try {
       window.adsbygoogle.push({});

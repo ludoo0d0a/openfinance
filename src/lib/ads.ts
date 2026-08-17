@@ -32,10 +32,52 @@ export function adsTxtBody(client: string): string | undefined {
 }
 
 /**
- * Paths where display ads would sit on top of an editor.
+ * Paths where Google would see ads without publisher article content
+ * (editor, graph, quiz, legal, or any unmatched / 404 URL).
  */
+const AD_DISABLED_PREFIXES = ['/try', '/map', '/quiz', '/privacy', '/contact'];
+
 export function adsDisabledForPath(pathname: string): boolean {
-  return pathname === '/try' || pathname.startsWith('/try/');
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (AD_DISABLED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+    return true;
+  }
+  return !isContentPath(path);
+}
+
+/** Catalog and article URLs that have prose a reviewer can read. */
+export function isContentPath(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (path === '/') return true;
+  return [
+    '/payment/',
+    '/scheme/',
+    '/infrastructure/',
+    '/compare/',
+    '/glossary',
+    '/about',
+    '/wero',
+    '/message/',
+    '/messages/',
+    '/samples/',
+    '/standards/',
+    '/flows/',
+    '/codes',
+    '/thesaurus',
+  ].some((prefix) => path === prefix.replace(/\/+$/, '') || path.startsWith(prefix));
+}
+
+/** Load adsbygoogle only after a content page mounts — never in the empty SPA shell. */
+export function ensureAdsScript(client: string): void {
+  if (typeof document === 'undefined' || !client) return;
+  const marker = `adsense-${client}`;
+  if (document.querySelector(`script[data-adsense="${marker}"]`)) return;
+  const script = document.createElement('script');
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
+  script.dataset.adsense = marker;
+  document.head.appendChild(script);
 }
 
 /**

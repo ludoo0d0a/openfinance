@@ -9,6 +9,7 @@ import { MapView } from '@/views/MapView';
 import { TryEditorView } from '@/views/TryEditorView';
 import { GlossaryView } from '@/views/GlossaryView';
 import { AboutView } from '@/views/AboutView';
+import { ContactView, PrivacyView } from '@/views/LegalView';
 import { NotFoundView } from '@/views/NotFoundView';
 import { PaymentExplorerView } from '@/views/PaymentExplorerView';
 import { SchemeView } from '@/views/SchemeView';
@@ -33,6 +34,8 @@ export default function App() {
         <Route path="try" element={<TryEditorView />} />
         <Route path="glossary" element={<GlossaryView />} />
         <Route path="about" element={<AboutView />} />
+        <Route path="privacy" element={<PrivacyView />} />
+        <Route path="contact" element={<ContactView />} />
         <Route path="thesaurus" element={<PreserveQuery to="/glossary" />} />
         <Route path="standards/:standardId" element={<StandardView />} />
         <Route path="flows/:flowId" element={<FlowView />} />

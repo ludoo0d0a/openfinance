@@ -13,7 +13,6 @@ import { INFRASTRUCTURES } from '@/data/infrastructures';
 import { cn } from '@/lib/cn';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
-import { PageAd } from './PageAd';
 
 const THEME_KEY = 'openfinance.theme';
 
@@ -310,9 +309,7 @@ export function AppShell() {
         </nav>
 
         <main className="min-w-0">
-          <PageAd placement="intro" />
           <Outlet />
-          <PageAd placement="end" />
           <SiteFooter />
         </main>
       </div>
@@ -367,6 +364,18 @@ function SiteFooter() {
         <span>{t('footer.copyright', { year: 2026 })}</span>
         <span aria-hidden>·</span>
         <span>{t('footer.license')}</span>
+        <span aria-hidden>·</span>
+        <NavLink to="/about" className="hover:text-ink hover:underline">
+          {t('nav.about')}
+        </NavLink>
+        <span aria-hidden>·</span>
+        <NavLink to="/privacy" className="hover:text-ink hover:underline">
+          {t('nav.privacy')}
+        </NavLink>
+        <span aria-hidden>·</span>
+        <NavLink to="/contact" className="hover:text-ink hover:underline">
+          {t('nav.contact')}
+        </NavLink>
       </p>
     </footer>
   );

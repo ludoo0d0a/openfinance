@@ -16,6 +16,16 @@ export function AboutView() {
         </p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('about.title')}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('about.lead')}</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">{t('about.publisher')}</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          <Link to="/contact" className="text-signal hover:underline">
+            {t('nav.contact')}
+          </Link>
+          {' · '}
+          <Link to="/privacy" className="text-signal hover:underline">
+            {t('nav.privacy')}
+          </Link>
+        </p>
       </header>
 
       <PageAd placement="mid" />

@@ -13,13 +13,9 @@ function adsenseAssets(): Plugin {
 
   return {
     name: 'adsense-assets',
-    transformIndexHtml(html) {
-      const id = client();
-      if (!id) return html;
-      const src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(id)}`;
-      const tag = `<script async src="${src}" crossorigin="anonymous"></script>`;
-      return html.replace('</head>', `    ${tag}\n  </head>`);
-    },
+    // Keep ads.txt in the build. Do not inject adsbygoogle.js into the empty
+    // SPA shell — AdSense rejected geoking.fr for ads on screens without
+    // publisher content. Units load the script after article pages mount.
     generateBundle() {
       const match = client().match(/^(?:ca-)?(pub-\d+)$/);
       if (!match) return;

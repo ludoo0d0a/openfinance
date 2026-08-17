@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://openfinance.geoking.fr/</loc></url>
+  <url><loc>https://openfinance.geoking.fr/about</loc></url>
+  <url><loc>https://openfinance.geoking.fr/privacy</loc></url>
+  <url><loc>https://openfinance.geoking.fr/contact</loc></url>
+  <url><loc>https://openfinance.geoking.fr/glossary</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/sepa-credit-transfer</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/sepa-instant</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/wero</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/sepa-direct-debit</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/card-payment</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/swift-credit-transfer</loc></url>
+</urlset>

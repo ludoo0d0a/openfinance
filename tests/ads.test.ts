@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { adsDisabledForPath, adsTxtBody, adRefreshKey, publisherIdFromClient } from '../src/lib/ads';
+import {
+  adsDisabledForPath,
+  adsTxtBody,
+  adRefreshKey,
+  isContentPath,
+  publisherIdFromClient,
+} from '../src/lib/ads';
 
 describe('ads', () => {
   it('derives ads.txt publisher ids from ca-pub clients', () => {
@@ -15,11 +21,19 @@ describe('ads', () => {
     );
   });
 
-  it('skips the try editor', () => {
+  it('skips screens without publisher article content', () => {
     expect(adsDisabledForPath('/try')).toBe(true);
     expect(adsDisabledForPath('/try/')).toBe(true);
+    expect(adsDisabledForPath('/map')).toBe(true);
+    expect(adsDisabledForPath('/quiz/debug-reject')).toBe(true);
+    expect(adsDisabledForPath('/privacy')).toBe(true);
+    expect(adsDisabledForPath('/contact')).toBe(true);
+    expect(adsDisabledForPath('/this-path-does-not-exist')).toBe(true);
     expect(adsDisabledForPath('/payment/wero')).toBe(false);
     expect(adsDisabledForPath('/glossary')).toBe(false);
+    expect(isContentPath('/')).toBe(true);
+    expect(isContentPath('/about')).toBe(true);
+    expect(isContentPath('/map')).toBe(false);
   });
 
   it('remounts ads when the catalog page or glossary term changes', () => {
