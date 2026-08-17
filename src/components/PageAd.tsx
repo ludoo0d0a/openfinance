@@ -25,8 +25,12 @@ export function PageAd({ placement }: { placement: AdPlacement }) {
 
   const refreshKey = `${placement}:${adRefreshKey(pathname, search)}`;
   return (
-    <div className={placement === 'intro' ? 'px-4 pt-6 lg:px-8' : placement === 'end' ? 'px-4 pb-8 lg:px-8' : 'my-8'}>
-      <AdSlot slot={slot} format={FORMAT[placement]} refreshKey={refreshKey} />
-    </div>
+    <AdSlot
+      key={refreshKey}
+      slot={slot}
+      format={FORMAT[placement]}
+      refreshKey={refreshKey}
+      className={placement === 'intro' ? 'px-4 pt-6 lg:px-8' : placement === 'end' ? 'px-4 pb-8 lg:px-8' : 'my-8'}
+    />
   );
 }
