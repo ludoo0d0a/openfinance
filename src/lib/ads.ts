@@ -1,5 +1,12 @@
+/**
+ * Display ads are paused until geoking.fr is approved. Flip to `false` to
+ * serve units again (env `VITE_ADSENSE_CLIENT` / slots still required).
+ */
+export const ADSENSE_PAUSED = true;
+
 /** AdSense client looks like `ca-pub-123…`. Empty means ads are off. */
 export function adsenseClient(): string {
+  if (ADSENSE_PAUSED) return '';
   return String(import.meta.env.VITE_ADSENSE_CLIENT ?? '').trim();
 }
 
@@ -38,6 +45,7 @@ export function adsTxtBody(client: string): string | undefined {
 const AD_DISABLED_PREFIXES = ['/try', '/map', '/quiz', '/privacy', '/contact'];
 
 export function adsDisabledForPath(pathname: string): boolean {
+  if (ADSENSE_PAUSED) return true;
   const path = pathname.replace(/\/+$/, '') || '/';
   if (AD_DISABLED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
     return true;
