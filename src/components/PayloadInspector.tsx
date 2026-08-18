@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FileCode2, Braces } from 'lucide-react';
 import { parseXml, searchNodes, type XmlNode } from '@/lib/xml';
-import { tryJsonToXml, tryXmlToJsonString } from '@/lib/isoCodec';
+import { tryJsonToXml, tryPrettyJson, tryXmlToJsonString, tryXmlToSourceJson } from '@/lib/isoCodec';
 import { cn } from '@/lib/cn';
 import type { ValidationResult } from '@/types';
 import { useT } from '@/i18n';
@@ -14,7 +14,7 @@ interface Props {
   description?: string;
   onContentChange?: (next: string) => void;
   /**
-   * When true (default for ISO XML), expose an XML | JSON switch.
+   * When true (default), expose an XML | JSON switch.
    * Editing in the alternate format is converted back to the source format.
    */
   allowAltFormat?: boolean;
@@ -35,8 +35,8 @@ export function PayloadInspector({
   initialFilter = '',
 }: Props) {
   const t = useT();
-  const dual = allowAltFormat ?? format === 'xml';
-  const [viewFormat, setViewFormat] = useState<ViewFormat>(format);
+  const dual = allowAltFormat ?? true;
+  const [viewFormat, setViewFormat] = useState<ViewFormat>('xml');
   const [tab, setTab] = useState<Tab>('tree');
   const [filter, setFilter] = useState(initialFilter);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
@@ -45,7 +45,7 @@ export function PayloadInspector({
   const [convertError, setConvertError] = useState<string | null>(null);
 
   useEffect(() => {
-    setViewFormat(format);
+    setViewFormat('xml');
     setConvertError(null);
     setValidation(null);
   }, [format]);
@@ -62,17 +62,27 @@ export function PayloadInspector({
   }, [content]);
 
   const displayContent = useMemo(() => {
-    if (viewFormat === format) return content;
-    if (format === 'xml' && viewFormat === 'json') {
+    let raw: string | null;
+    if (viewFormat === format) {
+      raw = content;
+    } else if (format === 'xml' && viewFormat === 'json') {
       const result = tryXmlToJsonString(content);
-      return result.ok ? result.json : null;
-    }
-    if (format === 'json' && viewFormat === 'xml') {
+      raw = result.ok ? result.json : null;
+    } else if (format === 'json' && viewFormat === 'xml') {
       const result = tryJsonToXml(content);
-      return result.ok ? result.xml : null;
+      raw = result.ok ? result.xml : null;
+    } else {
+      raw = content;
     }
-    return content;
-  }, [content, format, viewFormat]);
+    if (raw == null) return null;
+    // Pretty-print JSON for the tree/raw views, but not while the user is
+    // editing the source JSON — reformatting on each keystroke steals the caret.
+    if (viewFormat === 'json' && !(format === 'json' && onContentChange)) {
+      const pretty = tryPrettyJson(raw);
+      return pretty.ok ? pretty.json : raw;
+    }
+    return raw;
+  }, [content, format, onContentChange, viewFormat]);
 
   const displayError = useMemo(() => {
     if (viewFormat === format) return null;
@@ -104,7 +114,7 @@ export function PayloadInspector({
     return new Set(searchNodes(parsed?.root ?? null, filter).map((n) => n.path + n.name));
   }, [effectiveFormat, filter, parsed]);
 
-  const tabs: Tab[] = effectiveFormat === 'xml' ? ['tree', 'raw', 'validate'] : ['tree', 'raw'];
+  const tabs: Tab[] = format === 'xml' && viewFormat === 'xml' ? ['tree', 'raw', 'validate'] : ['tree', 'raw'];
   const activeTab: Tab = tabs.includes(tab) ? tab : 'tree';
 
   function handleRawChange(next: string) {
@@ -125,7 +135,7 @@ export function PayloadInspector({
       return;
     }
     if (format === 'json' && viewFormat === 'xml') {
-      const result = tryXmlToJsonString(next);
+      const result = tryXmlToSourceJson(next, content);
       if (!result.ok) {
         setConvertError(result.error);
         return;
@@ -166,7 +176,7 @@ export function PayloadInspector({
         <div className="min-w-0">
           <p className="eyebrow-dark inline-flex items-center gap-1.5">
             {effectiveFormat === 'xml' ? <FileCode2 size={12} aria-hidden /> : <Braces size={12} aria-hidden />}
-            {format === 'xml' || dual ? t('payload.isoPayload') : t('payload.apiPayload')}
+            {format === 'xml' ? t('payload.isoPayload') : t('payload.apiPayload')}
             {dual && <span className="text-muted-dark">· {effectiveFormat.toUpperCase()}</span>}
           </p>
           <h3 className="truncate text-sm font-semibold text-white">{title}</h3>
@@ -232,7 +242,7 @@ export function PayloadInspector({
                 <p className="px-2 py-4 text-vermillion">Not well-formed: {parsed?.error}</p>
               )
             ) : jsonTree.ok ? (
-              <JsonTree value={jsonTree.value} name="root" filter={filter} depth={0} />
+              <JsonTree value={jsonTree.value} name={null} filter={filter} depth={0} isLast />
             ) : (
               <p className="px-2 py-4 text-vermillion">Invalid JSON: {jsonTree.error}</p>
             )}
@@ -406,38 +416,87 @@ function JsonTree({
   name,
   filter,
   depth,
+  isLast,
 }: {
   value: unknown;
-  name: string;
+  name: string | null;
   filter: string;
   depth: number;
+  isLast: boolean;
 }) {
-  const [open, setOpen] = useState(depth < 3);
+  const [open, setOpen] = useState(depth < 4);
   const q = filter.trim().toLowerCase();
-  const selfMatch = !q || name.toLowerCase().includes(q) || String(value).toLowerCase().includes(q);
+  const selfMatch =
+    !q ||
+    (name != null && name.toLowerCase().includes(q)) ||
+    (value !== null && typeof value !== 'object' && String(value).toLowerCase().includes(q));
+  const comma = isLast ? '' : ',';
+  const rowPad = { paddingLeft: `${depth * 2}ch` };
 
   if (value !== null && typeof value === 'object') {
-    const entries = Array.isArray(value)
+    const isArray = Array.isArray(value);
+    const entries = isArray
       ? value.map((v, i) => [String(i), v] as const)
       : Object.entries(value as Record<string, unknown>);
-    const childMatch = q
-      ? entries.some(([k, v]) => jsonSubtreeMatches(k, v, q))
-      : true;
+    const childMatch = q ? entries.some(([k, v]) => jsonSubtreeMatches(k, v, q)) : true;
     if (q && !selfMatch && !childMatch) return null;
 
+    const openBracket = isArray ? '[' : '{';
+    const closeBracket = isArray ? ']' : '}';
+
+    if (entries.length === 0) {
+      return (
+        <div style={rowPad} className="flex items-baseline px-1.5 py-[3px] hover:bg-ink-raised">
+          <span className="mr-1.5 w-3 shrink-0" />
+          <JsonKey name={name} />
+          <span className="text-muted-dark">
+            {openBracket}
+            {closeBracket}
+            {comma}
+          </span>
+        </div>
+      );
+    }
+
     return (
-      <div style={{ paddingLeft: depth === 0 ? 0 : 14 }}>
+      <div>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex items-baseline gap-1.5 px-1.5 py-[3px] hover:bg-ink-raised"
+          className="flex w-full items-baseline px-1.5 py-[3px] text-left hover:bg-ink-raised"
+          style={rowPad}
         >
-          <span className="w-3 text-muted-dark">{open ? '▾' : '▸'}</span>
-          <span className="text-[#9ecbff]">{name}</span>
-          <span className="text-muted-dark">{Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`}</span>
+          <span className="mr-1.5 w-3 shrink-0 text-muted-dark">{open ? '▾' : '▸'}</span>
+          <JsonKey name={name} />
+          <span className="text-muted-dark">{openBracket}</span>
+          {!open && (
+            <span className="text-muted-dark">
+              {' … '}
+              {closeBracket}
+              {comma}
+            </span>
+          )}
         </button>
         {open &&
-          entries.map(([k, v]) => <JsonTree key={k} value={v} name={k} filter={filter} depth={depth + 1} />)}
+          entries.map(([k, v], i) => (
+            <JsonTree
+              key={k}
+              value={v}
+              name={isArray ? null : k}
+              filter={filter}
+              depth={depth + 1}
+              isLast={i === entries.length - 1}
+            />
+          ))}
+        {open && (
+          <div style={rowPad} className="flex items-baseline px-1.5 py-[3px]">
+            <span className="mr-1.5 w-3 shrink-0" />
+            <span className="text-muted-dark">
+              {closeBracket}
+              {comma}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -445,14 +504,30 @@ function JsonTree({
   if (q && !selfMatch) return null;
 
   return (
-    <div style={{ paddingLeft: depth === 0 ? 0 : 14 }} className="px-1.5 py-[3px] hover:bg-ink-raised">
-      <span className="text-[#9ecbff]">{name}</span>
-      <span className="text-muted-dark">: </span>
-      <span className={typeof value === 'string' ? 'text-jade' : 'text-[#dfe5ee]'}>
-        {typeof value === 'string' ? `"${value}"` : String(value)}
-      </span>
+    <div style={rowPad} className="flex items-baseline px-1.5 py-[3px] hover:bg-ink-raised">
+      <span className="mr-1.5 w-3 shrink-0" />
+      <JsonKey name={name} />
+      <JsonPrimitive value={value} />
+      {comma ? <span className="text-muted-dark">{comma}</span> : null}
     </div>
   );
+}
+
+function JsonKey({ name }: { name: string | null }) {
+  if (name == null) return null;
+  return (
+    <>
+      <span className="text-[#9ecbff]">{JSON.stringify(name)}</span>
+      <span className="text-muted-dark">: </span>
+    </>
+  );
+}
+
+function JsonPrimitive({ value }: { value: unknown }) {
+  if (typeof value === 'string') return <span className="text-jade">{JSON.stringify(value)}</span>;
+  if (value === null) return <span className="text-ochre">null</span>;
+  if (typeof value === 'boolean') return <span className="text-ochre">{String(value)}</span>;
+  return <span className="text-[#dfe5ee]">{String(value)}</span>;
 }
 
 function jsonSubtreeMatches(name: string, value: unknown, q: string): boolean {

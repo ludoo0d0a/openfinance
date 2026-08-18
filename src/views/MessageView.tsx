@@ -309,16 +309,12 @@ export function MessageView() {
               )}
               <div className="h-[70vh] min-h-[520px]">
                 <PayloadInspector
+                  key={sample.id}
                   content={edited ?? sample.content}
                   format={sample.format}
                   title={sample.label}
-                  description={
-                    sample.format === 'xml'
-                      ? `${sample.description} ${t('message.xmlJsonHint')}`
-                      : sample.description
-                  }
+                  description={`${sample.description} ${t('message.xmlJsonHint')}`}
                   onContentChange={setEdited}
-                  allowAltFormat={sample.format === 'xml' || sample.format === 'json'}
                   initialFilter={tagQuery}
                 />
               </div>

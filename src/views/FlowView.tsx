@@ -325,6 +325,7 @@ export function FlowView() {
           {sample ? (
             <div className="xl:sticky xl:top-[69px]" id="step-sample">
               <PayloadInspector
+                key={sample.id}
                 content={sample.content}
                 format={sample.format}
                 title={sample.label}

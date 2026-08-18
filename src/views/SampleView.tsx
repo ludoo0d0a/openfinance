@@ -48,10 +48,10 @@ export function SampleView() {
 
       <div className="h-[74vh] min-h-[540px]">
         <PayloadInspector
+          key={sample.id}
           content={sample.content}
           format={sample.format}
           title={sample.label}
-          allowAltFormat={Boolean(sample.messageShort)}
           initialFilter={tagQuery}
         />
       </div>
