@@ -26,7 +26,7 @@ export const fr: MessageTree = {
     privacy: 'Confidentialité',
     contact: 'Contact',
     standards: 'Standards API',
-    flows: 'Traces techniques',
+    flows: 'Flux',
     messages: 'ISO 20022',
     schemes: 'Schémas',
     infrastructure: 'Infrastructures',

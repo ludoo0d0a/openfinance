@@ -2,7 +2,7 @@
 
 **Live:** [openfinance.geoking.fr](https://openfinance.geoking.fr) ([pages.dev](https://openfinance.pages.dev))
 
-Browse **Payment Explorer**: understand European payments — actors, infrastructures, ISO 20022 messages and schemes — then drill into PSD2 / SIC / Wero technical traces.
+Browse **Payment Explorer**: understand European payments — actors, infrastructures, ISO 20022 messages and schemes — then drill into PSD2 / SIC / Wero flows.
 
 Built with React 19, Vite, Tailwind v4 and Cytoscape on the front, Cloudflare Pages Functions on
 the back, deployed by GitHub Actions.
