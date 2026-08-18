@@ -26,6 +26,8 @@ const TERMS: Term[] = [
   { pattern: /Wero platform/gi, id: 'wero' },
   { pattern: /Plateforme Wero/gi, id: 'wero' },
   { pattern: /\bWero\b/g, id: 'wero' },
+  { pattern: /\bPayPal\b/g, id: 'paypal' },
+  { pattern: /\bCurve\b/g, id: 'curve' },
   { pattern: /Card schemes?/gi, id: 'card-scheme' },
   { pattern: /Schémas? cartes?/gi, id: 'card-scheme' },
   { pattern: /Card payment/gi, id: 'card-scheme' },

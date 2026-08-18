@@ -268,5 +268,8 @@ describe('search index', () => {
   it('finds Payment Explorer journeys', () => {
     const hits = index.search('SEPA Instant');
     expect(hits.some((h) => h.id === 'payment:sepa-instant')).toBe(true);
+    expect(index.search('PayPal').some((h) => h.id === 'payment:paypal')).toBe(true);
+    expect(index.search('Curve').some((h) => h.id === 'payment:curve')).toBe(true);
+    expect(index.search('third party').some((h) => h.id === 'payment:paypal')).toBe(true);
   });
 });

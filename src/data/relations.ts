@@ -39,6 +39,16 @@ export const RELATIONS: CatalogRelation[] = [
   { type: 'initiated_via', from: 'payment:wero', to: 'scheme:wero' },
   { type: 'variant_of', from: 'payment:wero', to: 'payment:sepa-instant' },
 
+  { type: 'uses_message', from: 'payment:paypal', to: 'message:pacs.008' },
+  { type: 'settles_on', from: 'payment:paypal', to: 'infrastructure:card-schemes' },
+  { type: 'defined_by', from: 'payment:paypal', to: 'scheme:paypal' },
+  { type: 'initiated_via', from: 'payment:paypal', to: 'scheme:paypal' },
+
+  { type: 'settles_on', from: 'payment:curve', to: 'infrastructure:card-schemes' },
+  { type: 'defined_by', from: 'payment:curve', to: 'scheme:curve' },
+  { type: 'initiated_via', from: 'payment:curve', to: 'scheme:curve' },
+  { type: 'variant_of', from: 'payment:curve', to: 'payment:card-payment' },
+
   { type: 'related_message', from: 'message:pacs.008', to: 'message:pain.001' },
   { type: 'related_message', from: 'message:pacs.008', to: 'message:pacs.002' },
   { type: 'related_message', from: 'message:pacs.002', to: 'message:pacs.008' },

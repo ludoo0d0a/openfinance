@@ -190,7 +190,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Schéma carte mondial à quatre parties (crédit, débit, prepaid). Maestro est la marque débit historique dans plusieurs marchés européens. Compensation via le réseau Mastercard ; 3-D Secure en e-commerce. Ne pas confondre le schéma carte avec Mastercard Open Finance US (Data Connect) dans ce glossaire.',
   }, {
     aliases: { en: ['Mastercard', 'MasterCard', 'Maestro', 'Mastercard Debit'], fr: ['Mastercard', 'Maestro', 'Mastercard Debit'] },
-    seeAlso: ['card-scheme', 'visa', 'amex', 'cartes-bancaires', '3ds', 'data-connect'],
+    seeAlso: ['card-scheme', 'visa', 'amex', 'cartes-bancaires', '3ds', 'data-connect', 'curve'],
     links: [{ label: 'Card payment', href: '/payments/card-payment' }],
   }),
   g('amex', 'Amex', 'scheme', { en: 'American Express', fr: 'American Express' }, {
@@ -236,7 +236,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Wallet appareil : le PAN est tokénisé (DPAN) et le jeton circule sur un schéma carte existant (Visa, Mastercard, Amex, CB…). Pas un rail A2A. La SCA est en général biométrie appareil plus 3-D Secure du schéma ou cryptogramme du jeton.',
   }, {
     aliases: { en: ['Apple Pay', 'ApplePay'], fr: ['Apple Pay', 'ApplePay'] },
-    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds'],
+    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'curve'],
   }),
   g('google-pay', 'Google Pay', 'scheme', { en: 'Google Pay', fr: 'Google Pay' }, {
     en: 'Google wallet for cards (and in some markets bank accounts). Like Apple Pay, card credentials are tokenised onto Visa/Mastercard/Amex rails rather than moving as a pacs credit transfer.',
@@ -246,11 +246,20 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['apple-pay', 'visa', 'mastercard', 'paypal'],
   }),
   g('paypal', 'PayPal', 'scheme', { en: 'PayPal', fr: 'PayPal' }, {
-    en: 'Wallet / PSP: the customer pays from a PayPal balance, a linked card or a bank account. The merchant often sees PayPal as the acquirer of record, not Visa or SCT. Funding may still hit card schemes or A2A behind the wallet.',
-    fr: 'Wallet / PSP : le client paie depuis un solde PayPal, une carte liée ou un compte. Le commerçant voit souvent PayPal comme acquéreur, pas Visa ni un SCT. Le funding peut quand même taper schémas carte ou A2A derrière le wallet.',
+    en: 'Third-party wallet / PSP: the customer pays from a PayPal balance, a linked card or a bank account. The merchant often sees PayPal as the acquirer of record, not Visa or SCT. Funding may still hit card schemes or A2A behind the wallet; merchant payout is often a later credit transfer.',
+    fr: 'Wallet / PSP tiers : le client paie depuis un solde PayPal, une carte liée ou un compte. Le commerçant voit souvent PayPal comme acquéreur, pas Visa ni un SCT. Le funding peut quand même taper schémas carte ou A2A derrière le wallet ; le paiement commerçant est souvent un virement plus tard.',
   }, {
     aliases: { en: ['PayPal', 'Pay Pal'], fr: ['PayPal'] },
-    seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'emi'],
+    seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'emi', 'curve'],
+    links: [{ label: 'PayPal explorer', href: '/payment/paypal' }],
+  }),
+  g('curve', 'Curve', 'scheme', { en: 'Curve', fr: 'Curve' }, {
+    en: 'Third-party card overlay (card-on-card): Curve issues a Mastercard PAN in front of the payer’s existing cards. The merchant authorizes Curve; Curve then authorizes the selected underlying card. Close to a CBPII / third-party issuer pattern, not an A2A wallet like Wero or PayPal.',
+    fr: 'Overlay carte tiers (carte-sur-carte) : Curve émet un PAN Mastercard devant les cartes existantes du payeur. Le commerçant autorise Curve ; Curve autorise ensuite la carte sous-jacente choisie. Proche d’un CBPII / émetteur tiers, pas un wallet A2A comme Wero ou PayPal.',
+  }, {
+    aliases: { en: ['Curve', 'Curve card', 'card-on-card'], fr: ['Curve', 'carte Curve', 'carte-sur-carte'] },
+    seeAlso: ['mastercard', 'card-scheme', 'cbpii', 'third-party-issuer', 'paypal', 'apple-pay'],
+    links: [{ label: 'Curve explorer', href: '/payment/curve' }],
   }),
   g('alipay', 'Alipay', 'scheme', { en: 'Alipay', fr: 'Alipay' }, {
     en: 'Ant Group wallet dominant in mainland China (QR, in-app). European acquirers offer it for inbound Chinese spend; settlement to the merchant is usually in local currency via an acquirer, not a SEPA pacs from the consumer.',
@@ -369,7 +378,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       en: ['Card Based Payment Instrument Issuer', 'card-based payment instrument issuer', 'third-party issuer'],
       fr: ['émetteur d’instrument de paiement fondé sur une carte', 'CBPII', 'émetteur tiers'],
     },
-    seeAlso: ['piis', 'psp', 'tpp', 'caf', 'third-party-issuer'],
+    seeAlso: ['piis', 'psp', 'tpp', 'caf', 'third-party-issuer', 'curve'],
     sources: ['ukob', 'konsentus', 'bundesbank'],
   }),
   g('third-party-issuer', 'Third-party issuer', 'concept', { en: 'Third-party issuer', fr: 'Émetteur tiers' }, {
@@ -377,7 +386,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Terme PSD2 de la Bundesbank pour un émetteur de carte qui ne tient pas le compte à débiter. En langage XS2A, c’est un CBPII, qui utilise le PIIS / la confirmation de fonds auprès de l’ASPSP.',
   }, {
     aliases: { en: ['third party issuer', 'third-party card issuer'], fr: ['émetteur tiers', 'émetteur de carte tiers'] },
-    seeAlso: ['cbpii', 'piis', 'tpp', 'aspsp'],
+    seeAlso: ['cbpii', 'piis', 'tpp', 'aspsp', 'curve'],
     sources: ['bundesbank'],
   }),
   g('aspsp', 'ASPSP', 'concept', { en: 'Account Servicing Payment Service Provider', fr: 'Prestataire de services de paiement gestionnaire de compte' }, {

@@ -61,6 +61,7 @@ describe('glossary', () => {
       'cartes-bancaires',
       'wero',
       'paypal',
+      'curve',
       'apple-pay',
       'ideal',
       'bancontact',
@@ -180,6 +181,8 @@ describe('glossary', () => {
     expect(index.search('Payconiq').some((h) => String(h.id) === 'term:payconiq')).toBe(true);
     expect(index.search('TIPS').some((h) => String(h.id) === 'term:tips')).toBe(true);
     expect(index.search('Data Connect').some((h) => String(h.id) === 'term:data-connect')).toBe(true);
+    expect(index.search('PayPal').some((h) => String(h.id) === 'term:paypal')).toBe(true);
+    expect(index.search('Curve').some((h) => String(h.id) === 'term:curve')).toBe(true);
   });
 
   it('puts AML first when searching the thesaurus for AML', () => {

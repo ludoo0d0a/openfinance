@@ -85,6 +85,40 @@ describe('getPaymentJourney', () => {
     const opts = resolveJourneyOptions(payment, { locale: 'en', outcome: 'recall' });
     expect(opts.outcome).toBe('happy');
   });
+
+  it('PayPal funds from the wallet then pays the merchant later', () => {
+    const payment = paymentById('paypal')!;
+    const happy = getPaymentJourney('paypal', resolveJourneyOptions(payment, { locale: 'en' }))!;
+    expect(happy.hops.map((h) => h.id)).toEqual([
+      'paypal-choose',
+      'paypal-auth',
+      'paypal-fund',
+      'paypal-notify',
+      'paypal-payout',
+    ]);
+    expect(happy.hops.find((h) => h.id === 'paypal-payout')?.messageShort).toBe('pacs.008');
+    const reject = getPaymentJourney(
+      'paypal',
+      resolveJourneyOptions(payment, { locale: 'en', outcome: 'reject' }),
+    )!;
+    expect(reject.hops.some((h) => h.id === 'paypal-rjct')).toBe(true);
+    expect(reject.hops.some((h) => h.id === 'paypal-payout')).toBe(false);
+  });
+
+  it('Curve runs two card authorisations under one checkout', () => {
+    const payment = paymentById('curve')!;
+    const happy = getPaymentJourney('curve', resolveJourneyOptions(payment, { locale: 'en' }))!;
+    expect(happy.hops.some((h) => h.id === 'curve-route')).toBe(true);
+    expect(happy.hops.some((h) => h.id === 'curve-pull')).toBe(true);
+    expect(happy.hops.some((h) => h.id === 'curve-ok')).toBe(true);
+    expect(happy.hops.some((h) => h.id === 'curve-rjct')).toBe(false);
+    const reject = getPaymentJourney(
+      'curve',
+      resolveJourneyOptions(payment, { locale: 'en', outcome: 'reject' }),
+    )!;
+    expect(reject.hops.some((h) => h.id === 'curve-rjct')).toBe(true);
+    expect(reject.hops.some((h) => h.id === 'curve-ok')).toBe(false);
+  });
 });
 
 describe('payment–flow pairing', () => {

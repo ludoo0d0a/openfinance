@@ -29,6 +29,18 @@ const SRC_EPI: SourceRef = {
   lastUpdated: '2026-08-16',
 };
 
+const SRC_PAYPAL: SourceRef = {
+  name: 'PayPal',
+  url: 'https://www.paypal.com/us/digital-wallet/how-paypal-works',
+  lastUpdated: '2026-08-18',
+};
+
+const SRC_CURVE: SourceRef = {
+  name: 'Curve',
+  url: 'https://www.curve.com/en-gb/how-it-works',
+  lastUpdated: '2026-08-18',
+};
+
 const DISCLAIMER = L(
   'Teaching model of a typical path — not the EPC rulebook or a particular CSM implementation.',
   'Modèle pédagogique d’un parcours typique — pas le rulebook EPC ni l’implémentation d’un CSM particulier.',
@@ -484,6 +496,157 @@ const weroHops: PaymentHop[] = [
   }),
 ];
 
+const paypalHops: PaymentHop[] = [
+  hop('paypal-choose', 'payer', 'merchant', {
+    simple: L(
+      'The payer chooses PayPal at checkout for €100.',
+      'Le payeur choisit PayPal au checkout pour 100 €.',
+    ),
+    expert: L(
+      'Wallet checkout — merchant has not seen a card PAN yet',
+      'Checkout wallet — le commerçant n’a pas encore vu de PAN carte',
+    ),
+    tOffset: L('t+0', 't+0'),
+    initiation: ['merchant'],
+  }),
+  hop('paypal-auth', 'payer', 'scheme', {
+    simple: L(
+      'The payer signs in at PayPal and confirms (SCA).',
+      'Le payeur s’identifie chez PayPal et confirme (SCA).',
+    ),
+    expert: L('PayPal customer authentication / SCA', 'Authentification client PayPal / SCA'),
+  }),
+  hop('paypal-fund', 'scheme', 'bankA', {
+    simple: L(
+      'PayPal takes €100 from the linked card — or from the PayPal balance.',
+      'PayPal prélève 100 € sur la carte liée — ou sur le solde PayPal.',
+    ),
+    expert: L(
+      'Funding: card-scheme auth on the linked PAN, or internal e-money ledger',
+      'Funding : auth schéma carte sur le PAN lié, ou ledger de monnaie électronique',
+    ),
+    outcomes: ['happy', 'reject'],
+  }),
+  hop('paypal-notify', 'scheme', 'merchant', {
+    simple: L(
+      'PayPal tells the merchant the order is paid. The merchant never sees the card.',
+      'PayPal informe le commerçant que la commande est payée. Le commerçant ne voit pas la carte.',
+    ),
+    expert: L(
+      'Capture / webhook — PayPal is the acquirer of record',
+      'Capture / webhook — PayPal est l’acquéreur de record',
+    ),
+    outcomes: ['happy'],
+  }),
+  hop('paypal-payout', 'scheme', 'bankB', {
+    messageShort: 'pacs.008',
+    simple: L(
+      'Later, PayPal pays the merchant — often a SEPA credit transfer, not the card rail.',
+      'Plus tard, PayPal paie le commerçant — souvent un virement SEPA, pas le rail carte.',
+    ),
+    expert: L(
+      'Merchant settlement; often SCT pacs.008 from PayPal’s bank',
+      'Règlement commerçant ; souvent un pacs.008 SCT depuis la banque PayPal',
+    ),
+    tOffset: L('D+1 or batch', 'J+1 ou lot'),
+    sampleId: 'pacs-008-sct',
+    outcomes: ['happy'],
+  }),
+  hop('paypal-rjct', 'bankA', 'scheme', {
+    simple: L(
+      'The linked card (or bank) refuses. PayPal does not capture; the merchant is not paid.',
+      'La carte liée (ou la banque) refuse. PayPal ne capture pas ; le commerçant n’est pas payé.',
+    ),
+    expert: L('Funding decline — no merchant capture', 'Refus du funding — pas de capture commerçant'),
+    outcomes: ['reject'],
+  }),
+];
+
+const curveHops: PaymentHop[] = [
+  hop('curve-tap', 'payer', 'merchant', {
+    simple: L(
+      'The payer pays with their Curve card — a Mastercard in front of their real cards.',
+      'Le payeur paie avec sa carte Curve — un Mastercard devant ses vraies cartes.',
+    ),
+    expert: L(
+      'Card present / e-com with Curve PAN (Mastercard BIN)',
+      'Carte présente / e-com avec PAN Curve (BIN Mastercard)',
+    ),
+    tOffset: L('t+0', 't+0'),
+    initiation: ['merchant'],
+  }),
+  hop('curve-acq', 'merchant', 'acquirer', {
+    simple: L(
+      'The merchant’s acquirer forwards the authorization — they see Curve, not the bank card.',
+      'L’acquéreur du commerçant relaie l’autorisation — il voit Curve, pas la carte bancaire.',
+    ),
+    expert: L('Acquirer auth on the Curve PAN', 'Auth acquéreur sur le PAN Curve'),
+  }),
+  hop('curve-route', 'acquirer', 'scheme', {
+    simple: L(
+      'Mastercard routes to Curve as the issuer of that PAN.',
+      'Mastercard route vers Curve, émetteur de ce PAN.',
+    ),
+    expert: L('Scheme switch to Curve BIN / issuer', 'Commutateur schéma vers BIN / émetteur Curve'),
+  }),
+  hop('curve-pull', 'scheme', 'bankA', {
+    simple: L(
+      'Curve asks the selected underlying card’s issuer to hold €100.',
+      'Curve demande à l’émetteur de la carte sous-jacente de réserver 100 €.',
+    ),
+    expert: L(
+      'Second authorization: Curve on the funding card (card-on-card)',
+      'Seconde autorisation : Curve sur la carte de funding (carte-sur-carte)',
+    ),
+    outcomes: ['happy', 'reject'],
+  }),
+  hop('curve-ok', 'bankA', 'scheme', {
+    simple: L(
+      'The underlying issuer approves. Curve then approves the merchant authorization.',
+      'L’émetteur sous-jacent approuve. Curve approuve alors l’autorisation commerçant.',
+    ),
+    expert: L(
+      'Dual-auth complete: funding-card hold + Curve issuer approve',
+      'Double auth : réserve carte de funding + approbation émetteur Curve',
+    ),
+    outcomes: ['happy'],
+  }),
+  hop('curve-clear', 'acquirer', 'scheme', {
+    simple: L(
+      'Later, two clearings move: merchant vs Curve, and Curve vs the underlying card.',
+      'Plus tard, deux compensations : commerçant vs Curve, et Curve vs la carte sous-jacente.',
+    ),
+    expert: L(
+      'Two card clearing files (not ISO 20022 pacs)',
+      'Deux fichiers de clearing carte (pas des pacs ISO 20022)',
+    ),
+    tOffset: L('D or D+1', 'J ou J+1'),
+    outcomes: ['happy'],
+  }),
+  hop('curve-settle', 'scheme', 'bankB', {
+    simple: L(
+      'Settlement credits the merchant. Curve settles separately with the payer’s bank.',
+      'Le règlement crédite le commerçant. Curve règle à part avec la banque du payeur.',
+    ),
+    expert: L(
+      'Scheme settlement to acquirer; Curve vs issuer is a second settlement',
+      'Règlement schéma vers acquéreur ; Curve vs émetteur est un second règlement',
+    ),
+    outcomes: ['happy'],
+  }),
+  hop('curve-rjct', 'bankA', 'scheme', {
+    simple: L(
+      'The underlying card is declined. Curve declines the merchant auth — one refusal, two schemes.',
+      'La carte sous-jacente est refusée. Curve refuse l’auth commerçant — un refus, deux schémas.',
+    ),
+    expert: L(
+      'Funding-card decline mapped to Curve issuer decline',
+      'Refus de la carte de funding reporté en refus émetteur Curve',
+    ),
+    outcomes: ['reject'],
+  }),
+];
+
 const sddHops: PaymentHop[] = [
   hop('sdd-pain', 'beneficiary', 'bankB', {
     messageShort: 'pain.008',
@@ -675,6 +838,68 @@ export const PAYMENTS: Payment[] = [
     countryIds: ['FR', 'DE'],
     defaultCountryId: 'FR',
     sources: [SRC_EPI, SRC_EPC],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'paypal',
+    kind: 'wallet',
+    name: L('PayPal', 'PayPal'),
+    summary: L(
+      'A €100 third party wallet checkout: the merchant sees PayPal, not a card. Funding may still hit a card scheme or the PayPal balance; the merchant is often paid later by transfer.',
+      'Un checkout wallet tiers de 100 € : le commerçant voit PayPal, pas une carte. Le funding peut quand même taper un schéma carte ou le solde PayPal ; le commerçant est souvent payé plus tard par virement.',
+    ),
+    schemeId: 'paypal',
+    infrastructureIds: ['card-schemes'],
+    defaultRailId: 'card-schemes',
+    messageShorts: ['pacs.008'],
+    actors: ['payer', 'merchant', 'scheme', 'bankA', 'bankB'],
+    hops: paypalHops,
+    relatedFlowIds: [],
+    initiationChannels: ['merchant'],
+    comparePaymentId: 'card-payment',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 go through PayPal from France to a German merchant?',
+        'Comment 100 € passent-ils par PayPal de la France vers un commerçant allemand ?',
+      ),
+    },
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
+    sources: [SRC_PAYPAL],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'curve',
+    kind: 'card',
+    name: L('Curve', 'Curve'),
+    summary: L(
+      'A €100 third party card overlay: the merchant sees a Curve Mastercard. Curve then authorizes the payer’s real card underneath — two schemes, one checkout.',
+      'Un overlay carte tiers de 100 € : le commerçant voit un Mastercard Curve. Curve autorise ensuite la vraie carte du payeur en dessous — deux schémas, un checkout.',
+    ),
+    schemeId: 'curve',
+    infrastructureIds: ['card-schemes'],
+    defaultRailId: 'card-schemes',
+    messageShorts: [],
+    actors: ['payer', 'merchant', 'acquirer', 'scheme', 'bankA', 'bankB'],
+    hops: curveHops,
+    relatedFlowIds: [],
+    initiationChannels: ['merchant'],
+    comparePaymentId: 'card-payment',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 travel when the payer uses Curve?',
+        'Comment 100 € voyagent-ils quand le payeur utilise Curve ?',
+      ),
+    },
+    countryIds: ['FR', 'DE', 'CH'],
+    defaultCountryId: 'FR',
+    sources: [SRC_CURVE],
     disclaimer: DISCLAIMER,
   },
   {

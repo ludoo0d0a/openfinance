@@ -18,6 +18,18 @@ const SRC_SWIFT = {
   lastUpdated: '2026-08-16',
 };
 
+const SRC_PAYPAL = {
+  name: 'PayPal',
+  url: 'https://www.paypal.com/us/digital-wallet/how-paypal-works',
+  lastUpdated: '2026-08-18',
+};
+
+const SRC_CURVE = {
+  name: 'Curve',
+  url: 'https://www.curve.com/en-gb/how-it-works',
+  lastUpdated: '2026-08-18',
+};
+
 export const SCHEMES: Scheme[] = [
   {
     id: 'sct',
@@ -51,6 +63,28 @@ export const SCHEMES: Scheme[] = [
     },
     explorePaymentId: 'wero',
     sources: [SRC_EPI],
+  },
+  {
+    id: 'paypal',
+    name: { en: 'PayPal', fr: 'PayPal' },
+    operator: 'PayPal',
+    summary: {
+      en: 'Third-party wallet / PSP. The merchant sees PayPal as acquirer of record; funding may still hit a card scheme, a bank account or the PayPal balance. Merchant payout is often a later credit transfer.',
+      fr: 'Wallet / PSP tiers. Le commerçant voit PayPal comme acquéreur de record ; le funding peut quand même taper un schéma carte, un compte ou le solde PayPal. Le paiement commerçant est souvent un virement plus tard.',
+    },
+    explorePaymentId: 'paypal',
+    sources: [SRC_PAYPAL],
+  },
+  {
+    id: 'curve',
+    name: { en: 'Curve', fr: 'Curve' },
+    operator: 'Curve',
+    summary: {
+      en: 'Third-party card overlay: Curve issues a Mastercard PAN in front of the payer’s existing cards. The merchant authorizes Curve; Curve then authorizes the underlying card (card-on-card).',
+      fr: 'Overlay carte tiers : Curve émet un PAN Mastercard devant les cartes existantes du payeur. Le commerçant autorise Curve ; Curve autorise ensuite la carte sous-jacente (carte-sur-carte).',
+    },
+    explorePaymentId: 'curve',
+    sources: [SRC_CURVE],
   },
   {
     id: 'sdd',
