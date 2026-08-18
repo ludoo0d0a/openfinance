@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseXml, collectPaths, searchNodes } from '../src/lib/xml';
 import { SAMPLES } from '../src/data/samples';
-import { ISO_MESSAGES } from '../src/data/iso20022';
+import { ISO_MESSAGES, versionsFor } from '../src/data/iso20022';
+import { canonicalId } from '../src/lib/messageId';
 
 const pacs008 = SAMPLES.find((s) => s.id === 'pacs-008-sct')!;
 
@@ -42,7 +43,9 @@ describe('bundled XML samples', () => {
     const parsed = parseXml(sample.content);
     const message = ISO_MESSAGES.find((m) => m.short === sample.messageShort);
     expect(message, `no catalog entry for ${sample.messageShort}`).toBeDefined();
-    expect(parsed.messageId).toBe(message!.id);
+    expect(parsed.messageId).toBeDefined();
+    const knownIds = versionsFor(message!).map((v) => canonicalId(v.id));
+    expect(knownIds, `${sample.id} xmlns ${parsed.messageId}`).toContain(parsed.messageId);
     expect(parsed.root?.children[0]?.name).toBe(message!.rootElement);
   });
 

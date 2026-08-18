@@ -325,9 +325,11 @@ export const en: MessageTree = {
     namespace: 'Namespace',
     variant: 'Variant (flavour)',
     version: 'Version',
+    country: 'Country',
+    guideline: 'Usage guideline',
     versions: 'Schema versions',
     versionsLead:
-      'SWIFT and ISO publish successive revisions of the same message (e.g. pacs.008.001.08 → .10 → .13). Markets and exchange zones (SEPA, CBPR+, SIC…) mandate one via their usage guideline — the xmlns must match.',
+      'SWIFT and ISO publish successive revisions of the same message (e.g. pacs.008.001.08 → .10 → .13). Markets can also mandate a country usage-guideline suffix (pacs.008.001.08.ch.02) — the xmlns must match.',
     markets: 'Markets / rails',
     versionCurrent: 'current',
     versionLegacy: 'legacy',

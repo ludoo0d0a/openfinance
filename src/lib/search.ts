@@ -7,6 +7,7 @@ import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/da
 import { PAYMENTS } from '@/data/payments';
 import { SCHEMES } from '@/data/schemes';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
+import { compactMessageId, parseMessageId } from '@/lib/messageId';
 import { extractPayloadTags, looksLikeIsoTag } from '@/lib/payloadTags';
 
 export type ResultKind =
@@ -123,7 +124,10 @@ function buildDocuments(): IndexedDoc[] {
         m.area,
         m.direction,
         ...m.tags,
-        ...(m.versions ?? []).flatMap((v) => [v.id, ...v.markets]),
+        ...(m.versions ?? []).flatMap((v) => {
+          const compact = compactMessageId(parseMessageId(v.id));
+          return compact ? [v.id, compact, ...v.markets] : [v.id, ...v.markets];
+        }),
         ...pathTags,
       ].join(' '),
       tags: [...new Set([m.rootElement, ...pathTags, ...sampleTags])].join(' '),

@@ -1,16 +1,16 @@
 import type { Iso20022Message, Locale, MessageVersion } from '@/types';
 // Relative path: Wrangler Pages Functions bundle this file without Vite aliases.
-import { parseMessageId } from '../lib/messageId';
+import { canonicalId, parseMessageId } from '../lib/messageId';
 
 /**
  * ISO 20022 messages that show up in a PSD2 estate.
  * `requiredPaths` is a pragmatic subset used by /api/validate — enough to catch
  * the mistakes people actually make, not a replacement for the XSD.
  *
- * `versions` lists SWIFT/ISO successive schema revisions (pacs.008.001.08 → .10 → .13).
- * Markets (SEPA, CBPR+, SIC…) pick a revision via their usage guidelines — the
- * business message stays the same; the xmlns does not.
- */export const ISO_MESSAGES: Iso20022Message[] = [
+ * `versions` lists SWIFT/ISO schema revisions and national usage guidelines
+ * (pacs.008.001.08 → .08.ch.02 → .10 → .13). Markets pick one — the xmlns must match.
+ */
+export const ISO_MESSAGES: Iso20022Message[] = [
   // ── pain: customer to bank ──────────────────────────────────────────────
   {
     id: 'pain.001.001.09',
@@ -42,10 +42,20 @@ import { parseMessageId } from '../lib/messageId';
         id: 'pain.001.001.09',
         schemaName: 'CustomerCreditTransferInitiationV09',
         status: 'current',
-        markets: ['sepa-sct', 'swiss-sps', 'uk-ob'],
+        markets: ['sepa-sct', 'uk-ob'],
         notes: {
-          en: 'EPC / SPS customer initiation baseline used with modern pain.001 file and API payloads.',
-          fr: 'Référence EPC / SPS pour l’initiation client, utilisée avec les payloads pain.001 fichier et API modernes.',
+          en: 'EPC customer initiation baseline used with modern pain.001 file and API payloads. UK Open Banking bulk channels reuse this xmlns.',
+          fr: 'Référence EPC pour l’initiation client, utilisée avec les payloads pain.001 fichier et API modernes. Les canaux bulk UK Open Banking réutilisent ce xmlns.',
+        },
+      },
+      {
+        id: 'pain.001.001.09.ch.03',
+        schemaName: 'CustomerCreditTransferInitiationV09',
+        status: 'current',
+        markets: ['swiss-sps'],
+        notes: {
+          en: 'Swiss Payment Standards customer-bank schema. Document xmlns is the SIX URL, not the ISO urn; CHF SIC initiation must quote this id.',
+          fr: 'Schéma client-banque Swiss Payment Standards. Le xmlns Document est l’URL SIX, pas l’urn ISO ; l’initiation SIC CHF doit citer cet id.',
         },
       },
       {
@@ -56,6 +66,16 @@ import { parseMessageId } from '../lib/messageId';
         notes: {
           en: 'Older SEPA pain.001 still seen in legacy file channels. Do not mix with a bank that only accepts .09.',
           fr: 'Ancien pain.001 SEPA encore vu sur des canaux fichier historiques. Ne pas mélanger avec une banque qui n’accepte que le .09.',
+        },
+      },
+      {
+        id: 'pain.001.003.03',
+        schemaName: 'CustomerCreditTransferInitiationV03',
+        status: 'legacy',
+        markets: ['dk'],
+        notes: {
+          en: 'German DK / DFÜ-Abkommen flavour 003, still sent on many EBICS contracts. Same ISO version as .001.03 but a different variant — not a .de country suffix.',
+          fr: 'Flavour 003 DK / DFÜ-Abkommen allemand, encore envoyé sur de nombreux contrats EBICS. Même version ISO que le .001.03 mais une variante différente — pas un suffixe pays .de.',
         },
       },
     ],
@@ -77,6 +97,28 @@ import { parseMessageId } from '../lib/messageId';
     ],
     flows: ['sic-chf-credit'],
     tags: ['status', 'report', 'rejection', 'pain', 'sic'],
+    versions: [
+      {
+        id: 'pain.002.001.10',
+        schemaName: 'CustomerPaymentStatusReportV10',
+        status: 'current',
+        markets: ['sepa-sct'],
+        notes: {
+          en: 'ISO / EPC customer status report paired with pain.001.001.09. OrgnlMsgNmId must quote the original initiation’s full versioned id.',
+          fr: 'Rapport de statut client ISO / EPC associé au pain.001.001.09. OrgnlMsgNmId doit citer l’id versionné complet de l’initiation d’origine.',
+        },
+      },
+      {
+        id: 'pain.002.001.10.ch.03',
+        schemaName: 'CustomerPaymentStatusReportV10',
+        status: 'current',
+        markets: ['swiss-sps'],
+        notes: {
+          en: 'Swiss Payment Standards status report. Pair it with pain.001.001.09.ch.03; a plain ISO xmlns here is a common Swiss-bank rejection.',
+          fr: 'Rapport de statut Swiss Payment Standards. Associez-le au pain.001.001.09.ch.03 ; un xmlns ISO nu est un motif de rejet fréquent en Suisse.',
+        },
+      },
+    ],
   },
   {
     id: 'pain.008.001.08',
@@ -94,6 +136,28 @@ import { parseMessageId } from '../lib/messageId';
     ],
     flows: [],
     tags: ['direct debit', 'sdd', 'mandate', 'pain'],
+    versions: [
+      {
+        id: 'pain.008.001.08',
+        schemaName: 'CustomerDirectDebitInitiationV08',
+        status: 'current',
+        markets: ['sepa-sct'],
+        notes: {
+          en: 'EPC SEPA Direct Debit initiation on the current ISO catalogue revision.',
+          fr: 'Initiation de prélèvement SEPA EPC sur la révision courante du catalogue ISO.',
+        },
+      },
+      {
+        id: 'pain.008.003.02',
+        schemaName: 'CustomerDirectDebitInitiationV02',
+        status: 'legacy',
+        markets: ['dk'],
+        notes: {
+          en: 'German DK / DFÜ-Abkommen SDD flavour 003. Still common on EBICS; not a .de country suffix.',
+          fr: 'Flavour 003 DK / DFÜ-Abkommen pour le SDD. Encore courant sur EBICS ; ce n’est pas un suffixe pays .de.',
+        },
+      },
+    ],
   },
   {
     id: 'pain.013.001.09',
@@ -161,10 +225,20 @@ import { parseMessageId } from '../lib/messageId';
         id: 'pacs.008.001.08',
         schemaName: 'FIToFICustomerCreditTransferV08',
         status: 'current',
-        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1', 'sic', 'eurosic', 'target2'],
+        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1', 'target2'],
         notes: {
-          en: 'SEPA / SCT Inst / SIC / euroSIC baseline. EPC rulebooks and most TIPS/RT1 traffic still expect this xmlns. Samples in this explorer use .08.',
-          fr: 'Référence SEPA / SCT Inst / SIC / euroSIC. Les rulebooks EPC et la plupart du trafic TIPS/RT1 attendent encore ce xmlns. Les exemples de l’explorateur utilisent le .08.',
+          en: 'SEPA / SCT Inst / TARGET2 baseline. EPC rulebooks and most TIPS/RT1 traffic still expect this ISO xmlns. SEPA samples in this explorer use .08.',
+          fr: 'Référence SEPA / SCT Inst / TARGET2. Les rulebooks EPC et la plupart du trafic TIPS/RT1 attendent encore ce xmlns ISO. Les exemples SEPA de l’explorateur utilisent le .08.',
+        },
+      },
+      {
+        id: 'pacs.008.001.08.ch.02',
+        schemaName: 'FIToFICustomerCreditTransferV08',
+        status: 'current',
+        markets: ['sic', 'eurosic', 'swiss-sps'],
+        notes: {
+          en: 'SIC / euroSIC / SIC IP usage guideline. SIX publishes pacs.008.001.08.ch.02.xsd with a CH-specific namespace; ClrSys remains SIC, SICIP or EUROSIC.',
+          fr: 'Guide d’usage SIC / euroSIC / SIC IP. SIX publie pacs.008.001.08.ch.02.xsd avec un namespace CH ; ClrSys reste SIC, SICIP ou EUROSIC.',
         },
       },
       {
@@ -223,10 +297,20 @@ import { parseMessageId } from '../lib/messageId';
         id: 'pacs.002.001.10',
         schemaName: 'FIToFIPaymentStatusReportV10',
         status: 'current',
-        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1', 'sic', 'eurosic'],
+        markets: ['sepa-sct', 'sepa-sct-inst', 'tips', 'rt1'],
         notes: {
-          en: 'Status report paired with pacs.008.001.08 on SEPA / SCT Inst / SIC rails. OrgnlMsgNmId must quote the original message’s full versioned id.',
-          fr: 'Rapport de statut associé au pacs.008.001.08 sur les rails SEPA / SCT Inst / SIC. OrgnlMsgNmId doit citer l’id versionné complet du message d’origine.',
+          en: 'Status report paired with pacs.008.001.08 on SEPA / SCT Inst rails. OrgnlMsgNmId must quote the original message’s full versioned id.',
+          fr: 'Rapport de statut associé au pacs.008.001.08 sur les rails SEPA / SCT Inst. OrgnlMsgNmId doit citer l’id versionné complet du message d’origine.',
+        },
+      },
+      {
+        id: 'pacs.002.001.10.ch.02',
+        schemaName: 'FIToFIPaymentStatusReportV10',
+        status: 'current',
+        markets: ['sic', 'eurosic', 'swiss-sps'],
+        notes: {
+          en: 'SIC receipt/settlement ack. Pair it with pacs.008.001.08.ch.02 so OrgnlMsgNmId matches the original Swiss interbank xmlns.',
+          fr: 'Ack de réception/règlement SIC. Associez-le au pacs.008.001.08.ch.02 pour que OrgnlMsgNmId corresponde au xmlns interbancaire suisse d’origine.',
         },
       },
       {
@@ -443,6 +527,7 @@ export const MESSAGE_MARKET_LABELS: Record<string, Record<Locale, string>> = {
   sic: { en: 'SIC', fr: 'SIC' },
   eurosic: { en: 'euroSIC', fr: 'euroSIC' },
   'swiss-sps': { en: 'Swiss SPS', fr: 'SPS suisse' },
+  dk: { en: 'German DK', fr: 'DK allemande' },
   'uk-ob': { en: 'UK Open Banking', fr: 'UK Open Banking' },
 };
 
@@ -472,7 +557,8 @@ export function versionsFor(message: Iso20022Message): MessageVersion[] {
 }
 
 export function versionById(message: Iso20022Message, id: string): MessageVersion | undefined {
-  return versionsFor(message).find((v) => v.id === id);
+  const wanted = canonicalId(id);
+  return versionsFor(message).find((v) => canonicalId(v.id) === wanted);
 }
 
 export const AREA_LABELS: Record<string, string> = {

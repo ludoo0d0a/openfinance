@@ -11,7 +11,7 @@ export type BusinessArea = 'pain' | 'pacs' | 'camt' | 'acmt' | 'auth' | 'remt';
 
 export type Layer = 'api' | 'clearing';
 
-/** ISO 20022 message identifier, e.g. pacs.008.001.08 */
+/** ISO 20022 message identifier, e.g. pacs.008.001.08 or pacs.008.001.08.ch.02 */
 export interface MessageIdParts {
   /** Business area: pacs, pain, camt … */
   area: string;
@@ -21,9 +21,13 @@ export interface MessageIdParts {
   variant: string;
   /** Version: 08 */
   version: string;
+  /** ISO 3166 country on a usage-guideline suffix: ch */
+  country: string;
+  /** Usage-guideline revision after the country: 02 */
+  guideline: string;
   /** True when the string parsed cleanly */
   valid: boolean;
-  /** Short form without variant/version: pacs.008 */
+  /** Short form without variant/version/country: pacs.008 */
   short: string;
   raw: string;
 }

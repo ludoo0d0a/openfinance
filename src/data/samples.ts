@@ -772,7 +772,7 @@ export const SAMPLES: Sample[] = [
     description:
       'Swiss Payment Standards initiation in CHF. No SEPA service level — this becomes a SIC pacs.008, not STEP2.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pain.001.001.09.ch.03.xsd">
   <CstmrCdtTrfInitn>
     <GrpHdr>
       <MsgId>PAIN1-CH-20260812-001</MsgId>
@@ -815,7 +815,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'Customer status report ACTC before the instruction hits SIC.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.002.001.10">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pain.002.001.10.ch.03.xsd">
   <CstmrPmtStsRpt>
     <GrpHdr>
       <MsgId>PAIN2-CH-20260812-001</MsgId>
@@ -824,7 +824,7 @@ export const SAMPLES: Sample[] = [
     </GrpHdr>
     <OrgnlGrpInfAndSts>
       <OrgnlMsgId>PAIN1-CH-20260812-001</OrgnlMsgId>
-      <OrgnlMsgNmId>pain.001.001.09</OrgnlMsgNmId>
+      <OrgnlMsgNmId>pain.001.001.09.ch.03</OrgnlMsgNmId>
       <GrpSts>ACTC</GrpSts>
     </OrgnlGrpInfAndSts>
     <OrgnlPmtInfAndSts>
@@ -846,7 +846,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'Interbank CHF credit into SIC. ClrSys identifies the Swiss RTGS, not STEP2.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pacs.008.001.08.ch.02.xsd">
   <FIToFICstmrCdtTrf>
     <GrpHdr>
       <MsgId>PACS8-SIC-20260812-001</MsgId>
@@ -889,7 +889,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'SIC acknowledges receipt (RCVD) to the instructing participant.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pacs.002.001.10.ch.02.xsd">
   <FIToFIPmtStsRpt>
     <GrpHdr>
       <MsgId>PACS2-SIC-20260812-001</MsgId>
@@ -897,7 +897,7 @@ export const SAMPLES: Sample[] = [
     </GrpHdr>
     <OrgnlGrpInfAndSts>
       <OrgnlMsgId>PACS8-SIC-20260812-001</OrgnlMsgId>
-      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+      <OrgnlMsgNmId>pacs.008.001.08.ch.02</OrgnlMsgNmId>
     </OrgnlGrpInfAndSts>
     <TxInfAndSts>
       <OrgnlEndToEndId>E2E-CH-2026-0001</OrgnlEndToEndId>
@@ -915,7 +915,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'CHF instant credit on SIC IP. Same message family as SCT Inst, Swiss instant ClrSys.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pacs.008.001.08.ch.02.xsd">
   <FIToFICstmrCdtTrf>
     <GrpHdr>
       <MsgId>PACS8-SIP-20260812-009</MsgId>
@@ -956,7 +956,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'SIC IP ACSC inside the instant window.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pacs.002.001.10.ch.02.xsd">
   <FIToFIPmtStsRpt>
     <GrpHdr>
       <MsgId>PACS2-SIP-20260812-009</MsgId>
@@ -964,7 +964,7 @@ export const SAMPLES: Sample[] = [
     </GrpHdr>
     <OrgnlGrpInfAndSts>
       <OrgnlMsgId>PACS8-SIP-20260812-009</OrgnlMsgId>
-      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+      <OrgnlMsgNmId>pacs.008.001.08.ch.02</OrgnlMsgNmId>
     </OrgnlGrpInfAndSts>
     <TxInfAndSts>
       <OrgnlEndToEndId>E2E-SIP-2026-0042</OrgnlEndToEndId>
@@ -982,7 +982,7 @@ export const SAMPLES: Sample[] = [
     standardId: 'swiss-sps',
     description: 'EUR credit via euroSIC for Swiss participants.',
     content: `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+<Document xmlns="http://www.six-interbank-clearing.com/de/pacs.008.001.08.ch.02.xsd">
   <FIToFICstmrCdtTrf>
     <GrpHdr>
       <MsgId>PACS8-ESIC-20260812-003</MsgId>

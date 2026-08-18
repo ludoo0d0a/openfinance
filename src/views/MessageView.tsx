@@ -14,7 +14,7 @@ import { paymentById } from '@/data/payments';
 import { MessageIdPlate } from '@/components/MessageIdPlate';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { Tag } from '@/components/Chips';
-import { messageIdFromPayload, namespaceFor, parseMessageId } from '@/lib/messageId';
+import { canonicalId, messageIdFromPayload, namespaceFor, parseMessageId } from '@/lib/messageId';
 import { cn } from '@/lib/cn';
 import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
@@ -52,7 +52,10 @@ export function MessageView() {
     if (!short) return [];
     const all = samplesForMessage(short).filter((s) => !s.id.endsWith('-json'));
     if (!selectedVersion) return all;
-    const matching = all.filter((s) => messageIdFromPayload(s.content) === selectedVersion.id);
+    const matching = all.filter((s) => {
+      const id = messageIdFromPayload(s.content);
+      return id !== null && canonicalId(id) === canonicalId(selectedVersion.id);
+    });
     return matching.length > 0 ? matching : all;
   }, [short, selectedVersion]);
 
@@ -74,8 +77,9 @@ export function MessageView() {
   });
   const isAck = message.short === 'pacs.002';
   const parts = parseMessageId(selectedVersion.id);
+  const payloadId = sample ? messageIdFromPayload(sample.content) : null;
   const sampleMatchesVersion =
-    !sample || messageIdFromPayload(sample.content) === selectedVersion.id;
+    !sample || (payloadId !== null && canonicalId(payloadId) === canonicalId(selectedVersion.id));
 
   function selectVersion(id: string) {
     setSearchParams(
@@ -180,6 +184,7 @@ export function MessageView() {
                   >
                     {t(STATUS_KEYS[v.status])}
                     {vp.version ? ` · v${vp.version}` : ''}
+                    {vp.country && vp.guideline ? ` · ${vp.country}.${vp.guideline}` : ''}
                   </span>
                 </button>
               );
@@ -219,6 +224,10 @@ export function MessageView() {
                 <>
                   <Fact term={t('message.variant')} value={<code>{parts.variant}</code>} />
                   <Fact term={t('message.version')} value={<code>{parts.version}</code>} />
+                  {parts.country ? <Fact term={t('message.country')} value={<code>{parts.country}</code>} /> : null}
+                  {parts.guideline ? (
+                    <Fact term={t('message.guideline')} value={<code>{parts.guideline}</code>} />
+                  ) : null}
                 </>
               )}
             </dl>

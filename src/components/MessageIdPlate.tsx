@@ -7,9 +7,10 @@ interface Props {
 }
 
 /**
- * An ISO 20022 identifier is four independent facts jammed into one string,
- * and treating it as opaque text is how people end up sending v08 payloads to
- * a v09 endpoint. The plate pulls it apart and labels each cell.
+ * An ISO 20022 identifier is four independent facts jammed into one string
+ * (plus an optional country usage-guideline suffix), and treating it as opaque
+ * text is how people end up sending v08 payloads to a v09 endpoint. The plate
+ * pulls it apart and labels each cell.
  */
 export function MessageIdPlate({ id, size = 'lg' }: Props) {
   const parts = parseMessageId(id);
@@ -29,6 +30,8 @@ export function MessageIdPlate({ id, size = 'lg' }: Props) {
   ];
   if (parts.variant) cells.push({ value: parts.variant, label: 'variant' });
   if (parts.version) cells.push({ value: parts.version, label: 'version' });
+  if (parts.country) cells.push({ value: parts.country, label: 'country' });
+  if (parts.guideline) cells.push({ value: parts.guideline, label: 'guideline' });
 
   const valueSize = size === 'lg' ? 'id-plate-value' : 'font-mono text-base leading-none font-medium tnum';
   const pad = size === 'lg' ? '' : 'px-2 py-1.5';

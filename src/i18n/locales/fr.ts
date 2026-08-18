@@ -328,9 +328,11 @@ export const fr: MessageTree = {
     namespace: 'Espace de noms',
     variant: 'Variante (flavour)',
     version: 'Version',
+    country: 'Pays',
+    guideline: 'Guide d’usage',
     versions: 'Versions de schéma',
     versionsLead:
-      'SWIFT et l’ISO publient des révisions successives du même message (ex. pacs.008.001.08 → .10 → .13). Les marchés et zones d’échange (SEPA, CBPR+, SIC…) en imposent une via leur guide d’usage — le xmlns doit correspondre.',
+      'SWIFT et l’ISO publient des révisions successives du même message (ex. pacs.008.001.08 → .10 → .13). Les marchés peuvent aussi imposer un suffixe de guide d’usage national (pacs.008.001.08.ch.02) — le xmlns doit correspondre.',
     markets: 'Marchés / rails',
     versionCurrent: 'courante',
     versionLegacy: 'héritée',
