@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PAYMENTS } from '@/data/payments';
+import { PAYMENTS, paymentById } from '@/data/payments';
 import { SCHEMES } from '@/data/schemes';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { GLOSSARY_CODES } from '@/data/glossary';
@@ -9,12 +9,9 @@ import { CommandPalette } from '@/components/CommandPalette';
 import { PageAd } from '@/components/PageAd';
 import { useEffect, useState } from 'react';
 
-const POPULAR = [
-  { href: '/messages/pacs.008', label: 'pacs.008' },
-  { href: '/messages/pacs.002', label: 'pacs.002' },
-  { href: '/messages/pain.001', label: 'pain.001' },
-  { href: '/payment/sepa-instant', label: 'SEPA Instant' },
-  { href: '/payment/wero', label: 'Wero' },
+const FEATURED_IDS = ['sepa-instant', 'sepa-credit-transfer'] as const;
+const POPULAR_PAYMENT_IDS = ['sepa-credit-transfer', 'sepa-instant', 'wero', 'sepa-direct-debit'] as const;
+const POPULAR_GLOSSARY = [
   { href: '/glossary?id=ipr', label: 'IPR / PSD2' },
   { href: '/glossary?id=aml', label: 'AML' },
 ];
@@ -23,6 +20,9 @@ export function HomeView() {
   const t = useT();
   const { locale } = useI18n();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const featured = FEATURED_IDS.map((id) => paymentById(id)).filter(
+    (p): p is NonNullable<typeof p> => Boolean(p),
+  );
 
   useEffect(() => {
     document.title = 'OpenFinance — Payment Explorer';
@@ -49,13 +49,21 @@ export function HomeView() {
 
       <section className="mt-12">
         <h2 className="eyebrow mb-3">{t('home.explorePayment')}</h2>
-        <Link
-          to="/payment/sepa-instant"
-          className="mb-4 block border border-jade bg-jade-soft px-4 py-3 hover:border-ink"
-        >
-          <p className="font-mono text-[11px] uppercase tracking-widest text-jade">{t('home.storyEyebrow')}</p>
-          <p className="mt-1 text-[16px] font-semibold">{t('home.storyHeadline')}</p>
-        </Link>
+        <ul className="mb-4 grid gap-3 sm:grid-cols-2">
+          {featured.map((p) => (
+            <li key={p.id}>
+              <Link
+                to={`/payment/${p.id}`}
+                className="block h-full border border-jade bg-jade-soft px-4 py-3 hover:border-ink"
+              >
+                <p className="font-mono text-[11px] uppercase tracking-widest text-jade">{t('home.storyEyebrow')}</p>
+                <p className="mt-1 text-[16px] font-semibold">
+                  {p.story?.headline[locale] ?? p.name[locale]}
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ul>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PAYMENTS.map((p) => (
             <li key={p.id}>
@@ -65,10 +73,14 @@ export function HomeView() {
               >
                 <h3 className="text-[16px] font-semibold">{p.name[locale]}</h3>
                 <p className="mt-2 text-[13px] leading-relaxed text-muted">{p.summary[locale]}</p>
+                {p.messageShorts.length > 0 && (
+                  <p className="mt-3 font-mono text-[11px] text-violet">{p.messageShorts.join(' → ')}</p>
+                )}
               </Link>
             </li>
           ))}
         </ul>
+        <p className="mt-4 text-[13px] leading-relaxed text-muted">{t('home.thenTrace')}</p>
       </section>
 
       <PageAd placement="mid" />
@@ -76,7 +88,21 @@ export function HomeView() {
       <section className="mt-10">
         <h2 className="eyebrow mb-3">{t('home.popular')}</h2>
         <ul className="flex flex-wrap gap-2">
-          {POPULAR.map((item) => (
+          {POPULAR_PAYMENT_IDS.map((id) => {
+            const p = paymentById(id);
+            if (!p) return null;
+            return (
+              <li key={id}>
+                <Link
+                  to={`/payment/${id}`}
+                  className="inline-block border border-rule bg-surface px-3 py-1.5 font-mono text-[13px] hover:border-ink"
+                >
+                  {p.name[locale]}
+                </Link>
+              </li>
+            );
+          })}
+          {POPULAR_GLOSSARY.map((item) => (
             <li key={item.href}>
               <Link
                 to={item.href}

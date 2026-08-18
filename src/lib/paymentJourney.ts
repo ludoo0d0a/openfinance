@@ -1,6 +1,5 @@
 import type {
   CountryId,
-  ExplorerLevel,
   InitiationChannel,
   Locale,
   Payment,
@@ -10,7 +9,6 @@ import { paymentById, PAYMENTS } from '@/data/payments';
 import { countryById } from '@/data/countries';
 
 export interface JourneyOptions {
-  level: ExplorerLevel;
   initiation: InitiationChannel;
   rail: string;
   outcome: PaymentOutcome;
@@ -25,6 +23,7 @@ export interface JourneyHopView {
   to: Payment['hops'][number]['to'];
   messageShort?: string;
   label: string;
+  expert: string;
   tOffset?: string;
   sla?: string;
   flowId?: string;
@@ -38,7 +37,6 @@ export interface JourneyView {
   rail: string;
   initiation: InitiationChannel;
   outcome: PaymentOutcome;
-  level: ExplorerLevel;
   country?: CountryId;
 }
 
@@ -75,14 +73,46 @@ export function resolveJourneyOptions(
     : (railFromCountry ?? payment.defaultRailId);
 
   return {
-    level: partial.level === 'expert' ? 'expert' : 'simple',
     initiation,
     rail,
-    outcome:
-      partial.outcome === 'reject' || partial.outcome === 'timeout' ? partial.outcome : 'happy',
+    outcome: parseOutcome(payment, partial.outcome),
     locale: partial.locale,
     country,
   };
+}
+
+function parseOutcome(payment: Payment, raw: unknown): PaymentOutcome {
+  if (raw === 'reject' || raw === 'timeout' || raw === 'recall') {
+    if (payment.hops.some((h) => h.outcomes.includes(raw))) return raw;
+  }
+  return 'happy';
+}
+
+/** Payments whose explorer hops or relatedFlowIds point at this technical flow. */
+export function paymentsForFlow(flowId: string): Payment[] {
+  const hopLinked = PAYMENTS.filter((p) => p.hops.some((h) => h.flowId === flowId));
+  const relatedOnly = PAYMENTS.filter(
+    (p) => p.relatedFlowIds.includes(flowId) && !hopLinked.some((linked) => linked.id === p.id),
+  );
+  return [...hopLinked, ...relatedOnly];
+}
+
+export function outcomeForFlow(flowId: string): PaymentOutcome {
+  if (flowId.includes('recall')) return 'recall';
+  if (flowId.includes('reject')) return 'reject';
+  if (flowId.includes('timeout')) return 'timeout';
+  return 'happy';
+}
+
+export function paymentExplorerHref(
+  paymentId: string,
+  opts?: { outcome?: PaymentOutcome; focus?: string },
+): string {
+  const params = new URLSearchParams();
+  if (opts?.outcome && opts.outcome !== 'happy') params.set('outcome', opts.outcome);
+  if (opts?.focus) params.set('focus', opts.focus);
+  const q = params.toString();
+  return q ? `/payment/${paymentId}?${q}` : `/payment/${paymentId}`;
 }
 
 export function getPaymentJourney(paymentId: string, opts: JourneyOptions): JourneyView | undefined {
@@ -95,7 +125,8 @@ export function getPaymentJourney(paymentId: string, opts: JourneyOptions): Jour
     from: h.from,
     to: h.to,
     messageShort: h.messageShort,
-    label: resolved.level === 'expert' ? h.expertLabel[resolved.locale] : h.simpleText[resolved.locale],
+    label: h.simpleText[resolved.locale],
+    expert: h.expertLabel[resolved.locale],
     tOffset: h.tOffset?.[resolved.locale],
     sla: h.sla?.[resolved.locale],
     flowId: h.flowId,
@@ -108,7 +139,6 @@ export function getPaymentJourney(paymentId: string, opts: JourneyOptions): Jour
     rail: resolved.rail,
     initiation: resolved.initiation,
     outcome: resolved.outcome,
-    level: resolved.level,
     country: resolved.country,
   };
 }

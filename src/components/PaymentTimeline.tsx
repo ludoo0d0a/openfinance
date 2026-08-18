@@ -68,16 +68,16 @@ export function PaymentTimeline({
                 </div>
               </div>
               <p className="mt-1.5 text-[14px] leading-snug">
-                {journey.level === 'simple' ? <JargonText text={hop.label} /> : hop.label}
+                <JargonText text={hop.label} />
               </p>
-              {hop.messageShort && (
-                <p className="mt-1 font-mono text-[12px] text-violet">{hop.messageShort}</p>
+              {hop.expert && hop.expert !== hop.label && (
+                <p className="mt-1 font-mono text-[12px] text-violet">{hop.expert}</p>
               )}
               {peer && (
                 <p className="mt-2 border-t border-rule-soft pt-2 text-[12px] leading-snug text-muted">
                   <span className="font-mono text-[10px] uppercase tracking-widest">{t('explorer.compareVs')} · </span>
                   {peer.label}
-                  {peer.messageShort ? ` (${peer.messageShort})` : ''}
+                  {peer.expert && peer.expert !== peer.label ? ` (${peer.expert})` : ''}
                 </p>
               )}
             </div>

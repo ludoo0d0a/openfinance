@@ -6,6 +6,7 @@ import { flowById, isoMessagesInFlow, usagesOfMessage } from '@/data/flows';
 import { messageByShort } from '@/data/iso20022';
 import { standardById } from '@/data/standards';
 import { sampleById, samplesForMessage } from '@/data/samples';
+import { outcomeForFlow, paymentExplorerHref, paymentsForFlow } from '@/lib/paymentJourney';
 import { FlowCanvas } from '@/components/FlowCanvas';
 import { EntityFlowDiagram } from '@/components/EntityFlowDiagram';
 import { PayloadInspector } from '@/components/PayloadInspector';
@@ -98,6 +99,8 @@ export function FlowView() {
   const standard = flow ? standardById(flow.standardId) : undefined;
   const hopMessage = step?.messageShort ? messageByShort(step.messageShort) : undefined;
   const flowMessages = flow ? isoMessagesInFlow(flow) : [];
+  const pairedPayments = flow ? paymentsForFlow(flow.id) : [];
+  const pairedOutcome = flow ? outcomeForFlow(flow.id) : 'happy';
 
   if (!flow || !step) return <NotFoundView />;
 
@@ -115,6 +118,39 @@ export function FlowView() {
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{flow.name}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{flow.summary}</p>
         <p className="mt-3 border-l-2 border-ochre pl-3 text-[13px] leading-relaxed">{flow.useCase}</p>
+        {pairedPayments.length > 0 && (
+          <p className="mt-3 border-l-2 border-jade pl-3 text-[13px] leading-relaxed">
+            {t('flow.technicalViewOf')}{' '}
+            {pairedPayments.map((p, i) => (
+              <span key={p.id}>
+                {i > 0 ? ', ' : ''}
+                <Link
+                  to={paymentExplorerHref(p.id, {
+                    outcome: pairedOutcome,
+                    focus: step.messageShort,
+                  })}
+                  className="text-signal hover:underline"
+                >
+                  {p.name[locale]}
+                </Link>
+              </span>
+            ))}
+          </p>
+        )}
+        {flowMessages.length > 0 && (
+          <p className="mt-3 font-mono text-[12px] text-violet">
+            {t('flow.messages')}
+            {' · '}
+            {flowMessages.map((short, i) => (
+              <span key={short}>
+                {i > 0 ? ' → ' : ''}
+                <Link to={`/messages/${short}`} className="hover:underline">
+                  {short}
+                </Link>
+              </span>
+            ))}
+          </p>
+        )}
         <div className="mt-4 flex flex-wrap gap-1.5">
           {flow.tags.map((tag) => (
             <Tag key={tag}>{tag}</Tag>

@@ -86,6 +86,7 @@ const sctHops: PaymentHop[] = [
     step: 1,
     sampleId: 'pain-001-sct',
     initiation: ['bank'],
+    outcomes: ['happy', 'reject', 'recall'],
   }),
   hop('sct-init-pisp', 'payer', 'bankA', {
     messageShort: 'pain.001',
@@ -99,6 +100,7 @@ const sctHops: PaymentHop[] = [
     step: 2,
     sampleId: 'pain-001-sct',
     initiation: ['pisp'],
+    outcomes: ['happy', 'reject', 'recall'],
   }),
   hop('sct-008-out', 'bankA', 'csm', {
     messageShort: 'pacs.008',
@@ -111,6 +113,7 @@ const sctHops: PaymentHop[] = [
     flowId: 'clearing-sct-happy-path',
     step: 2,
     sampleId: 'pacs-008-sct',
+    outcomes: ['happy', 'reject', 'recall'],
   }),
   hop('sct-008-in', 'csm', 'bankB', {
     messageShort: 'pacs.008',
@@ -122,6 +125,7 @@ const sctHops: PaymentHop[] = [
     flowId: 'clearing-sct-happy-path',
     step: 3,
     sampleId: 'pacs-008-sct',
+    outcomes: ['happy', 'reject', 'recall'],
   }),
   hop('sct-002', 'bankB', 'csm', {
     messageShort: 'pacs.002',
@@ -131,7 +135,7 @@ const sctHops: PaymentHop[] = [
     flowId: 'clearing-sct-happy-path',
     step: 4,
     sampleId: 'pacs-002-accepted',
-    outcomes: ['happy'],
+    outcomes: ['happy', 'recall'],
   }),
   hop('sct-credit', 'bankB', 'beneficiary', {
     messageShort: 'camt.054',
@@ -141,7 +145,77 @@ const sctHops: PaymentHop[] = [
     flowId: 'clearing-sct-happy-path',
     step: 6,
     sampleId: 'camt-054-credit',
-    outcomes: ['happy'],
+    outcomes: ['happy', 'recall'],
+  }),
+  hop('sct-002-rjct', 'bankB', 'csm', {
+    messageShort: 'pacs.002',
+    simple: L(
+      'The beneficiary’s bank refuses the transfer. The money is not credited.',
+      'La banque du bénéficiaire refuse le virement. L’argent n’est pas crédité.',
+    ),
+    expert: L('pacs.002 TxSts=RJCT + reason code', 'pacs.002 TxSts=RJCT + motif'),
+    flowId: 'clearing-reject',
+    step: 2,
+    sampleId: 'pacs-002-rejected',
+    outcomes: ['reject'],
+  }),
+  hop('sct-reject-back', 'csm', 'bankA', {
+    messageShort: 'pacs.002',
+    simple: L(
+      'The payer’s bank is told it failed and releases any reservation.',
+      'La banque du payeur est informée de l’échec et libère toute réserve.',
+    ),
+    expert: L('pacs.002 RJCT relayed to debtor PSP', 'pacs.002 RJCT relayé au PSP débiteur'),
+    flowId: 'clearing-reject',
+    step: 3,
+    outcomes: ['reject'],
+  }),
+  hop('sct-056', 'bankA', 'csm', {
+    messageShort: 'camt.056',
+    simple: L(
+      'After settlement, the payer’s bank asks to get the money back (duplicate, fraud, or customer request).',
+      'Après règlement, la banque du payeur demande le retour des fonds (doublon, fraude ou demande client).',
+    ),
+    expert: L('camt.056 cancellation request (DUPL / TECH / FRAD / CUST)', 'camt.056 demande d’annulation (DUPL / TECH / FRAD / CUST)'),
+    flowId: 'clearing-recall',
+    step: 1,
+    sampleId: 'camt-056-recall',
+    outcomes: ['recall'],
+  }),
+  hop('sct-056-in', 'csm', 'bankB', {
+    messageShort: 'camt.056',
+    simple: L(
+      'Clearing forwards the recall to the beneficiary’s bank. A recall is a request, not an order.',
+      'La compensation transmet le rappel à la banque du bénéficiaire. Un rappel est une demande, pas un ordre.',
+    ),
+    expert: L('camt.056 delivered to creditor PSP', 'camt.056 livré au PSP créancier'),
+    flowId: 'clearing-recall',
+    step: 2,
+    outcomes: ['recall'],
+  }),
+  hop('sct-029', 'bankB', 'csm', {
+    messageShort: 'camt.029',
+    simple: L(
+      'The beneficiary’s bank accepts or refuses the recall.',
+      'La banque du bénéficiaire accepte ou refuse le rappel.',
+    ),
+    expert: L('camt.029 resolution (ACCR or ARDT / NOAS / LEGL)', 'camt.029 résolution (ACCR ou ARDT / NOAS / LEGL)'),
+    flowId: 'clearing-recall',
+    step: 3,
+    sampleId: 'camt-029-resolution',
+    outcomes: ['recall'],
+  }),
+  hop('sct-004', 'bankB', 'csm', {
+    messageShort: 'pacs.004',
+    simple: L(
+      'If accepted, the banks send the money back.',
+      'Si le rappel est accepté, les banques renvoient l’argent.',
+    ),
+    expert: L('pacs.004 payment return (FOCR)', 'pacs.004 retour de paiement (FOCR)'),
+    flowId: 'clearing-recall',
+    step: 4,
+    sampleId: 'pacs-004-return',
+    outcomes: ['recall'],
   }),
 ];
 
@@ -155,7 +229,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 1,
     initiation: ['bank'],
-    outcomes: ['happy', 'reject', 'timeout'],
+    outcomes: ['happy', 'reject', 'timeout', 'recall'],
   }),
   hop('inst-init-pisp', 'payer', 'bankA', {
     messageShort: 'pain.001',
@@ -169,7 +243,7 @@ const instHops: PaymentHop[] = [
     step: 2,
     sampleId: 'bg-instant-payment-request',
     initiation: ['pisp'],
-    outcomes: ['happy', 'reject', 'timeout'],
+    outcomes: ['happy', 'reject', 'timeout', 'recall'],
   }),
   hop('inst-vop', 'bankA', 'bankB', {
     messageShort: 'acmt.023',
@@ -182,7 +256,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-vop',
     step: 2,
     sampleId: 'acmt-023-vop',
-    outcomes: ['happy', 'reject', 'timeout'],
+    outcomes: ['happy', 'reject', 'timeout', 'recall'],
   }),
   hop('inst-008-out', 'bankA', 'csm', {
     messageShort: 'pacs.008',
@@ -196,7 +270,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 4,
     sampleId: 'pacs-008-sct-inst',
-    outcomes: ['happy', 'reject', 'timeout'],
+    outcomes: ['happy', 'reject', 'timeout', 'recall'],
   }),
   hop('inst-008-in', 'csm', 'bankB', {
     messageShort: 'pacs.008',
@@ -208,7 +282,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 5,
     sampleId: 'pacs-008-sct-inst',
-    outcomes: ['happy', 'reject', 'timeout'],
+    outcomes: ['happy', 'reject', 'timeout', 'recall'],
   }),
   hop('inst-002-ok', 'bankB', 'csm', {
     messageShort: 'pacs.002',
@@ -218,7 +292,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 6,
     sampleId: 'pacs-002-sct-inst',
-    outcomes: ['happy'],
+    outcomes: ['happy', 'recall'],
   }),
   hop('inst-002-back', 'csm', 'bankA', {
     messageShort: 'pacs.002',
@@ -227,7 +301,7 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 7,
     sampleId: 'pacs-002-sct-inst',
-    outcomes: ['happy'],
+    outcomes: ['happy', 'recall'],
   }),
   hop('inst-credit', 'bankB', 'beneficiary', {
     messageShort: 'camt.054',
@@ -237,7 +311,54 @@ const instHops: PaymentHop[] = [
     flowId: 'sct-inst-happy-path',
     step: 8,
     sampleId: 'camt-054-credit',
-    outcomes: ['happy'],
+    outcomes: ['happy', 'recall'],
+  }),
+  hop('inst-056', 'bankA', 'csm', {
+    messageShort: 'camt.056',
+    simple: L(
+      'After the instant credit, the payer’s bank asks to get the money back (fraud or duplicate).',
+      'Après le crédit instantané, la banque du payeur demande le retour des fonds (fraude ou doublon).',
+    ),
+    expert: L('camt.056 recall (FRAD / DUPL / TECH)', 'camt.056 rappel (FRAD / DUPL / TECH)'),
+    flowId: 'sct-inst-recall',
+    step: 1,
+    sampleId: 'camt-056-recall',
+    outcomes: ['recall'],
+  }),
+  hop('inst-056-in', 'csm', 'bankB', {
+    messageShort: 'camt.056',
+    simple: L(
+      'The instant rail forwards the recall. Funds may already have been withdrawn.',
+      'Le rail instantané transmet le rappel. Les fonds peuvent déjà avoir été retirés.',
+    ),
+    expert: L('camt.056 to creditor PSP', 'camt.056 vers PSP créancier'),
+    flowId: 'sct-inst-recall',
+    step: 2,
+    outcomes: ['recall'],
+  }),
+  hop('inst-029', 'bankB', 'csm', {
+    messageShort: 'camt.029',
+    simple: L(
+      'The beneficiary’s bank accepts or refuses. Instant does not mean irreversible, but a no is common.',
+      'La banque du bénéficiaire accepte ou refuse. Instantané ne veut pas dire irréversible, mais un refus est fréquent.',
+    ),
+    expert: L('camt.029 resolution (ACCR or NOAS / ARDT / LEGL)', 'camt.029 résolution (ACCR ou NOAS / ARDT / LEGL)'),
+    flowId: 'sct-inst-recall',
+    step: 3,
+    sampleId: 'camt-029-resolution',
+    outcomes: ['recall'],
+  }),
+  hop('inst-004', 'bankB', 'csm', {
+    messageShort: 'pacs.004',
+    simple: L(
+      'If accepted, the money comes back as a return.',
+      'Si le rappel est accepté, l’argent revient en retour.',
+    ),
+    expert: L('pacs.004 return (FOCR)', 'pacs.004 retour (FOCR)'),
+    flowId: 'sct-inst-recall',
+    step: 4,
+    sampleId: 'pacs-004-return',
+    outcomes: ['recall'],
   }),
   hop('inst-002-rjct', 'bankB', 'csm', {
     messageShort: 'pacs.002',
@@ -477,7 +598,7 @@ export const PAYMENTS: Payment[] = [
     schemeId: 'sct',
     infrastructureIds: ['step2', 'eurosic'],
     defaultRailId: 'step2',
-    messageShorts: ['pain.001', 'pacs.008', 'pacs.002', 'camt.054'],
+    messageShorts: ['pain.001', 'pacs.008', 'pacs.002', 'camt.054', 'camt.056', 'camt.029', 'pacs.004'],
     actors: ['payer', 'bankA', 'csm', 'bankB', 'beneficiary'],
     hops: sctHops,
     relatedFlowIds: ['clearing-sct-happy-path', 'bg-pis-sepa-redirect', 'clearing-reject', 'clearing-recall'],
@@ -508,7 +629,7 @@ export const PAYMENTS: Payment[] = [
     schemeId: 'sct-inst',
     infrastructureIds: ['tips', 'rt1'],
     defaultRailId: 'tips',
-    messageShorts: ['pain.001', 'acmt.023', 'acmt.024', 'pacs.008', 'pacs.002', 'pacs.028', 'camt.054'],
+    messageShorts: ['pain.001', 'acmt.023', 'acmt.024', 'pacs.008', 'pacs.002', 'pacs.028', 'camt.054', 'camt.056', 'camt.029', 'pacs.004'],
     actors: ['payer', 'bankA', 'csm', 'bankB', 'beneficiary'],
     hops: instHops,
     relatedFlowIds: [

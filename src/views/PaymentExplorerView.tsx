@@ -1,19 +1,19 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { paymentById, PAYMENTS } from '@/data/payments';
 import { infrastructureById } from '@/data/infrastructures';
 import { schemeById } from '@/data/schemes';
 import { countryById, COUNTRIES } from '@/data/countries';
+import { flowById, isoMessagesInFlow } from '@/data/flows';
 import { compareJourneys, getPaymentJourney, resolveJourneyOptions } from '@/lib/paymentJourney';
-import type { CountryId, ExplorerLevel, InitiationChannel, PaymentOutcome } from '@/types';
+import type { CountryId, InitiationChannel, PaymentOutcome } from '@/types';
 import { PaymentTimeline } from '@/components/PaymentTimeline';
 import { EntityPanel } from '@/components/EntityPanel';
-import { useI18n, useT } from '@/i18n';
+import { JargonText } from '@/components/JargonText';
+import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 import { cn } from '@/lib/cn';
 import { PageAd } from '@/components/PageAd';
-
-const LEVEL_KEY = 'openfinance.explorerLevel';
 
 export function PaymentExplorerView() {
   const t = useT();
@@ -25,7 +25,6 @@ export function PaymentExplorerView() {
   const opts = payment
     ? resolveJourneyOptions(payment, {
         locale,
-        level: (params.get('level') as ExplorerLevel) || readStoredLevel(),
         initiation: params.get('via') as InitiationChannel,
         rail: params.get('rail') ?? undefined,
         outcome: params.get('outcome') as PaymentOutcome,
@@ -63,6 +62,20 @@ export function PaymentExplorerView() {
   if (!payment || !journey || !opts) return <NotFoundView />;
 
   const scheme = schemeById(payment.schemeId);
+  const compareName = payment.comparePaymentId
+    ? PAYMENTS.find((p) => p.id === payment.comparePaymentId)?.name[locale]
+    : undefined;
+
+  const outcomes: { id: string; label: string }[] = [
+    { id: 'happy', label: t('explorer.happy') },
+    { id: 'reject', label: t('explorer.reject') },
+  ];
+  if (payment.hops.some((h) => h.outcomes.includes('timeout'))) {
+    outcomes.push({ id: 'timeout', label: t('explorer.timeout') });
+  }
+  if (payment.hops.some((h) => h.outcomes.includes('recall'))) {
+    outcomes.push({ id: 'recall', label: t('explorer.recall') });
+  }
 
   function setParam(key: string, value: string | null) {
     setParams(
@@ -111,106 +124,93 @@ export function PaymentExplorerView() {
             </Link>
           </p>
         )}
+        <p className="mt-4 text-[14px] leading-relaxed text-muted">
+          <JargonText text={t('explorer.howTo')} />
+        </p>
       </header>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        <ToggleGroup
-          ariaLabel={t('explorer.level')}
-          value={opts.level}
-          options={[
-            { id: 'simple', label: t('explorer.simple') },
-            { id: 'expert', label: t('explorer.expert') },
-          ]}
-          onChange={(id) => {
-            try {
-              localStorage.setItem(LEVEL_KEY, id);
-            } catch {
-              /* ignore */
-            }
-            setParam('level', id === 'simple' ? null : id);
-          }}
-        />
+      <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {payment.countryIds && payment.countryIds.length > 0 && (
-          <ToggleGroup
-            ariaLabel={t('explorer.country')}
-            value={opts.country ?? payment.defaultCountryId ?? payment.countryIds[0]}
-            options={payment.countryIds.map((id) => ({
-              id,
-              label: COUNTRIES.find((c) => c.id === id)?.name[locale] ?? id,
-            }))}
-            onChange={(id) =>
-              setParam('from', id === payment.defaultCountryId ? null : id)
-            }
-          />
+          <ToggleField label={t('explorer.country')} hint={t('explorer.countryHint')}>
+            <ToggleGroup
+              ariaLabel={t('explorer.country')}
+              value={opts.country ?? payment.defaultCountryId ?? payment.countryIds[0]}
+              options={payment.countryIds.map((id) => ({
+                id,
+                label: COUNTRIES.find((c) => c.id === id)?.name[locale] ?? id,
+              }))}
+              onChange={(id) => setParam('from', id === payment.defaultCountryId ? null : id)}
+            />
+          </ToggleField>
         )}
         {payment.initiationChannels.length > 1 && (
-          <ToggleGroup
-            ariaLabel={t('explorer.viaLabel')}
-            value={opts.initiation}
-            options={payment.initiationChannels.map((c) => ({
-              id: c,
-              label: t(viaKey(c)),
-            }))}
-            onChange={(id) => setParam('via', id === payment.initiationChannels[0] ? null : id)}
-          />
+          <ToggleField label={t('explorer.viaLabel')} hint={t('explorer.viaHint')}>
+            <ToggleGroup
+              ariaLabel={t('explorer.viaLabel')}
+              value={opts.initiation}
+              options={payment.initiationChannels.map((c) => ({
+                id: c,
+                label: t(viaKey(c)),
+              }))}
+              onChange={(id) => setParam('via', id === payment.initiationChannels[0] ? null : id)}
+            />
+          </ToggleField>
         )}
         {payment.infrastructureIds.length > 1 && (
-          <ToggleGroup
-            ariaLabel={t('explorer.rail')}
-            value={opts.rail}
-            options={payment.infrastructureIds.map((id) => ({
-              id,
-              label: infrastructureById(id)?.name[locale] ?? id,
-            }))}
-            onChange={(id) => setParam('rail', id === payment.defaultRailId ? null : id)}
-          />
+          <ToggleField label={t('explorer.rail')} hint={t('explorer.railHint')}>
+            <ToggleGroup
+              ariaLabel={t('explorer.rail')}
+              value={opts.rail}
+              options={payment.infrastructureIds.map((id) => ({
+                id,
+                label: infrastructureById(id)?.name[locale] ?? id,
+              }))}
+              onChange={(id) => setParam('rail', id === payment.defaultRailId ? null : id)}
+            />
+          </ToggleField>
         )}
-        {(() => {
-          const outcomes: { id: string; label: string }[] = [
-            { id: 'happy', label: t('explorer.happy') },
-            { id: 'reject', label: t('explorer.reject') },
-          ];
-          if (payment.hops.some((h) => h.outcomes.includes('timeout'))) {
-            outcomes.push({ id: 'timeout', label: t('explorer.timeout') });
-          }
-          if (outcomes.length < 2) return null;
-          return (
+        {outcomes.length >= 2 && (
+          <ToggleField label={t('explorer.outcome')} hint={t('explorer.outcomeHint')}>
             <ToggleGroup
               ariaLabel={t('explorer.outcome')}
               value={opts.outcome}
               options={outcomes}
               onChange={(id) => setParam('outcome', id === 'happy' ? null : id)}
             />
-          );
-        })()}
-        {payment.comparePaymentId && (
-          <button
-            type="button"
-            onClick={() => setParam('compare', compareOn ? null : '1')}
-            className={cn(
-              'border px-3 py-1.5 text-[13px]',
-              compareOn ? 'border-ink bg-ink text-white' : 'border-rule bg-surface hover:border-ink',
-            )}
-          >
-            {t('explorer.compare')}{' '}
-            {PAYMENTS.find((p) => p.id === payment.comparePaymentId)?.name[locale]}
-          </button>
+          </ToggleField>
+        )}
+        {payment.comparePaymentId && compareName && (
+          <ToggleField label={t('explorer.compare')} hint={t('explorer.compareHint')}>
+            <button
+              type="button"
+              onClick={() => setParam('compare', compareOn ? null : '1')}
+              className={cn(
+                'border px-3 py-1.5 text-[13px]',
+                compareOn ? 'border-ink bg-ink text-white' : 'border-rule bg-surface hover:border-ink',
+              )}
+            >
+              {compareName}
+            </button>
+          </ToggleField>
         )}
       </div>
 
       {country && (
-        <div className="mt-4 panel grid gap-3 p-4 text-[13px] leading-relaxed sm:grid-cols-3">
-          <div>
-            <p className="eyebrow mb-1">{t('explorer.cutoff')}</p>
-            <p className="text-muted">{country.cutoffNote[locale]}</p>
-          </div>
-          <div>
-            <p className="eyebrow mb-1">{t('explorer.reachability')}</p>
-            <p className="text-muted">{country.reachabilityNote[locale]}</p>
-          </div>
-          <div>
-            <p className="eyebrow mb-1">{t('explorer.localException')}</p>
-            <p className="text-muted">{country.exceptionNote[locale]}</p>
+        <div className="mt-4">
+          <p className="mb-2 text-[12px] leading-snug text-muted">{t('explorer.countryNotesLead')}</p>
+          <div className="panel grid gap-3 p-4 text-[13px] leading-relaxed sm:grid-cols-3">
+            <div>
+              <p className="eyebrow mb-1">{t('explorer.cutoff')}</p>
+              <p className="text-muted">{country.cutoffNote[locale]}</p>
+            </div>
+            <div>
+              <p className="eyebrow mb-1">{t('explorer.reachability')}</p>
+              <p className="text-muted">{country.reachabilityNote[locale]}</p>
+            </div>
+            <div>
+              <p className="eyebrow mb-1">{t('explorer.localException')}</p>
+              <p className="text-muted">{country.exceptionNote[locale]}</p>
+            </div>
           </div>
         </div>
       )}
@@ -226,18 +226,58 @@ export function PaymentExplorerView() {
         />
         <EntityPanel journey={journey} hop={selectedHop} />
       </div>
+
+      {payment.relatedFlowIds.length > 0 && (
+        <section className="mt-10 max-w-3xl">
+          <p className="eyebrow">{t('explorer.layerTraces')}</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            <JargonText text={t('explorer.tracesHint')} />
+          </p>
+          <ul className="mt-3 space-y-2">
+            {payment.relatedFlowIds.map((flowId) => {
+              const catalog = flowById(flowId);
+              if (!catalog) return null;
+              const flow = localizeFlow(catalog, locale);
+              const messages = isoMessagesInFlow(catalog);
+              const active = selectedHop?.flowId === flowId;
+              const href =
+                active && selectedHop?.step
+                  ? `/flows/${flowId}?step=${selectedHop.step}`
+                  : `/flows/${flowId}`;
+              return (
+                <li key={flowId}>
+                  <Link
+                    to={href}
+                    className={cn(
+                      'block border px-3 py-2 hover:border-ink',
+                      active ? 'border-ink bg-paper-raised' : 'border-rule bg-surface',
+                    )}
+                  >
+                    <span className="text-[14px] font-medium">{flow.name}</span>
+                    {messages.length > 0 && (
+                      <p className="mt-1 font-mono text-[11px] text-violet">{messages.join(' → ')}</p>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
 
-function readStoredLevel(): ExplorerLevel | undefined {
-  try {
-    const v = localStorage.getItem(LEVEL_KEY);
-    if (v === 'simple' || v === 'expert') return v;
-  } catch {
-    /* ignore */
-  }
-  return undefined;
+function ToggleField({ label, hint, children }: { label: string; hint: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className="eyebrow">{label}</p>
+      <p className="mt-1 mb-2 text-[12px] leading-snug text-muted">
+        <JargonText text={hint} />
+      </p>
+      {children}
+    </div>
+  );
 }
 
 function ToggleGroup({
@@ -252,7 +292,7 @@ function ToggleGroup({
   onChange: (id: string) => void;
 }) {
   return (
-    <div role="group" aria-label={ariaLabel} className="inline-flex border border-rule">
+    <div role="group" aria-label={ariaLabel} className="inline-flex flex-wrap border border-rule">
       {options.map((o) => (
         <button
           key={o.id}

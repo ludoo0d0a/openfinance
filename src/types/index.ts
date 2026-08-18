@@ -235,8 +235,7 @@ export interface CatalogRelation {
 
 export type PaymentKind = 'credit-transfer' | 'instant' | 'wallet' | 'direct-debit' | 'card' | 'cross-border';
 export type InitiationChannel = 'bank' | 'pisp' | 'wero' | 'merchant' | 'creditor';
-export type PaymentOutcome = 'happy' | 'reject' | 'timeout';
-export type ExplorerLevel = 'simple' | 'expert';
+export type PaymentOutcome = 'happy' | 'reject' | 'timeout' | 'recall';
 export type PaymentActorId = 'payer' | 'bankA' | 'csm' | 'bankB' | 'beneficiary' | 'scheme' | 'merchant' | 'acquirer';
 export type CountryId = 'FR' | 'DE' | 'CH';
 

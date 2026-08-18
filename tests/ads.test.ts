@@ -54,7 +54,7 @@ describe('ads', () => {
   });
 
   it('does not remount when explorer filters or flow steps change', () => {
-    expect(adRefreshKey('/payment/wero', '?focus=pacs.008&level=expert')).toBe(
+    expect(adRefreshKey('/payment/wero', '?focus=pacs.008')).toBe(
       adRefreshKey('/payment/wero', '?via=pisp'),
     );
     expect(adRefreshKey('/flows/sct-inst-happy-path', '?step=3')).toBe(

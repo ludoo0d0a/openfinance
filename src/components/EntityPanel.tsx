@@ -6,6 +6,7 @@ import { schemeById } from '@/data/schemes';
 import { samplesForMessage } from '@/data/samples';
 import { relatedFrom, parseEntityRef, paymentsUsingMessage } from '@/data/relations';
 import { PAYMENTS } from '@/data/payments';
+import { JargonText } from '@/components/JargonText';
 import { useI18n, useT } from '@/i18n';
 
 export function EntityPanel({
@@ -40,16 +41,22 @@ export function EntityPanel({
         <p className="eyebrow">{t('explorer.questionsTitle')}</p>
         <ul className="mt-2 space-y-1 text-[13px] text-muted">
           <li className={hop ? 'text-ink' : undefined}>
-            {t('explorer.qWho')} — {hop ? `${t(`explorer.actor.${hop.from}`)} → ${t(`explorer.actor.${hop.to}`)}` : '—'}
+            {t('explorer.qWho')} —{' '}
+            {hop ? (
+              <JargonText text={`${t(`explorer.actor.${hop.from}`)} → ${t(`explorer.actor.${hop.to}`)}`} />
+            ) : (
+              '—'
+            )}
           </li>
           <li>
-            {t('explorer.qSystem')} — {rail ? rail.name[locale] : '—'}
+            {t('explorer.qSystem')} — {rail ? <JargonText text={rail.name[locale]} /> : '—'}
           </li>
           <li>
-            {t('explorer.qMessages')} — {hop?.messageShort ?? t('explorer.noMessage')}
+            {t('explorer.qMessages')} —{' '}
+            {hop?.messageShort ? <JargonText text={hop.messageShort} /> : t('explorer.noMessage')}
           </li>
           <li>
-            {t('explorer.qStandards')} — {scheme?.name[locale]}
+            {t('explorer.qStandards')} — {scheme ? <JargonText text={scheme.name[locale]} /> : '—'}
           </li>
         </ul>
       </section>
@@ -58,6 +65,9 @@ export function EntityPanel({
         <section>
           <p className="eyebrow">{t('explorer.thisHop')}</p>
           <p className="mt-2 text-[14px] leading-relaxed">{hop.label}</p>
+          {hop.expert && hop.expert !== hop.label && (
+            <p className="mt-1 font-mono text-[12px] text-violet">{hop.expert}</p>
+          )}
           {hop.flowId && (
             <Link
               to={hop.step ? `/flows/${hop.flowId}?step=${hop.step}` : `/flows/${hop.flowId}`}
