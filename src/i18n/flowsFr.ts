@@ -632,11 +632,11 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
     summary:
       'Paiement compte-à-compte retail via Wero : intent wallet, résolution proxy, débit ASPSP, règlement SCT Inst.',
     useCase:
-      'Checkout ou P2P où l’UX est Wero mais l’argent circule toujours sur rails instantanés. Déboguez le statut schéma et le pacs.002.',
+      'Checkout ou P2P où l’UX est gouvernée par EPI Company SE (Wero) mais l’argent circule sur rails instantanés (SCT Inst). Option de routage banque participante directe ou sous-participant.',
     steps: {
       1: {
         label: 'Créer l’intent de paiement Wero',
-        detail: 'Montant, alias commerçant/bénéficiaire, URLs de retour. Le schéma possède l’UX ; la banque possède les fonds.',
+        detail: 'Montant, alias commerçant/bénéficiaire, URLs de retour. Régi par les règles du schéma EPI Company SE.',
       },
       2: {
         label: 'Résoudre proxy / alias',
@@ -651,7 +651,7 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
       4: {
         label: 'pacs.008 SCT Inst',
         detail:
-          'Le règlement sous-jacent est SCT Instant (ou instantané national). Le statut schéma suit ce chemin pacs.',
+          'La jambe de règlement sous-jacente est SCT Instant (ou instantané national), routée via BIC participant direct ou sous-participant.',
       },
       5: {
         label: 'pacs.002 ACSC',
@@ -668,9 +668,9 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
   'hub-ip-transaction-flow': {
     name: 'Flux de paiement instantané (IP) via Payment Hub & ILM',
     summary:
-      'Flux de paiement instantané de bout en bout à travers l’architecture interne : Réseau externe > AGI > Payment Hub > ILM (Gestion de la liquidité intraday) > Moteur de règlement.',
+      'Flux de paiement instantané de bout en bout à travers l’architecture interne : Réseau externe > Passerelle AGI (Access Gateway Interface) > Payment Hub (Finastra/Volante/FIS/Sopra/Maison) > ILM (Gestion de la liquidité intraday) > Core Banking / Moteur de règlement.',
     useCase:
-      'Traitement de paiements instantanés à haut débit nécessitant une vérification de la liquidité intraday en temps réel avant le règlement en monnaie banque centrale.',
+      'Traitement de paiements instantanés à haut débit détaillant les jambes obligatoires de passerelle/hub et la réservation de liquidité ILM optionnelle vs blocage direct Core Banking (T24).',
     steps: {
       1: {
         label: 'Demande pacs.008 INST entrante',
@@ -680,10 +680,10 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
       2: {
         label: 'Relais du payload pacs.008 validé',
         detail:
-          'AGI valide le schéma XML, les signatures de sécurité et les en-têtes mTLS, puis achemine le message pacs.008 normalisé vers le Payment Hub.',
+          'AGI valide le schéma XML, les signatures de sécurité et les en-têtes mTLS, puis achemine le message pacs.008 normalisé vers le Payment Hub (Finastra/Volante/FIS/Sopra/Maison).',
       },
       3: {
-        label: 'Vérification de liquidité intraday en temps réel',
+        label: 'Vérification de liquidité intraday en temps réel (Obligatoire participants directs ; optionnelle pour sous-participants pré-financés)',
         detail:
           'Le Payment Hub demande un contrôle de liquidité intraday instantané et une réservation auprès de l’ILM (Intraday Liquidity Management) afin d’assurer la couverture nécessaire.',
       },
@@ -693,14 +693,14 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
           'L’ILM vérifie les positions intraday actuelles, réserve la liquidité pour la transaction instantanée et renvoie une confirmation au Payment Hub.',
       },
       5: {
-        label: 'Exécution du règlement instantané',
+        label: 'Blocage Core Banking (T24) & exécution du règlement',
         detail:
-          'Le Payment Hub transmet l’instruction pacs.008 au Moteur de règlement principal pour imputer les débits/crédits sur les comptes participants.',
+          'Le Payment Hub transmet l’instruction pacs.008 au Core Banking System (T24) / Moteur de règlement pour effectuer la réservation de fonds et imputer les écritures comptables.',
       },
       6: {
         label: 'Statut final pacs.002 ACSC',
         detail:
-          'Le Moteur de règlement exécute le règlement immédiat et renvoie un rapport de statut pacs.002 avec TxSts=ACSC (Accepted Settlement Completed).',
+          'Le Moteur de règlement / Core Banking exécute le règlement immédiat et renvoie un rapport de statut pacs.002 avec TxSts=ACSC (Accepted Settlement Completed).',
       },
       7: {
         label: 'Validation de la réservation de liquidité',
@@ -723,9 +723,9 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
   'hub-non-ip-transaction-flow': {
     name: 'Flux de paiement non instantané (Batch standard) via Payment Hub & ILM',
     summary:
-      'Flux de paiement non instantané (batch standard / virement) de bout en bout à travers l’architecture interne : Réseau externe > AGI > Payment Hub > ILM > Moteur de règlement.',
+      'Flux de paiement non instantané (batch standard / virement) de bout en bout à travers l’architecture interne : Réseau externe > AGI > Payment Hub > ILM > Core Banking (T24) / Moteur de règlement.',
     useCase:
-      'Traitement de paiements standard où les transactions sont mises en attente, validées par rapport aux plafonds de liquidité ILM, et réglées lors des fenêtres de compensation batch programmées.',
+      'Traitement de paiements standard détaillant les jambes de routage obligatoires et l’option de compensation via Sous-Participant vs directe.',
     steps: {
       1: {
         label: 'Virement standard pacs.008 entrant',
@@ -735,10 +735,10 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
       2: {
         label: 'Relais du payload pacs.008 validé',
         detail:
-          'AGI valide la conformité XML et les règles de schéma, puis transmet l’instruction au Payment Hub.',
+          'AGI valide la conformité XML et les règles de schéma, puis transmet l’instruction au Payment Hub (Finastra/Volante/FIS/Sopra/Maison).',
       },
       3: {
-        label: 'Vérification des limites et mise en file d’attente',
+        label: 'Vérification des limites et mise en file d’attente (Optionnelle pour sous-participants pré-financés ; obligatoire pour membres compensateurs directs)',
         detail:
           'Le Payment Hub contrôle les limites de liquidité intraday avec l’ILM. S’agissant d’un paiement non instantané, si la liquidité est tendue, la transaction est mise en attente pour la prochaine fenêtre de cutoff plutôt que rejetée immédiatement.',
       },
@@ -748,9 +748,9 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
           'Lors de la fenêtre de règlement intraday programmée, l’ILM alloue la liquidité intraday requise pour le lot et notifie le Payment Hub.',
       },
       5: {
-        label: 'Soumission du règlement batch',
+        label: 'Soumission du règlement batch & comptabilisation Core Banking',
         detail:
-          'Le Payment Hub soumet les instructions pacs.008 accumulées au Moteur de règlement pour écriture comptable.',
+          'Le Payment Hub soumet les instructions pacs.008 accumulées au Moteur de règlement / Core Banking System (T24) pour écriture comptable.',
       },
       6: {
         label: 'Confirmation batch pacs.002 ACSC',
