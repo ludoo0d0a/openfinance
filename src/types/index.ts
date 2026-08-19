@@ -116,7 +116,20 @@ export interface Standard {
   gotchas: string[];
 }
 
-export type ActorId = 'psu' | 'tpp' | 'aspsp' | 'sca' | 'csm' | 'beneficiary' | 'rail' | 'scheme';
+export type ActorId =
+  | 'psu'
+  | 'tpp'
+  | 'aspsp'
+  | 'sca'
+  | 'csm'
+  | 'beneficiary'
+  | 'rail'
+  | 'scheme'
+  | 'external-network'
+  | 'agi'
+  | 'payment-hub'
+  | 'ilm'
+  | 'settlement';
 
 /** UI language for bilingual catalog overlays (glossary, flows, …). */
 export type Locale = 'en' | 'fr';

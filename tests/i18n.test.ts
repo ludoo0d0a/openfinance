@@ -44,7 +44,21 @@ describe('i18n', () => {
   });
 
   it('gives every actor a short legend term in EN and FR', () => {
-    const ids: ActorId[] = ['psu', 'tpp', 'aspsp', 'sca', 'csm', 'beneficiary', 'rail', 'scheme'];
+    const ids: ActorId[] = [
+      'psu',
+      'tpp',
+      'aspsp',
+      'sca',
+      'csm',
+      'beneficiary',
+      'rail',
+      'scheme',
+      'external-network',
+      'agi',
+      'payment-hub',
+      'ilm',
+      'settlement',
+    ];
     for (const id of ids) {
       expect(ACTOR_LEGEND.en[id].term).toBeTruthy();
       expect(ACTOR_LEGEND.en[id].short).toBeTruthy();
