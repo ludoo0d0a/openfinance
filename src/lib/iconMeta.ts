@@ -33,6 +33,11 @@ export const ACTOR_ICON: Record<
   csm: { Icon: Network, label: 'CSM', color: '#5b45d6', bg: '#e4dffb' },
   rail: { Icon: Waypoints, label: 'Rail', color: '#5b45d6', bg: '#e4dffb' },
   scheme: { Icon: Wallet, label: 'Scheme', color: '#b26b00', bg: '#f9ecd4' },
+  'external-network': { Icon: Globe2, label: 'External Network', color: '#1f4fd8', bg: '#dde5fb' },
+  agi: { Icon: Layers, label: 'AGI', color: '#0b8f63', bg: '#d5f0e5' },
+  'payment-hub': { Icon: Network, label: 'Payment Hub', color: '#5b45d6', bg: '#e4dffb' },
+  ilm: { Icon: Landmark, label: 'ILM', color: '#b26b00', bg: '#f9ecd4' },
+  settlement: { Icon: Building2, label: 'Settlement Engine', color: '#1f4fd8', bg: '#dde5fb' },
 };
 
 /** Nav / section icons */
@@ -68,6 +73,11 @@ export function actorIconDataUri(actor: ActorId): string {
     csm: '<rect x="9" y="9" width="6" height="6"/><path d="M9 12H4m16 0h-5M12 9V4m0 16v-5"/><circle cx="4" cy="12" r="1.5"/><circle cx="20" cy="12" r="1.5"/><circle cx="12" cy="4" r="1.5"/><circle cx="12" cy="20" r="1.5"/>',
     rail: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 11 15.5 7.2M8.2 13l7.3 3.8"/>',
     scheme: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 0 4H5a2 2 0 0 0 0 4h12a2 2 0 0 0 2-2v-2"/>',
+    'external-network': '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    agi: '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="m12 12 8-4.5M12 12v9M12 12 4 7.5"/>',
+    'payment-hub': '<rect x="9" y="9" width="6" height="6"/><path d="M9 12H4m16 0h-5M12 9V4m0 16v-5"/><circle cx="4" cy="12" r="1.5"/><circle cx="20" cy="12" r="1.5"/><circle cx="12" cy="4" r="1.5"/><circle cx="12" cy="20" r="1.5"/>',
+    ilm: '<path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/>',
+    settlement: '<path d="M6 22V9l6-5 6 5v13M10 22v-5h4v5M9 12h.01M15 12h.01"/>',
   };
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${paths[actor]}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;

@@ -9,6 +9,11 @@ export const ACTORS: Record<ActorId, Actor> = {
   beneficiary: { id: 'beneficiary', label: 'Creditor bank', sublabel: 'Beneficiary side' },
   rail: { id: 'rail', label: 'SIC rail', sublabel: 'SIC / euroSIC / SIC IP' },
   scheme: { id: 'scheme', label: 'Wero', sublabel: 'EPI payment scheme' },
+  'external-network': { id: 'external-network', label: 'External Network', sublabel: 'Inbound message rail / SWIFT / STEP2' },
+  agi: { id: 'agi', label: 'AGI', sublabel: 'Access Gateway Interface' },
+  'payment-hub': { id: 'payment-hub', label: 'Payment Hub', sublabel: 'Orchestration & Routing engine' },
+  ilm: { id: 'ilm', label: 'ILM', sublabel: 'Intraday Liquidity Management' },
+  settlement: { id: 'settlement', label: 'Settlement Engine', sublabel: 'Core ledger / Central bank settlement' },
 };
 
 export const FLOWS: Flow[] = [
@@ -1353,6 +1358,238 @@ export const FLOWS: Flow[] = [
         detail: 'Wallet UI updates from scheme status, which must lag the clearing confirmation — not lead it.',
         sampleId: 'wero-payment-completed',
         codes: ['WERO_COMPLETED'],
+      },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    id: 'hub-ip-transaction-flow',
+    name: 'Instant Payment (IP) flow via Payment Hub & ILM',
+    standardId: 'sct-inst',
+    category: 'clearing',
+    summary:
+      'End-to-end instant payment flow through the internal architecture: External Network > AGI > Payment Hub > ILM (Intraday Liquidity Management) > Settlement Engine.',
+    useCase:
+      'High-throughput instant payment processing requiring real-time intraday liquidity check before central bank settlement.',
+    actors: ['external-network', 'agi', 'payment-hub', 'ilm', 'settlement'],
+    tags: ['instant', 'ip', 'agi', 'payment hub', 'ilm', 'settlement', 'iso20022'],
+    steps: [
+      {
+        n: 1,
+        from: 'external-network',
+        to: 'agi',
+        layer: 'clearing',
+        label: 'Inbound pacs.008 INST request',
+        detail:
+          'The external network (e.g. TIPS/RT1/SWIFT) delivers an inbound pacs.008 with LclInstrm=INST to the Access Gateway Interface (AGI).',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct-inst',
+      },
+      {
+        n: 2,
+        from: 'agi',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'Validated pacs.008 payload relayed',
+        detail:
+          'AGI validates XML schema, security signatures, and mTLS headers, then routes the normalized pacs.008 message to the Payment Hub.',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct-inst',
+      },
+      {
+        n: 3,
+        from: 'payment-hub',
+        to: 'ilm',
+        layer: 'clearing',
+        label: 'Real-time intraday liquidity check',
+        detail:
+          'The Payment Hub requests an instant intraday liquidity check and reservation from Intraday Liquidity Management (ILM) to ensure adequate central bank / participant coverage.',
+        messageShort: 'pacs.008',
+        codes: ['ACSP', 'AM04'],
+      },
+      {
+        n: 4,
+        from: 'ilm',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'Liquidity reserved & approved',
+        detail:
+          'ILM verifies current intraday positions, reserves liquidity for the instant transaction, and returns confirmation to the Payment Hub.',
+        codes: ['ACSP'],
+      },
+      {
+        n: 5,
+        from: 'payment-hub',
+        to: 'settlement',
+        layer: 'clearing',
+        label: 'Execute instant settlement',
+        detail:
+          'Payment Hub dispatches the pacs.008 instruction to the core Settlement Engine to post debit/credit entries to participant accounts.',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct-inst',
+      },
+      {
+        n: 6,
+        from: 'settlement',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'pacs.002 ACSC final status',
+        detail:
+          'Settlement Engine executes immediate settlement and returns a pacs.002 status report with TxSts=ACSC (Accepted Settlement Completed).',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-sct-inst',
+        codes: ['ACSC'],
+      },
+      {
+        n: 7,
+        from: 'payment-hub',
+        to: 'ilm',
+        layer: 'clearing',
+        label: 'Commit liquidity reservation',
+        detail:
+          'Payment Hub notifies ILM that settlement is complete, converting the temporary reservation into a final settled intraday ledger position.',
+        codes: ['ACSC'],
+      },
+      {
+        n: 8,
+        from: 'payment-hub',
+        to: 'agi',
+        layer: 'clearing',
+        label: 'pacs.002 ACSC response forwarded',
+        detail:
+          'Payment Hub forwards the positive pacs.002 confirmation back to AGI for outbound transmission.',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-sct-inst',
+        codes: ['ACSC'],
+      },
+      {
+        n: 9,
+        from: 'agi',
+        to: 'external-network',
+        layer: 'clearing',
+        label: 'Outbound pacs.002 ACSC acknowledgement',
+        detail:
+          'AGI delivers the pacs.002 ACSC confirmation across the external network back to the instructing party within the instant SLA.',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-sct-inst',
+        codes: ['ACSC'],
+      },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    id: 'hub-non-ip-transaction-flow',
+    name: 'Non-Instant Payment (Standard Batch) flow via Payment Hub & ILM',
+    standardId: 'berlin-group',
+    category: 'clearing',
+    summary:
+      'End-to-end non-instant (standard batch / credit transfer) payment flow through the internal architecture: External Network > AGI > Payment Hub > ILM > Settlement Engine.',
+    useCase:
+      'Standard payment processing where transactions are queued, validated against ILM credit lines / liquidity limits, and settled during scheduled batch settlement windows.',
+    actors: ['external-network', 'agi', 'payment-hub', 'ilm', 'settlement'],
+    tags: ['non-ip', 'batch', 'agi', 'payment hub', 'ilm', 'settlement', 'iso20022'],
+    steps: [
+      {
+        n: 1,
+        from: 'external-network',
+        to: 'agi',
+        layer: 'clearing',
+        label: 'Inbound pacs.008 standard credit transfer',
+        detail:
+          'The external network (STEP2 / SWIFT / CSM) delivers a batch or standard credit transfer pacs.008 to the Access Gateway Interface (AGI).',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct',
+      },
+      {
+        n: 2,
+        from: 'agi',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'Validated pacs.008 payload relayed',
+        detail:
+          'AGI validates XML well-formedness and schema rules, then hands off the instruction to the Payment Hub.',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct',
+      },
+      {
+        n: 3,
+        from: 'payment-hub',
+        to: 'ilm',
+        layer: 'clearing',
+        label: 'Limit check & batch liquidity queuing',
+        detail:
+          'Payment Hub checks intraday liquidity limits with ILM. Since it is non-instant, if liquidity is tight, the transaction is queued for the next cutoff window rather than rejected immediately.',
+        messageShort: 'pacs.008',
+        codes: ['ACTC', 'PDNG'],
+      },
+      {
+        n: 4,
+        from: 'ilm',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'Liquidity allocated at batch cutoff',
+        detail:
+          'During the scheduled intraday settlement window, ILM allocates required intraday liquidity for the batch and notifies the Payment Hub.',
+        codes: ['ACSP'],
+      },
+      {
+        n: 5,
+        from: 'payment-hub',
+        to: 'settlement',
+        layer: 'clearing',
+        label: 'Batch settlement submission',
+        detail:
+          'Payment Hub submits the accumulated pacs.008 instructions to the Settlement Engine for ledger posting.',
+        messageShort: 'pacs.008',
+        sampleId: 'pacs-008-sct',
+      },
+      {
+        n: 6,
+        from: 'settlement',
+        to: 'payment-hub',
+        layer: 'clearing',
+        label: 'pacs.002 ACSC batch confirmation',
+        detail:
+          'Settlement Engine executes batch posting and returns a pacs.002 report indicating ACSC (Accepted Settlement Completed).',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-accepted',
+        codes: ['ACSC'],
+      },
+      {
+        n: 7,
+        from: 'payment-hub',
+        to: 'ilm',
+        layer: 'clearing',
+        label: 'Update intraday liquidity position',
+        detail:
+          'Payment Hub sends final settlement details to ILM to update the institution intraday liquidity ledger and release remaining holds.',
+        codes: ['ACSC'],
+      },
+      {
+        n: 8,
+        from: 'payment-hub',
+        to: 'agi',
+        layer: 'clearing',
+        label: 'pacs.002 ACSC response forwarded',
+        detail:
+          'Payment Hub passes the pacs.002 confirmation report back to AGI.',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-accepted',
+        codes: ['ACSC'],
+      },
+      {
+        n: 9,
+        from: 'agi',
+        to: 'external-network',
+        layer: 'clearing',
+        label: 'Outbound pacs.002 ACSC delivered',
+        detail:
+          'AGI transmits the final pacs.002 ACSC report across the external network to complete the non-instant payment lifecycle.',
+        messageShort: 'pacs.002',
+        sampleId: 'pacs-002-accepted',
+        codes: ['ACSC'],
       },
     ],
   },

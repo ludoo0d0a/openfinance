@@ -12,6 +12,11 @@ export const ACTOR_LEGEND: Record<Locale, Record<ActorId, { term: string; short:
     beneficiary: { term: 'Creditor', short: 'Bank' },
     rail: { term: 'Rail', short: 'RTGS' },
     scheme: { term: 'Scheme', short: 'Wero' },
+    'external-network': { term: 'ExtNet', short: 'Network' },
+    agi: { term: 'AGI', short: 'Gateway' },
+    'payment-hub': { term: 'Hub', short: 'Orchestrator' },
+    ilm: { term: 'ILM', short: 'Liquidity' },
+    settlement: { term: 'Sttlm', short: 'Settlement' },
   },
   fr: {
     psu: { term: 'PSU', short: 'Utilisateur' },
@@ -22,5 +27,10 @@ export const ACTOR_LEGEND: Record<Locale, Record<ActorId, { term: string; short:
     beneficiary: { term: 'Créancier', short: 'Banque' },
     rail: { term: 'Rail', short: 'RTGS' },
     scheme: { term: 'Schéma', short: 'Wero' },
+    'external-network': { term: 'ExtNet', short: 'Réseau' },
+    agi: { term: 'AGI', short: 'Passerelle' },
+    'payment-hub': { term: 'Hub', short: 'Orchestrateur' },
+    ilm: { term: 'ILM', short: 'Liquidité' },
+    settlement: { term: 'Règlement', short: 'Règlement' },
   },
 };

@@ -31,6 +31,11 @@ const ACTOR_SVG_PATH: Record<ActorId, string> = {
   csm: 'M9 9h6v6H9zM9 12H4m16 0h-5M12 9V4m0 16v-5',
   rail: 'M6 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18 6a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM8.2 11l7.3-3.8M8.2 13l7.3 3.8',
   scheme: 'M19 7V5a2 2 0 0 0-2-2H5a2 2 0 1 0 0 4h14a2 2 0 1 1 0 4H5a2 2 0 1 0 0 4h12a2 2 0 0 0 2-2v-2',
+  'external-network': 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
+  agi: 'm12 3 8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12 4 7.5',
+  'payment-hub': 'M9 9h6v6H9zM9 12H4m16 0h-5M12 9V4m0 16v-5',
+  ilm: 'M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6',
+  settlement: 'M6 22V9l6-5 6 5v13M10 22v-5h4v5',
 };
 
 

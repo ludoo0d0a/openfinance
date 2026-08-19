@@ -665,6 +665,116 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
     },
   },
 
+  'hub-ip-transaction-flow': {
+    name: 'Flux de paiement instantané (IP) via Payment Hub & ILM',
+    summary:
+      'Flux de paiement instantané de bout en bout à travers l’architecture interne : Réseau externe > AGI > Payment Hub > ILM (Gestion de la liquidité intraday) > Moteur de règlement.',
+    useCase:
+      'Traitement de paiements instantanés à haut débit nécessitant une vérification de la liquidité intraday en temps réel avant le règlement en monnaie banque centrale.',
+    steps: {
+      1: {
+        label: 'Demande pacs.008 INST entrante',
+        detail:
+          'Le réseau externe (ex. TIPS/RT1/SWIFT) délivre un message pacs.008 entrant avec LclInstrm=INST à l’Access Gateway Interface (AGI).',
+      },
+      2: {
+        label: 'Relais du payload pacs.008 validé',
+        detail:
+          'AGI valide le schéma XML, les signatures de sécurité et les en-têtes mTLS, puis achemine le message pacs.008 normalisé vers le Payment Hub.',
+      },
+      3: {
+        label: 'Vérification de liquidité intraday en temps réel',
+        detail:
+          'Le Payment Hub demande un contrôle de liquidité intraday instantané et une réservation auprès de l’ILM (Intraday Liquidity Management) afin d’assurer la couverture nécessaire.',
+      },
+      4: {
+        label: 'Liquidité réservée et approuvée',
+        detail:
+          'L’ILM vérifie les positions intraday actuelles, réserve la liquidité pour la transaction instantanée et renvoie une confirmation au Payment Hub.',
+      },
+      5: {
+        label: 'Exécution du règlement instantané',
+        detail:
+          'Le Payment Hub transmet l’instruction pacs.008 au Moteur de règlement principal pour imputer les débits/crédits sur les comptes participants.',
+      },
+      6: {
+        label: 'Statut final pacs.002 ACSC',
+        detail:
+          'Le Moteur de règlement exécute le règlement immédiat et renvoie un rapport de statut pacs.002 avec TxSts=ACSC (Accepted Settlement Completed).',
+      },
+      7: {
+        label: 'Validation de la réservation de liquidité',
+        detail:
+          'Le Payment Hub informe l’ILM que le règlement est effectué, convertissant la réservation temporaire en une position comptable intraday définitive.',
+      },
+      8: {
+        label: 'Réponse pacs.002 ACSC transmise',
+        detail:
+          'Le Payment Hub transmet la confirmation positive pacs.002 à l’AGI pour émission sortante.',
+      },
+      9: {
+        label: 'Accusé de réception sortant pacs.002 ACSC',
+        detail:
+          'AGI délivre la confirmation pacs.002 ACSC via le réseau externe vers la partie instructrice dans le respect du SLA instantané.',
+      },
+    },
+  },
+
+  'hub-non-ip-transaction-flow': {
+    name: 'Flux de paiement non instantané (Batch standard) via Payment Hub & ILM',
+    summary:
+      'Flux de paiement non instantané (batch standard / virement) de bout en bout à travers l’architecture interne : Réseau externe > AGI > Payment Hub > ILM > Moteur de règlement.',
+    useCase:
+      'Traitement de paiements standard où les transactions sont mises en attente, validées par rapport aux plafonds de liquidité ILM, et réglées lors des fenêtres de compensation batch programmées.',
+    steps: {
+      1: {
+        label: 'Virement standard pacs.008 entrant',
+        detail:
+          'Le réseau externe (STEP2 / SWIFT / CSM) délivre un virement batch ou standard pacs.008 à l’Access Gateway Interface (AGI).',
+      },
+      2: {
+        label: 'Relais du payload pacs.008 validé',
+        detail:
+          'AGI valide la conformité XML et les règles de schéma, puis transmet l’instruction au Payment Hub.',
+      },
+      3: {
+        label: 'Vérification des limites et mise en file d’attente',
+        detail:
+          'Le Payment Hub contrôle les limites de liquidité intraday avec l’ILM. S’agissant d’un paiement non instantané, si la liquidité est tendue, la transaction est mise en attente pour la prochaine fenêtre de cutoff plutôt que rejetée immédiatement.',
+      },
+      4: {
+        label: 'Allocation de liquidité au cutoff batch',
+        detail:
+          'Lors de la fenêtre de règlement intraday programmée, l’ILM alloue la liquidité intraday requise pour le lot et notifie le Payment Hub.',
+      },
+      5: {
+        label: 'Soumission du règlement batch',
+        detail:
+          'Le Payment Hub soumet les instructions pacs.008 accumulées au Moteur de règlement pour écriture comptable.',
+      },
+      6: {
+        label: 'Confirmation batch pacs.002 ACSC',
+        detail:
+          'Le Moteur de règlement exécute la comptabilisation batch et renvoie un rapport pacs.002 indiquant ACSC (Accepted Settlement Completed).',
+      },
+      7: {
+        label: 'Mise à jour de la position de liquidité intraday',
+        detail:
+          'Le Payment Hub transmet les détails finaux du règlement à l’ILM pour mettre à jour le grand livre de liquidité intraday et libérer les réserves.',
+      },
+      8: {
+        label: 'Réponse pacs.002 ACSC transmise',
+        detail:
+          'Le Payment Hub renvoie le rapport de confirmation pacs.002 à l’AGI.',
+      },
+      9: {
+        label: 'Délivrance du pacs.002 ACSC sortant',
+        detail:
+          'AGI transmet le rapport final pacs.002 ACSC sur le réseau externe pour achever le cycle de vie du paiement non instantané.',
+      },
+    },
+  },
+
   'bg-payment-cancellation': {
     name: 'Annulation de paiement avant règlement',
     summary:
