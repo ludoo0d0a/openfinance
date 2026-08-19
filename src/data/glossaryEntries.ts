@@ -1244,4 +1244,86 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['xs2a', 'oauth2'],
     sources: ['ukob', 'konsentus', 'ravelin'],
   }),
+  g('agi', 'AGI', 'concept', { en: 'Access Gateway Interface', fr: 'Interface passerelle d’accès' }, {
+    en: 'Security and connectivity gateway interfacing external network rails (SWIFT, TIPS, RT1, STEP2) with internal bank systems. Handles mTLS, QWAC/QSealC verification, message schema validation, and protocol conversion.',
+    fr: 'Passerelle de sécurité et de connectivité assurant l’interface entre les réseaux externes (SWIFT, TIPS, RT1, STEP2) et le SI bancaire interne. Gère le mTLS, la vérification QWAC/QSealC, la validation de schéma et la conversion de protocole.',
+  }, {
+    aliases: { en: ['Access Gateway Interface', 'AGI gateway', 'payment gateway'], fr: ['passerelle AGI', 'passerelle de paiement', 'gateway'] },
+    seeAlso: ['payment-hub', 'csm', 'mtls', 'qwac'],
+    links: [
+      { label: 'Flow: IP via Hub & ILM', href: '/flows/hub-ip-transaction-flow' },
+      { label: 'Flow: Batch via Hub & ILM', href: '/flows/hub-non-ip-transaction-flow' },
+    ],
+  }),
+  g('sub-participant', 'Sub participant', 'concept', { en: 'Sub participant / Indirect participant', fr: 'Sous-participant / Participant indirect' }, {
+    en: 'Payment service provider or financial institution that accesses a clearing and settlement system (CSM / RTGS) through a direct participant bank instead of maintaining a direct central bank account or clearing membership.',
+    fr: 'Prestataire de services de paiement ou établissement financier qui accède à un système de compensation et de règlement (CSM / RTGS) via une banque participante directe plutôt qu’en direct.',
+  }, {
+    aliases: { en: ['sub participant', 'indirect participant', 'sub-member', 'nested participant'], fr: ['sous-participant', 'participant indirect', 'sous-membre'] },
+    seeAlso: ['csm', 'aspsp', 'correspondent-banking', 'sct-inst'],
+  }),
+  g('settlement', 'Settlement', 'concept', { en: 'Settlement', fr: 'Règlement' }, {
+    en: 'The irrevocable and final discharge of a payment obligation through the transfer of funds or value between payment service providers, often in central bank money via a clearing and settlement mechanism (CSM).',
+    fr: 'Le dénouement irrévocable et définitif d’une obligation de paiement par transfert de fonds ou de valeur entre prestataires de services de paiement, souvent en monnaie banque centrale via un mécanisme de compensation et de règlement (CSM).',
+  }, {
+    aliases: { en: ['settlement', 'final settlement', 'settlement engine'], fr: ['règlement', 'règlement définitif', 'dénouement'] },
+    seeAlso: ['csm', 'target2', 'tips', 'core-banking'],
+  }),
+  g('core-banking', 'Core Banking', 'concept', { en: 'Core Banking System / System of Record', fr: 'Système de Core Banking / System of Record' }, {
+    en: 'Central back-office ledger and banking engine (such as Temenos T24, FIS, Sopra, or SAP) that maintains master account records, customer balances, debit/credit postings, and interest calculation.',
+    fr: 'Système comptable central et moteur bancaire back-office (tel que Temenos T24, FIS, Sopra ou SAP) qui gère le référentiel des comptes, les soldes clients, l’imputation comptable et le calcul des intérêts.',
+  }, {
+    aliases: { en: ['Core Banking System', 'CBS', 'System of Record', 'SoR', 'T24', 'Temenos T24'], fr: ['Core Banking', 'système bancaire central', 'System of Record', 'SoR', 'T24'] },
+    seeAlso: ['fund-reservation', 'settlement', 'aspsp'],
+    links: [
+      { label: 'Flow: IP via Hub & ILM', href: '/flows/hub-ip-transaction-flow' },
+    ],
+  }),
+  g('fund-reservation', 'Fund reservation', 'concept', { en: 'Fund Reservation / Earmarking', fr: 'Réservation de fonds / Blocage' }, {
+    en: 'Temporary hold or earmarking placed on a customer account balance prior to final settlement or clearing execution, preventing double spending while a payment order is being processed.',
+    fr: 'Saisie conservatoire ou blocage temporaire appliqué sur le solde d’un compte client avant le règlement définitif, évitant la double dépense pendant le traitement de l’ordre de paiement.',
+  }, {
+    aliases: { en: ['fund reservation', 'hold', 'earmarking', 'balance hold', 'funds block'], fr: ['réservation de fonds', 'blocage de solde', 'réserve de fonds', 'hold'] },
+    seeAlso: ['core-banking', 'sct-inst', 'ilm'],
+  }),
+  g('leg', 'Leg', 'concept', { en: 'Payment Leg', fr: 'Jambe de paiement' }, {
+    en: 'Distinct segment or stage of an end-to-end payment transaction, such as the customer initiation leg (pain.001), interbank clearing leg (pacs.008), or internal ledger posting leg.',
+    fr: 'Segment ou étape distincte d’une transaction de paiement de bout en bout, telle que la jambe d’initiation client (pain.001), la jambe de compensation interbancaire (pacs.008) ou la jambe comptable interne.',
+  }, {
+    aliases: { en: ['payment leg', 'transaction leg', 'clearing leg', 'settlement leg'], fr: ['jambe de paiement', 'jambe de compensation', 'tronçon de paiement'] },
+    seeAlso: ['pacs-008', 'pain-001', 'sct-inst'],
+  }),
+  g('ilm', 'ILM', 'concept', { en: 'Intraday Liquidity Management', fr: 'Gestion de la liquidité intraday' }, {
+    en: 'System and operational control framework monitoring and managing real-time intraday liquidity positions, central bank reserve accounts, and credit limits during operating hours.',
+    fr: 'Système et dispositif de contrôle surveillant et gérant en temps réel les positions de liquidité intraday, les comptes de réserve en banque centrale et les lignes de crédit au cours de la journée opératoire.',
+  }, {
+    aliases: { en: ['Intraday Liquidity Management', 'ILM system', 'intraday liquidity'], fr: ['gestion de la liquidité intraday', 'ILM', 'liquidité intraday'] },
+    seeAlso: ['payment-hub', 'settlement', 'csm', 'target2'],
+    links: [
+      { label: 'Flow: IP via Hub & ILM', href: '/flows/hub-ip-transaction-flow' },
+      { label: 'Flow: Batch via Hub & ILM', href: '/flows/hub-non-ip-transaction-flow' },
+    ],
+  }),
+  g('payment-hub', 'Payment Hub', 'concept', { en: 'Payment Hub', fr: 'Hub de paiement' }, {
+    en: 'Centralised enterprise orchestration engine for payment routing, message transformation, limit checking, and clearing system dispatch. Commercial vendor engines include Finastra, Volante, FIS, Sopra Steria, or custom in-house ("maison") solutions.',
+    fr: 'Moteur centralisé d’orchestration d’entreprise assurant le routage des paiements, la transformation de messages, le contrôle des limites et la distribution vers les CSM. Solutions éditeurs incluant Finastra, Volante, FIS, Sopra Steria ou développements internes (« maison »).',
+  }, {
+    aliases: { en: ['Payment Hub', 'Payment Orchestration Engine', 'Finastra', 'Volante', 'FIS', 'Sopra', 'maison'], fr: ['Hub de paiement', 'orchestrateur de paiement', 'Finastra', 'Volante', 'FIS', 'Sopra', 'maison'] },
+    seeAlso: ['agi', 'ilm', 'core-banking', 'csm'],
+    links: [
+      { label: 'Flow: IP via Hub & ILM', href: '/flows/hub-ip-transaction-flow' },
+      { label: 'Flow: Batch via Hub & ILM', href: '/flows/hub-non-ip-transaction-flow' },
+    ],
+  }),
+  g('epi-company', 'EPI Company SE', 'scheme', { en: 'EPI Company SE', fr: 'EPI Company SE' }, {
+    en: 'European Payments Initiative corporate entity (Societas Europaea) established by major European banks and payment acquirers to own, govern, and operate the Wero account-to-account retail payment scheme.',
+    fr: 'Entité commerciale (Societas Europaea) de l’European Payments Initiative créée par les grandes banques et acquéreurs européens pour détenir, gouverner et opérer le schéma de paiement retail Wero.',
+  }, {
+    aliases: { en: ['EPI Company SE', 'EPI Company', 'EPI SE'], fr: ['EPI Company SE', 'EPI Company'] },
+    seeAlso: ['epi', 'wero', 'a2a', 'sct-inst'],
+    links: [
+      { label: 'Standard: Wero', href: '/standards/wero' },
+      { label: 'Flow: Wero A2A', href: '/flows/wero-a2a-payment' },
+    ],
+  }),
 ];

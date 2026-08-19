@@ -1295,7 +1295,7 @@ export const FLOWS: Flow[] = [
     summary:
       'Retail account-to-account payment via Wero: wallet intent, proxy resolve, ASPSP debit, SCT Inst settlement.',
     useCase:
-      'Checkout or P2P where the UX is Wero but money still moves on instant rails. Debug both the scheme status and the pacs.002.',
+      'Checkout or P2P where the UX is governed by EPI Company SE (Wero) but money moves on instant rails (SCT Inst). Option for direct or sub-participant bank routing.',
     actors: ['psu', 'scheme', 'aspsp', 'csm', 'beneficiary'],
     tags: ['wero', 'epi', 'instant', 'a2a', 'sct-inst'],
     steps: [
@@ -1305,8 +1305,8 @@ export const FLOWS: Flow[] = [
         to: 'scheme',
         layer: 'api',
         label: 'Create Wero payment intent',
-        detail: 'Amount, merchant/payee alias, and return URLs. The scheme owns the UX; the bank owns the funds.',
-        sampleId: 'wero-payment-create',
+        detail: 'Amount, merchant/payee alias, and return URLs. Governed by EPI Company SE scheme rules.',
+        sampleId: 'epi-company-wero-intent',
         codes: ['WERO_CREATED'],
       },
       {
@@ -1334,7 +1334,7 @@ export const FLOWS: Flow[] = [
         to: 'csm',
         layer: 'clearing',
         label: 'SCT Inst pacs.008',
-        detail: 'Underlying settlement is SCT Instant (or national instant). Scheme status tracks this pacs path.',
+        detail: 'Underlying settlement leg is SCT Instant (or national instant), routed via direct participant or sub-participant BIC.',
         messageShort: 'pacs.008',
         sampleId: 'pacs-008-sct',
       },
@@ -1369,9 +1369,9 @@ export const FLOWS: Flow[] = [
     standardId: 'sct-inst',
     category: 'clearing',
     summary:
-      'End-to-end instant payment flow through the internal architecture: External Network > AGI > Payment Hub > ILM (Intraday Liquidity Management) > Settlement Engine.',
+      'End-to-end instant payment flow through internal architecture: External Network > AGI (Access Gateway Interface) > Payment Hub (Finastra/Volante/FIS/Sopra/Maison) > ILM (Intraday Liquidity Management) > Core Banking / Settlement Engine.',
     useCase:
-      'High-throughput instant payment processing requiring real-time intraday liquidity check before central bank settlement.',
+      'High-throughput instant payment processing detailing mandatory gateway/hub legs and optional ILM liquidity reservation vs direct Core Banking (T24) hold.',
     actors: ['external-network', 'agi', 'payment-hub', 'ilm', 'settlement'],
     tags: ['instant', 'ip', 'agi', 'payment hub', 'ilm', 'settlement', 'iso20022'],
     steps: [
@@ -1393,19 +1393,20 @@ export const FLOWS: Flow[] = [
         layer: 'clearing',
         label: 'Validated pacs.008 payload relayed',
         detail:
-          'AGI validates XML schema, security signatures, and mTLS headers, then routes the normalized pacs.008 message to the Payment Hub.',
+          'AGI validates XML schema, security signatures, and mTLS headers, then routes the normalized pacs.008 message to the Payment Hub (Finastra/Volante/FIS/Sopra/Maison).',
         messageShort: 'pacs.008',
-        sampleId: 'pacs-008-sct-inst',
+        sampleId: 'hub-internal-route',
       },
       {
         n: 3,
         from: 'payment-hub',
         to: 'ilm',
         layer: 'clearing',
-        label: 'Real-time intraday liquidity check',
+        label: 'Real-time intraday liquidity check (Mandatory for direct participants; optional for pre-funded sub-participants)',
         detail:
           'The Payment Hub requests an instant intraday liquidity check and reservation from Intraday Liquidity Management (ILM) to ensure adequate central bank / participant coverage.',
         messageShort: 'pacs.008',
+        sampleId: 'ilm-reservation-check',
         codes: ['ACSP', 'AM04'],
       },
       {
@@ -1423,11 +1424,11 @@ export const FLOWS: Flow[] = [
         from: 'payment-hub',
         to: 'settlement',
         layer: 'clearing',
-        label: 'Execute instant settlement',
+        label: 'Core Banking (T24) hold & settlement execution',
         detail:
-          'Payment Hub dispatches the pacs.008 instruction to the core Settlement Engine to post debit/credit entries to participant accounts.',
+          'Payment Hub dispatches the pacs.008 instruction to the Core Banking System (T24) / Settlement Engine to place fund reservation hold and post ledger entries.',
         messageShort: 'pacs.008',
-        sampleId: 'pacs-008-sct-inst',
+        sampleId: 'cbs-fund-hold',
       },
       {
         n: 6,
@@ -1436,7 +1437,7 @@ export const FLOWS: Flow[] = [
         layer: 'clearing',
         label: 'pacs.002 ACSC final status',
         detail:
-          'Settlement Engine executes immediate settlement and returns a pacs.002 status report with TxSts=ACSC (Accepted Settlement Completed).',
+          'Settlement Engine / Core Banking executes immediate settlement and returns a pacs.002 status report with TxSts=ACSC (Accepted Settlement Completed).',
         messageShort: 'pacs.002',
         sampleId: 'pacs-002-sct-inst',
         codes: ['ACSC'],
@@ -1485,9 +1486,9 @@ export const FLOWS: Flow[] = [
     standardId: 'berlin-group',
     category: 'clearing',
     summary:
-      'End-to-end non-instant (standard batch / credit transfer) payment flow through the internal architecture: External Network > AGI > Payment Hub > ILM > Settlement Engine.',
+      'End-to-end non-instant (standard batch / credit transfer) payment flow through internal architecture: External Network > AGI > Payment Hub > ILM > Core Banking (T24) / Settlement Engine.',
     useCase:
-      'Standard payment processing where transactions are queued, validated against ILM credit lines / liquidity limits, and settled during scheduled batch settlement windows.',
+      'Standard payment processing detailing mandatory routing legs and optional Sub Participant clearing vs direct clearing.',
     actors: ['external-network', 'agi', 'payment-hub', 'ilm', 'settlement'],
     tags: ['non-ip', 'batch', 'agi', 'payment hub', 'ilm', 'settlement', 'iso20022'],
     steps: [
@@ -1509,19 +1510,20 @@ export const FLOWS: Flow[] = [
         layer: 'clearing',
         label: 'Validated pacs.008 payload relayed',
         detail:
-          'AGI validates XML well-formedness and schema rules, then hands off the instruction to the Payment Hub.',
+          'AGI validates XML well-formedness and schema rules, then hands off the instruction to the Payment Hub (Finastra/Volante/FIS/Sopra/Maison).',
         messageShort: 'pacs.008',
-        sampleId: 'pacs-008-sct',
+        sampleId: 'hub-internal-route',
       },
       {
         n: 3,
         from: 'payment-hub',
         to: 'ilm',
         layer: 'clearing',
-        label: 'Limit check & batch liquidity queuing',
+        label: 'Limit check & batch liquidity queuing (Optional for pre-funded sub-participants; mandatory for direct clearing members)',
         detail:
           'Payment Hub checks intraday liquidity limits with ILM. Since it is non-instant, if liquidity is tight, the transaction is queued for the next cutoff window rather than rejected immediately.',
         messageShort: 'pacs.008',
+        sampleId: 'ilm-reservation-check',
         codes: ['ACTC', 'PDNG'],
       },
       {
@@ -1539,11 +1541,11 @@ export const FLOWS: Flow[] = [
         from: 'payment-hub',
         to: 'settlement',
         layer: 'clearing',
-        label: 'Batch settlement submission',
+        label: 'Batch settlement submission & Core Banking posting',
         detail:
-          'Payment Hub submits the accumulated pacs.008 instructions to the Settlement Engine for ledger posting.',
+          'Payment Hub submits the accumulated pacs.008 instructions to the Settlement Engine / Core Banking System (T24) for ledger posting.',
         messageShort: 'pacs.008',
-        sampleId: 'pacs-008-sct',
+        sampleId: 'cbs-fund-hold',
       },
       {
         n: 6,

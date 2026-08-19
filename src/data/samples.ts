@@ -1062,6 +1062,103 @@ export const SAMPLES: Sample[] = [
 }`,
   },
   {
+    id: 'epi-company-wero-intent',
+    label: 'EPI Company SE merchant intent',
+    format: 'json',
+    standardId: 'wero',
+    description: 'Corporate scheme payment intent created via EPI Company SE API gateways.',
+    content: `{
+  "epiSchemeVersion": "2.1",
+  "corporateEntity": "EPI Company SE",
+  "intentId": "epi_intent_9921a4f0",
+  "merchantInfo": {
+    "merchantId": "mrc_sopra_8842",
+    "legalName": "EPI Partner Merchant SAS",
+    "brandName": "EPI Store France"
+  },
+  "paymentContext": {
+    "amount": { "value": "189.50", "currency": "EUR" },
+    "paymentType": "IMMEDIATE_A2A",
+    "subParticipantRouting": {
+      "directParticipantBic": "DEMOFRPPXXX",
+      "subParticipantBic": "SUBPB2BXXXX"
+    }
+  },
+  "status": "AWAITING_SCA"
+}`,
+  },
+  {
+    id: 'ilm-reservation-check',
+    label: 'ILM intraday liquidity reservation',
+    format: 'json',
+    standardId: 'sct-inst',
+    description: 'Real-time intraday liquidity query and reservation payload sent from Payment Hub to ILM.',
+    content: `{
+  "ilmInstructionId": "ILM-RES-20260812-9901",
+  "participantBic": "DEMOFRPPXXX",
+  "subParticipantBic": "SUBPB2BXXXX",
+  "requestedAmount": {
+    "currency": "EUR",
+    "value": "1250.00"
+  },
+  "settlementRail": "SCT_INST_TIPS",
+  "priority": "INSTANT_HIGH",
+  "reservationType": "TEMPORARY_HOLD",
+  "status": "RESERVED_APPROVED",
+  "liquidityPosition": {
+    "availableIntradayCredit": "4500000.00",
+    "reservedTotal": "12500.00"
+  }
+}`,
+  },
+  {
+    id: 'cbs-fund-hold',
+    label: 'Core Banking / T24 fund hold',
+    format: 'json',
+    standardId: 'berlin-group',
+    description: 'Fund reservation / hold request sent to Core Banking System (Temenos T24) prior to settlement.',
+    content: `{
+  "cbsTransactionId": "T24-HOLD-8841209",
+  "accountReference": {
+    "iban": "FR7630006000011234567890189",
+    "cbsAccountId": "ACC-CACC-000492"
+  },
+  "holdDetails": {
+    "holdAmount": "1250.00",
+    "currency": "EUR",
+    "reasonCode": "PMT_RESERVATION",
+    "endToEndId": "E2E-2026-0842",
+    "expiryTimestamp": "2026-08-12T09:20:00Z"
+  },
+  "postingLeg": "DEBTOR_RESERVATION",
+  "holdStatus": "ACTIVE_LOCKED"
+}`,
+  },
+  {
+    id: 'hub-internal-route',
+    label: 'Payment Hub orchestration route',
+    format: 'json',
+    standardId: 'berlin-group',
+    description: 'Internal orchestration message inside Payment Hub (Finastra/Volante/Sopra/FIS/Maison).',
+    content: `{
+  "hubOrchestrationId": "HUB-ORCH-2026-77812",
+  "vendorEngine": "PaymentHub_Engine_V4",
+  "legDetails": {
+    "legSequence": 2,
+    "legType": "INTERBANK_CLEARING",
+    "originatingChannel": "PISP_OPEN_BANKING"
+  },
+  "routingDecision": {
+    "targetRail": "STEP2_BATCH",
+    "gateway": "AGI_OUTBOUND_GW_01",
+    "directParticipantBic": "DEMOFRPPXXX",
+    "subParticipantBic": "SUBPB2BXXXX"
+  },
+  "ilmStatus": "APPROVED",
+  "cbsHoldReference": "T24-HOLD-8841209"
+}`,
+  },
+  {
     id: 'bg-payment-cancel-request',
     label: 'Berlin Group DELETE payment',
     format: 'json',
