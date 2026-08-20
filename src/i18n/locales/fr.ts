@@ -96,7 +96,7 @@ export const fr: MessageTree = {
     title1: 'Comprendre comment fonctionnent les paiements.',
     title2: '',
     lead:
-      'Explorez les parcours de paiement, les infrastructures, les messages ISO 20022, les schémas et les institutions.',
+      'Commencez par la différence entre paiements classiques et instantanés face au CSM au milieu, puis explorez flux, messages ISO 20022, schémas et rails.',
     searchPrompt: 'Que voulez-vous explorer ?',
     explorePayment: 'Explorer un paiement',
     thenTrace: 'Commencez par le récit, puis ouvrez la trace technique hop par hop.',
@@ -139,6 +139,81 @@ export const fr: MessageTree = {
     reasonStop: 'les motifs s’arrêtent ici',
     samePayment:
       'Le même paiement. Un TPP voit « rejected » ; la banque voit AC01 et sait que l’IBAN est faux.',
+    overview: {
+      eyebrow: 'Comment le système s’articule',
+      title: 'Classique, instantané, et le CSM au milieu',
+      lead:
+        'Un schéma dit ce qui doit se passer. Un CSM est l’endroit où les banques compensent et règlent. Même forme de pacs.008 — horloge, cut-off et rail différents.',
+      schemeTitle: 'Schéma (règles métier)',
+      schemeBody:
+        'SCT, SCT Inst, SDD : qui doit être joignable, quels messages ISO, quel SLA. Le rulebook — pas le fil.',
+      csmTitle: 'CSM (le rail)',
+      csmBody:
+        'Mécanisme de compensation et de règlement : STEP2 pour le SEPA par lots, TIPS ou RT1 pour l’instantané. Les banques y échangent les pacs.',
+      vsTitle: 'Classique vs instantané',
+      vsBody:
+        'Le SCT classique attend le prochain lot / jour TARGET. L’instantané (défaut IPR pour les CT euro) se règle en ≤10 secondes, 24/7, avec LclInstrm=INST.',
+      linkRegular: 'Explorer le SCT',
+      linkInstant: 'Explorer le SCT Inst',
+      diagramEyebrow: 'Acteurs & parcours de l’argent',
+      diagramHint: 'Changez le type de paiement — le CSM et qui démarre l’instruction changent.',
+      modeLabel: 'Type de paiement',
+      mode: {
+        regular: 'SCT classique',
+        instant: 'SCT Inst',
+        sdd: 'Prélèvement',
+      },
+      modeLead: {
+        regular:
+          'Le payeur initie un virement. La banque débitrice envoie des pacs.008 par lots dans STEP2 (ou équivalent). Le créancier voit les fonds au prochain cycle de règlement — pas en secondes.',
+        instant:
+          'Mêmes acteurs et rôles que le SCT classique, mais le CSM est TIPS ou RT1. Fonds disponibles en ≤10 secondes ; rejet ou timeout doivent tenir dans cette fenêtre.',
+        sdd:
+          'Le créancier initie le prélèvement (pain.008). L’argent quitte toujours le Débiteur et arrive au Créancier — le côté qui démarre s’inverse, pas les côtés ISO.',
+      },
+      partyPayer: 'Payeur',
+      partyBene: 'Bénéficiaire',
+      partyCreditor: 'Créancier',
+      bankDebtor: 'Banque débitrice',
+      bankCreditor: 'Banque créancière',
+      csmNode: 'CSM',
+      csmBatch: 'STEP2 / lots',
+      csmInstant: 'TIPS / RT1',
+      slaRegular: 'Prochain jour TARGET',
+      slaInstant: '≤10 secondes · 24/7',
+      msgsRegular: 'pain.001 → pacs.008 → pacs.002',
+      msgsInstant: 'pain.001 → pacs.008 INST → pacs.002 ACSC',
+      msgsSdd: 'pain.008 → pacs.003 → pacs.002',
+      rolesEyebrow: 'Vocabulaire',
+      rolesTitle: 'Débiteur / Créancier vs Orig / Bene',
+      rolesLead:
+        'ISO 20022 nomme les côtés de compte (qui est débité / crédité). Les ops disent souvent originator / beneficiary pour qui démarre ou reçoit l’instruction.',
+      roleDebtor: 'Débiteur',
+      roleCreditor: 'Créancier',
+      roleOriginator: 'Originator',
+      roleBeneficiary: 'Beneficiary',
+      rolePayer: 'Payeur',
+      roleDebtorPlain: 'Compte qui perd l’argent (Dbtr / DbtrAcct). Toujours le côté payeur économiquement.',
+      roleCreditorPlain: 'Compte qui gagne l’argent (Cdtr / CdtrAcct). Toujours le côté bénéficiaire économiquement.',
+      roleOriginatorPlain: 'Partie qui démarre l’instruction — payeur sur un virement, créancier sur un prélèvement.',
+      roleBeneficiaryPlain: 'Partie qui reçoit le crédit sur un virement (souvent = Créancier).',
+      mapEyebrow: 'Carte rapide',
+      mapTitle: 'Mêmes mots, paiements différents',
+      mapLead:
+        'Sur SCT et SCT Inst, Originator ≈ Débiteur et Beneficiary ≈ Créancier. Sur SDD, le Créancier est l’Originator du prélèvement.',
+      colPayment: 'Paiement',
+      colDebit: 'Débité',
+      colCredit: 'Crédité',
+      colStarts: 'Qui démarre',
+      mapSctDebit: 'Payeur = Débiteur = Orig',
+      mapSctCredit: 'Bene = Créancier',
+      mapSctStarts: 'Payeur / banque débitrice',
+      mapSddDebit: 'Payeur = Débiteur',
+      mapSddCredit: 'Créancier = Orig',
+      mapSddStarts: 'Créancier / banque créancière',
+      mapFoot:
+        'Dans le XML cherchez Dbtr / Cdtr, pas « payeur ». Les agents sont DbtrAgt / CdtrAgt. La compensation reste dans le CSM au milieu.',
+    },
   },
   explorer: {
     eyebrow: 'Payment Explorer',

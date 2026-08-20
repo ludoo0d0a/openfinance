@@ -29,6 +29,7 @@ describe('i18n', () => {
       'privacy.title',
       'contact.title',
       'home.title1',
+      'home.overview.title',
       'ad.label',
       'footer.version',
       'footer.copyright',

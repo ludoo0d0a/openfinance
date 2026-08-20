@@ -7,6 +7,7 @@ import { UI_ICONS } from '@/lib/iconMeta';
 import { useI18n, useT } from '@/i18n';
 import { CommandPalette } from '@/components/CommandPalette';
 import { PageAd } from '@/components/PageAd';
+import { PaymentSystemOverview } from '@/components/PaymentSystemOverview';
 import { useEffect, useState } from 'react';
 
 const FEATURED_IDS = ['sepa-instant', 'sepa-credit-transfer'] as const;
@@ -29,7 +30,7 @@ export function HomeView() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 lg:px-8 lg:py-14">
+    <div className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-14">
       <header className="max-w-3xl">
         <p className="eyebrow">{t('home.eyebrow')}</p>
         <h1 className="mt-3 text-4xl leading-[1.05] font-bold sm:text-5xl">{t('home.title1')}</h1>
@@ -46,6 +47,8 @@ export function HomeView() {
         <kbd className="hidden border border-rule px-1.5 py-0.5 font-mono text-[10px] sm:inline">⌘K</kbd>
       </button>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
+      <PaymentSystemOverview />
 
       <section className="mt-12">
         <h2 className="eyebrow mb-3">{t('home.explorePayment')}</h2>
