@@ -48,6 +48,12 @@ const SRC_TRUELAYER = {
   lastUpdated: '2026-08-20',
 };
 
+const SRC_SIX = {
+  name: 'SIX Interbank Clearing',
+  url: 'https://www.six-group.com/en/products-services/banking-services/interbank-clearing/sic.html',
+  lastUpdated: '2026-08-16',
+};
+
 export const SCHEMES: Scheme[] = [
   {
     id: 'sct',
@@ -164,6 +170,17 @@ export const SCHEMES: Scheme[] = [
     },
     explorePaymentId: 'swift-credit-transfer',
     sources: [SRC_SWIFT],
+  },
+  {
+    id: 'sic-ch',
+    name: { en: 'SIC Payment Scheme', fr: 'Schéma de paiement SIC' },
+    operator: 'SIX / SNB',
+    summary: {
+      en: 'Swiss Interbank Clearing scheme for domestic CHF payments, governing both regular RTGS credit transfers and sub-10s instant payments (SIC IP).',
+      fr: 'Schéma Swiss Interbank Clearing pour les paiements CHF domestiques, régissant à la fois les virements RTGS réguliers et les paiements instantanés <10s (SIC IP).',
+    },
+    explorePaymentId: 'swiss-credit-transfer',
+    sources: [SRC_SIX],
   },
 ];
 

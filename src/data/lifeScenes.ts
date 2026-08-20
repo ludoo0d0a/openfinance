@@ -317,7 +317,7 @@ export const LIFE_SCENARIOS: LifeScenario[] = [
       ],
       ['cart', 'processing', 'processing', 'processing', 'processing', 'receipt'],
     ),
-    { paymentId: 'sepa-credit-transfer' },
+    { paymentId: 'swiss-credit-transfer' },
   ),
 
   scenario(
@@ -336,7 +336,7 @@ export const LIFE_SCENARIOS: LifeScenario[] = [
       ],
       ['cart', 'processing', 'processing', 'receipt'],
     ),
-    { paymentId: 'sepa-credit-transfer' },
+    { paymentId: 'swiss-credit-transfer' },
   ),
 
   scenario(
@@ -901,7 +901,7 @@ export const LIFE_SCENARIOS: LifeScenario[] = [
       ],
       ['inbox', 'processing', 'processing', 'receipt'],
     ),
-    { paymentId: 'sepa-instant' },
+    { paymentId: 'swiss-credit-transfer' },
   ),
 
   scenario(
@@ -920,7 +920,26 @@ export const LIFE_SCENARIOS: LifeScenario[] = [
       ],
       ['processing', 'failed', 'processing', 'failed'],
     ),
-    { paymentId: 'sepa-instant' },
+    { paymentId: 'swiss-credit-transfer' },
+  ),
+
+  scenario(
+    'banque-target2',
+    'bank',
+    L('TARGET2 regular euro credit', 'Virement euro régulier TARGET2'),
+    L('T2 RTGS counterpart to TIPS — settle in central bank money.', 'Contrepartie T2 RTGS de TIPS — règlement en monnaie banque centrale.'),
+    'happy',
+    flowBeats(
+      'target2-regular-payment',
+      [
+        L('pacs.008 into T2 RTGS', 'pacs.008 dans T2 RTGS'),
+        L('TARGET2 delivers to creditor PSP', 'TARGET2 livre au PSP créancier'),
+        L('Creditor confirms ACSC', 'Le créancier confirme ACSC'),
+        L('Status back to debtor bank', 'Statut vers la banque débitrice'),
+      ],
+      ['inbox', 'processing', 'processing', 'receipt'],
+    ),
+    { paymentId: 'sepa-credit-transfer' },
   ),
 
   scenario(

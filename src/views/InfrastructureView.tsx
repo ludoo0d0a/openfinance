@@ -30,6 +30,34 @@ export function InfrastructureView() {
       </p>
       <p className="mt-4 text-[15px] leading-relaxed text-muted">{infra.summary[locale]}</p>
       <p className="mt-3 text-[14px] leading-relaxed">{infra.usedFor[locale]}</p>
+      {(infra.instantFlowHref || infra.regularFlowHref || infra.mapFlowHref) && (
+        <div className="mt-6 flex flex-wrap gap-3">
+          {infra.instantFlowHref && (
+            <Link
+              to={infra.instantFlowHref}
+              className="inline-flex items-center gap-1.5 rounded border border-signal/30 bg-signal-soft px-3 py-1.5 text-[13px] font-medium text-signal hover:bg-signal/10"
+            >
+              ⚡ {locale === 'fr' ? 'Flux paiement instantané' : 'Instant payment flow'}
+            </Link>
+          )}
+          {infra.regularFlowHref && (
+            <Link
+              to={infra.regularFlowHref}
+              className="inline-flex items-center gap-1.5 rounded border border-violet/30 bg-violet-soft px-3 py-1.5 text-[13px] font-medium text-violet hover:bg-violet/10"
+            >
+              📅 {locale === 'fr' ? 'Flux paiement régulier' : 'Regular payment flow'}
+            </Link>
+          )}
+          {!infra.instantFlowHref && !infra.regularFlowHref && infra.mapFlowHref && (
+            <Link
+              to={infra.mapFlowHref}
+              className="inline-flex items-center gap-1.5 rounded border border-rule bg-surface-elevated px-3 py-1.5 text-[13px] font-medium text-muted hover:text-foreground"
+            >
+              🔗 {locale === 'fr' ? 'Voir le flux' : 'View clearing flow'}
+            </Link>
+          )}
+        </div>
+      )}
       <PageAd placement="mid" />
       {infra.relatedMessageShorts.length > 0 && (
         <p className="mt-4 font-mono text-[13px]">
