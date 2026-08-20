@@ -428,6 +428,47 @@ export const SAMPLES: Sample[] = [
 </Document>`,
   },
   {
+    id: 'pacs-002-rejected-am04',
+    label: 'pacs.002 rejected (RJCT / AM04)',
+    format: 'xml',
+    messageShort: 'pacs.002',
+    description:
+      'AM04 InsufficientFunds. Debtor account has insufficient funds to settle the credit transfer.',
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>PACS2-20260812-11899</MsgId>
+      <CreDtTm>2026-08-12T09:15:10</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PACS8-20260812-77412</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+      <GrpSts>RJCT</GrpSts>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <StsId>STS-0000771415</StsId>
+      <OrgnlEndToEndId>E2E-2026-0842</OrgnlEndToEndId>
+      <OrgnlTxId>TX-DEMO-0000771412</OrgnlTxId>
+      <TxSts>RJCT</TxSts>
+      <StsRsnInf>
+        <Orgtr>
+          <Id>
+            <OrgId>
+              <AnyBIC>DEMOFRPPXXX</AnyBIC>
+            </OrgId>
+          </Id>
+        </Orgtr>
+        <Rsn>
+          <Cd>AM04</Cd>
+        </Rsn>
+        <AddtlInf>Insufficient funds on debtor account</AddtlInf>
+      </StsRsnInf>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>`,
+  },
+  {
     id: 'pacs-002-rejected',
     label: 'pacs.002 rejected (RJCT / AC01)',
     format: 'xml',

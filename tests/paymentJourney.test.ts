@@ -86,7 +86,7 @@ describe('getPaymentJourney', () => {
     expect(opts.outcome).toBe('happy');
   });
 
-  it('PayPal funds from the wallet then pays the merchant later', () => {
+  it('Digital wallet funds from the wallet then pays the merchant later', () => {
     const payment = paymentById('paypal')!;
     const happy = getPaymentJourney('paypal', resolveJourneyOptions(payment, { locale: 'en' }))!;
     expect(happy.hops.map((h) => h.id)).toEqual([
@@ -105,7 +105,7 @@ describe('getPaymentJourney', () => {
     expect(reject.hops.some((h) => h.id === 'paypal-payout')).toBe(false);
   });
 
-  it('Curve runs two card authorisations under one checkout', () => {
+  it('Card overlay runs two card authorisations under one checkout', () => {
     const payment = paymentById('curve')!;
     const happy = getPaymentJourney('curve', resolveJourneyOptions(payment, { locale: 'en' }))!;
     expect(happy.hops.some((h) => h.id === 'curve-route')).toBe(true);
