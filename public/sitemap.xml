@@ -8,6 +8,9 @@
   <url><loc>https://openfinance.geoking.fr/payment/sepa-credit-transfer</loc></url>
   <url><loc>https://openfinance.geoking.fr/payment/sepa-instant</loc></url>
   <url><loc>https://openfinance.geoking.fr/payment/wero</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/instant-a2a</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/pisp-a2a</loc></url>
+  <url><loc>https://openfinance.geoking.fr/payment/paypal</loc></url>
   <url><loc>https://openfinance.geoking.fr/payment/sepa-direct-debit</loc></url>
   <url><loc>https://openfinance.geoking.fr/payment/card-payment</loc></url>
   <url><loc>https://openfinance.geoking.fr/payment/swift-credit-transfer</loc></url>

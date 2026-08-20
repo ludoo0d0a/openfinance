@@ -186,6 +186,18 @@ html[data-theme='dark'] {
     background: var(--color-rule);
   }
 
+  /* Full-width content; editors especially need the extra columns. */
+  .page-fluid {
+    width: 100%;
+    padding: 1.5rem 1rem;
+  }
+
+  @media (width >= 64rem) {
+    .page-fluid {
+      padding-inline: 1.5rem;
+    }
+  }
+
   /* Scrollbars inside data panels, to keep the dark surfaces coherent. */
   .scroll-ink {
     scrollbar-width: thin;

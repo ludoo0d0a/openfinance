@@ -91,22 +91,50 @@ export const INFRASTRUCTURES: Infrastructure[] = [
   },
   {
     id: 'wero-platform',
-    name: { en: 'Wero platform', fr: 'Plateforme Wero' },
-    operator: 'EPI Company',
+    name: { en: 'A2A overlay platform', fr: 'Plateforme overlay A2A' },
+    operator: 'Scheme operators (e.g. EPI / Wero)',
     region: 'Europe',
     currency: 'EUR',
     summary: {
-      en: 'Wero account-to-account overlay: payment intent, proxy (phone/email → IBAN), then settlement on instant rails.',
-      fr: 'Couche compte-à-compte Wero : intention de paiement, proxy (téléphone/e-mail → IBAN), puis règlement sur rails instantanés.',
+      en: 'Retail A2A overlay: payment intent, proxy (phone/email → IBAN), then settlement on instant rails. Wero is the sample; Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay and TWINT follow the same split.',
+      fr: 'Overlay A2A retail : intention de paiement, proxy (téléphone/e-mail → IBAN), puis règlement sur rails instantanés. Wero est l’exemple ; Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay et TWINT suivent la même séparation.',
     },
     usedFor: {
-      en: 'Retail A2A checkout and P2P where the UX is Wero and money still moves as SCT Inst.',
-      fr: 'Paiement A2A retail et P2P dont l’UX est Wero, l’argent circulant toujours en SCT Inst.',
+      en: 'Retail A2A checkout and P2P where the UX is the overlay scheme and money still moves as an instant credit transfer (SCT Inst in the euro area).',
+      fr: 'Paiement A2A retail et P2P dont l’UX est le schéma overlay, l’argent circulant toujours en virement instantané (SCT Inst en zone euro).',
     },
     relatedMessageShorts: ['pacs.008', 'pacs.002'],
     instantFlowHref: '/flows/wero-a2a-payment',
     mapFlowHref: '/flows/wero-a2a-payment',
     sources: [SRC_EPI],
+  },
+  {
+    id: 'domestic-instant',
+    name: { en: 'Domestic instant rail (Pix, UPI)', fr: 'Rail instantané domestique (Pix, UPI)' },
+    operator: 'Central banks / NPCI',
+    region: 'BR / IN',
+    currency: 'BRL / INR',
+    summary: {
+      en: 'National 24/7 instant rails where the scheme is the product (Pix SPI, UPI), not an overlay on SCT Inst.',
+      fr: 'Rails instantanés nationaux 24/7 où le schéma est le produit (Pix SPI, UPI), pas un overlay sur SCT Inst.',
+    },
+    usedFor: {
+      en: 'Alias-addressed retail A2A in Brazil (Pix) and India (UPI).',
+      fr: 'A2A retail adressé par alias au Brésil (Pix) et en Inde (UPI).',
+    },
+    relatedMessageShorts: [],
+    sources: [
+      {
+        name: 'Banco Central do Brasil — Pix',
+        url: 'https://www.bcb.gov.br/en/financialstability/pix',
+        lastUpdated: '2026-08-20',
+      },
+      {
+        name: 'NPCI — UPI',
+        url: 'https://www.npci.org.in/what-we-do/upi/product-overview',
+        lastUpdated: '2026-08-20',
+      },
+    ],
   },
   {
     id: 'sic',

@@ -4,7 +4,7 @@ import { useT } from '@/i18n';
 export function MapView() {
   const t = useT();
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-10">
+    <div className="page-fluid">
       <header className="max-w-3xl">
         <p className="eyebrow">{t('map.eyebrow')}</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t('map.title')}</h1>

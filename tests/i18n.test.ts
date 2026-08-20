@@ -21,6 +21,7 @@ describe('i18n', () => {
     for (const key of [
       'nav.overview',
       'nav.try',
+      'nav.live',
       'nav.glossary',
       'nav.about',
       'nav.privacy',
@@ -29,6 +30,13 @@ describe('i18n', () => {
       'privacy.title',
       'contact.title',
       'home.title1',
+      'home.noticeTitle',
+      'home.noticePurpose',
+      'home.noticeAi',
+      'home.noticeNoMoney',
+      'home.noticePublic',
+      'home.noticeInfoOnly',
+      'home.overview.title',
       'ad.label',
       'footer.version',
       'footer.copyright',
@@ -36,7 +44,11 @@ describe('i18n', () => {
       'locale.fr',
       'flow.entities',
       'flow.fullscreen',
-      'flow.exitFullscreen',
+      'try.modeExpert',
+      'live.title',
+      'live.lead',
+      'live.outcome.happy',
+      'live.scene.receive',
     ]) {
       expect(resolveMessage(en, key), key).toBeTypeOf('string');
       expect(resolveMessage(fr, key), key).toBeTypeOf('string');

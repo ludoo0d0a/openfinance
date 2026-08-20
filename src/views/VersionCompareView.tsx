@@ -67,7 +67,7 @@ export function VersionCompareView() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <p className="eyebrow">{t('compare.eyebrow')}</p>
       <h1 className="mt-2 text-3xl font-bold">
         {message.short} — {t('compare.title')}

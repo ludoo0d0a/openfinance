@@ -124,6 +124,33 @@ function findNsAttribute(node: XmlNode): string | undefined {
   return key ? node.attributes[key] : undefined;
 }
 
+/** Path used to join form fields and tree rows: Document-relative, optional `@attr`. */
+export function xmlSelector(node: XmlNode, attr?: string): string {
+  const rel = node.path.replace(/^Document\/?/, '');
+  const base = rel || node.name;
+  return attr ? `${base}@${attr}` : base;
+}
+
+export function xmlElementPath(selector: string): string {
+  return selector.split('@')[0] ?? selector;
+}
+
+/** Leaf text nodes and attributes, in document order. */
+export function collectLeaves(root: XmlNode | null): { selector: string; value: string }[] {
+  const out: { selector: string; value: string }[] = [];
+  const walk = (node: XmlNode) => {
+    for (const [k, v] of Object.entries(node.attributes)) {
+      out.push({ selector: xmlSelector(node, k), value: v });
+    }
+    if (node.children.length === 0 && node.text != null) {
+      out.push({ selector: xmlSelector(node), value: node.text });
+    }
+    node.children.forEach(walk);
+  };
+  if (root) walk(root);
+  return out;
+}
+
 /** Every path present in the document, relative to the Document element. */
 export function collectPaths(root: XmlNode | null): Set<string> {
   const paths = new Set<string>();

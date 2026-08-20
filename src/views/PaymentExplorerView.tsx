@@ -105,7 +105,7 @@ export function PaymentExplorerView() {
             : 'explorer.viaCreditor';
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <header className="max-w-3xl">
         <p className="eyebrow">{t('explorer.eyebrow')}</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{payment.name[locale]}</h1>

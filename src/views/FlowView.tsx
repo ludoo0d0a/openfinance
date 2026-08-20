@@ -105,7 +105,7 @@ export function FlowView() {
   if (!flow || !step) return <NotFoundView />;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <header className="max-w-3xl">
         <div className="flex flex-wrap items-center gap-2">
           <p className="eyebrow">{t(`category.${flow.category}`)}</p>
@@ -324,13 +324,15 @@ export function FlowView() {
         <div className="min-w-0 space-y-6">
           {sample ? (
             <div className="xl:sticky xl:top-[69px]" id="step-sample">
-              <PayloadInspector
-                key={sample.id}
-                content={sample.content}
-                format={sample.format}
-                title={sample.label}
-                description={sample.description}
-              />
+              <div className="h-[min(70vh,720px)] min-h-[480px]">
+                <PayloadInspector
+                  key={sample.id}
+                  content={sample.content}
+                  format={sample.format}
+                  title={sample.label}
+                  description={sample.description}
+                />
+              </div>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                 <Link to={`/samples/${sample.id}`} className="font-mono text-[11px] text-signal hover:underline">
                   {t('flow.openSample')}

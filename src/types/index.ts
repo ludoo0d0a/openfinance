@@ -349,3 +349,49 @@ export interface Infrastructure {
   regularFlowHref?: string;
   sources: SourceRef[];
 }
+
+/** Fake-app scene in the `/live` showcase. */
+export type LifeSceneId = 'shop' | 'stream' | 'wallet' | 'receive' | 'bank';
+
+/** Outcome chip on a life scenario (extends payment outcomes with cancel). */
+export type LifeOutcome = PaymentOutcome | 'cancel';
+
+/**
+ * One beat in a `/live` walkthrough. Prefer `flowId`+`step` so prose comes from
+ * the catalog; use `paymentId`+`hopId` when there is no Flow for that path.
+ */
+export interface LifeBeat {
+  /** Fake-app screen key rendered by LiveAppFrame. */
+  screen: string;
+  /** One line shown in the consumer chrome. */
+  consumer: LocalizedText;
+  flowId?: string;
+  /** FlowStep.n when flowId is set. */
+  step?: number;
+  paymentId?: string;
+  hopId?: string;
+  /** Override sample; otherwise inherit from the flow step / hop. */
+  sampleId?: string;
+}
+
+export interface LifeScenario {
+  id: string;
+  sceneId: LifeSceneId;
+  title: LocalizedText;
+  blurb: LocalizedText;
+  outcome: LifeOutcome;
+  /** Primary payment this story illustrates (for links / coverage). */
+  paymentId?: string;
+  /** Matching opposite-side scenario (send ↔ receive). */
+  pairScenarioId?: string;
+  /** Hub scenario to open after a merchant receipt (“see what the banks did”). */
+  bankDeepLinkId?: string;
+  beats: LifeBeat[];
+}
+
+export interface LifeSceneMeta {
+  id: LifeSceneId;
+  brand: LocalizedText;
+  title: LocalizedText;
+  blurb: LocalizedText;
+}

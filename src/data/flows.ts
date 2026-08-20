@@ -8,7 +8,7 @@ export const ACTORS: Record<ActorId, Actor> = {
   csm: { id: 'csm', label: 'CSM', sublabel: 'Clearing & settlement' },
   beneficiary: { id: 'beneficiary', label: 'Creditor bank', sublabel: 'Beneficiary side' },
   rail: { id: 'rail', label: 'SIC rail', sublabel: 'SIC / euroSIC / SIC IP' },
-  scheme: { id: 'scheme', label: 'Wero', sublabel: 'EPI payment scheme' },
+  scheme: { id: 'scheme', label: 'A2A overlay', sublabel: 'Retail A2A scheme (e.g. Wero)' },
   'external-network': { id: 'external-network', label: 'External Network', sublabel: 'Inbound message rail / SWIFT / STEP2' },
   agi: { id: 'agi', label: 'AGI', sublabel: 'Access Gateway Interface' },
   'payment-hub': { id: 'payment-hub', label: 'Payment Hub', sublabel: 'Orchestration & Routing engine' },
@@ -1347,11 +1347,11 @@ export const FLOWS: Flow[] = [
   // ────────────────────────────────────────────────────────────────────────
   {
     id: 'wero-a2a-payment',
-    name: 'Wero A2A payment',
+    name: 'A2A overlay payment (Wero sample)',
     standardId: 'wero',
     category: 'scheme',
     summary:
-      'Retail account-to-account payment via Wero: wallet intent, proxy resolve, ASPSP debit, SCT Inst settlement.',
+      'Retail A2A overlay: wallet intent, proxy resolve, ASPSP debit, SCT Inst settlement. Wero is the sample; Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay and TWINT follow the same split.',
     useCase:
       'Checkout or P2P where the UX is governed by EPI Company SE (Wero) but money moves on instant rails (SCT Inst). Option for direct or sub-participant bank routing.',
     actors: ['psu', 'scheme', 'aspsp', 'csm', 'beneficiary'],

@@ -41,7 +41,7 @@ export const ACTORS_FR: Record<string, { label: string; sublabel: string }> = {
   csm: { label: 'CSM', sublabel: 'Compensation & règlement' },
   beneficiary: { label: 'Banque créancière', sublabel: 'Côté bénéficiaire' },
   rail: { label: 'Rail SIC', sublabel: 'SIC / euroSIC / SIC IP' },
-  scheme: { label: 'Wero', sublabel: 'Schéma de paiement EPI' },
+  scheme: { label: 'Overlay A2A', sublabel: 'Schéma A2A retail (ex. Wero)' },
 };
 
 export const FLOWS_FR: Record<string, FlowI18n> = {
@@ -654,9 +654,9 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
   },
 
   'wero-a2a-payment': {
-    name: 'Paiement A2A Wero',
+    name: 'Paiement overlay A2A (exemple Wero)',
     summary:
-      'Paiement compte-à-compte retail via Wero : intent wallet, résolution proxy, débit ASPSP, règlement SCT Inst.',
+      'Overlay A2A retail : intent wallet, résolution proxy, débit ASPSP, règlement SCT Inst. Wero est l’exemple ; Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay et TWINT suivent la même séparation.',
     useCase:
       'Checkout ou P2P où l’UX est gouvernée par EPI Company SE (Wero) mais l’argent circule sur rails instantanés (SCT Inst). Option de routage banque participante directe ou sous-participant.',
     steps: {

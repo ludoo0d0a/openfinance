@@ -271,5 +271,9 @@ describe('search index', () => {
     expect(index.search('PayPal').some((h) => h.id === 'payment:paypal')).toBe(true);
     expect(index.search('Curve').some((h) => h.id === 'payment:curve')).toBe(true);
     expect(index.search('third party').some((h) => h.id === 'payment:paypal')).toBe(true);
+    expect(index.search('A2A Overlay').some((h) => h.id === 'payment:wero')).toBe(true);
+    expect(index.search('Bizum').some((h) => h.id === 'payment:wero')).toBe(true);
+    expect(index.search('Pix').some((h) => h.id === 'payment:instant-a2a')).toBe(true);
+    expect(index.search('TrueLayer').some((h) => h.id === 'payment:pisp-a2a')).toBe(true);
   });
 });

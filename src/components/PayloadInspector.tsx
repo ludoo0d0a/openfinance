@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FileCode2, Braces } from 'lucide-react';
-import { parseXml, searchNodes, type XmlNode } from '@/lib/xml';
+import { parseXml, searchNodes, xmlElementPath, xmlSelector, type XmlNode } from '@/lib/xml';
 import { tryJsonToXml, tryPrettyJson, tryXmlToJsonString, tryXmlToSourceJson } from '@/lib/isoCodec';
 import { cn } from '@/lib/cn';
 import type { ValidationResult } from '@/types';
@@ -20,6 +20,10 @@ interface Props {
   allowAltFormat?: boolean;
   /** Prefill the tree filter (e.g. from search ?q=DbtrAgt). */
   initialFilter?: string;
+  /** Selectors to highlight in the XML tree (`path` or `path@attr`). */
+  selectedPaths?: string[];
+  /** Click a tree row / attribute to link it back to a form field. */
+  onSelectPath?: (selector: string) => void;
 }
 
 type Tab = 'tree' | 'raw' | 'validate';
@@ -33,9 +37,12 @@ export function PayloadInspector({
   onContentChange,
   allowAltFormat,
   initialFilter = '',
+  selectedPaths,
+  onSelectPath,
 }: Props) {
   const t = useT();
   const dual = allowAltFormat ?? true;
+  const treeRef = useRef<HTMLDivElement>(null);
   const [viewFormat, setViewFormat] = useState<ViewFormat>('xml');
   const [tab, setTab] = useState<Tab>('tree');
   const [filter, setFilter] = useState(initialFilter);
@@ -117,6 +124,18 @@ export function PayloadInspector({
   const tabs: Tab[] = format === 'xml' && viewFormat === 'xml' ? ['tree', 'raw', 'validate'] : ['tree', 'raw'];
   const activeTab: Tab = tabs.includes(tab) ? tab : 'tree';
 
+  const selectedSet = useMemo(() => new Set(selectedPaths ?? []), [selectedPaths]);
+
+  useEffect(() => {
+    if (!selectedPaths?.length || activeTab !== 'tree' || viewFormat !== 'xml') return;
+    const first = xmlElementPath(selectedPaths[0]);
+    const frame = requestAnimationFrame(() => {
+      const el = treeRef.current?.querySelector(`[data-xml-path="${CSS.escape(first)}"]`);
+      el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectedPaths, activeTab, viewFormat]);
+
   function handleRawChange(next: string) {
     if (!onContentChange) return;
     if (viewFormat === format) {
@@ -171,7 +190,7 @@ export function PayloadInspector({
   }
 
   return (
-    <section className="panel-ink flex min-h-0 flex-col">
+    <section className="panel-ink flex h-full min-h-[28rem] flex-col">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-line px-4 py-3">
         <div className="min-w-0">
           <p className="eyebrow-dark inline-flex items-center gap-1.5">
@@ -234,10 +253,16 @@ export function PayloadInspector({
               aria-label={t('payload.filterAria')}
             />
           </div>
-          <div className="scroll-ink min-h-0 flex-1 overflow-auto px-2 py-2 font-mono text-xs">
+          <div ref={treeRef} className="scroll-ink min-h-0 flex-1 overflow-auto px-2 py-2 font-mono text-xs">
             {effectiveFormat === 'xml' ? (
               parsed?.wellFormed && parsed.root ? (
-                <XmlTree node={parsed.root} matches={matches} filter={filter} />
+                <XmlTree
+                  node={parsed.root}
+                  matches={matches}
+                  filter={filter}
+                  selectedPaths={selectedSet}
+                  onSelectPath={onSelectPath}
+                />
               ) : (
                 <p className="px-2 py-4 text-vermillion">Not well-formed: {parsed?.error}</p>
               )
@@ -325,32 +350,59 @@ function XmlTree({
   node,
   matches,
   filter,
+  selectedPaths,
+  onSelectPath,
   depth = 0,
 }: {
   node: XmlNode;
   matches: Set<string> | null;
   filter: string;
+  selectedPaths: Set<string>;
+  onSelectPath?: (selector: string) => void;
   depth?: number;
 }) {
-  const [open, setOpen] = useState(depth < 4);
+  const rel = xmlSelector(node);
+  const ancestorOfSelection =
+    selectedPaths.size > 0 &&
+    [...selectedPaths].some((p) => {
+      const el = xmlElementPath(p);
+      return el === rel || el.startsWith(`${rel}/`);
+    });
+  const [open, setOpen] = useState(depth < 4 || ancestorOfSelection);
+  useEffect(() => {
+    if (ancestorOfSelection) setOpen(true);
+  }, [ancestorOfSelection]);
+
   const hasChildren = node.children.length > 0;
   const isMatch = matches?.has(node.path + node.name) ?? false;
   const hasMatchBelow = matches ? subtreeHasMatch(node, matches) : false;
+  const rowSelected = selectedPaths.has(rel);
+  const attrSelected = Object.keys(node.attributes).some((k) => selectedPaths.has(xmlSelector(node, k)));
 
-  if (matches && !isMatch && !hasMatchBelow) return null;
+  if (matches && !isMatch && !hasMatchBelow && !ancestorOfSelection) return null;
 
   return (
     <div style={{ paddingLeft: depth === 0 ? 0 : 14 }}>
       <div
+        data-xml-path={rel}
+        onClick={onSelectPath ? () => onSelectPath(rel) : undefined}
         className={cn(
           'group flex items-baseline gap-1.5 rounded-none px-1.5 py-[3px]',
-          isMatch && filter ? 'bg-signal/25' : 'hover:bg-ink-raised',
+          onSelectPath && 'cursor-pointer',
+          rowSelected || attrSelected
+            ? 'bg-signal/30 ring-1 ring-inset ring-signal'
+            : isMatch && filter
+              ? 'bg-signal/25'
+              : 'hover:bg-ink-raised',
         )}
       >
         {hasChildren ? (
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((v) => !v);
+            }}
             className="w-3 shrink-0 text-muted-dark"
             aria-label={open ? 'Collapse' : 'Expand'}
           >
@@ -361,12 +413,26 @@ function XmlTree({
         )}
         <span className="text-signal">{'<'}</span>
         <span className="text-[#9ecbff]">{node.name}</span>
-        {Object.entries(node.attributes).map(([k, v]) => (
-          <span key={k} className="text-muted-dark">
-            {' '}
-            <span className="text-ochre">{k}</span>=<span className="text-jade">"{v}"</span>
-          </span>
-        ))}
+        {Object.entries(node.attributes).map(([k, v]) => {
+          const attrSel = xmlSelector(node, k);
+          return (
+            <span
+              key={k}
+              className={cn('text-muted-dark', selectedPaths.has(attrSel) && 'bg-signal/40 px-0.5')}
+              onClick={
+                onSelectPath
+                  ? (e) => {
+                      e.stopPropagation();
+                      onSelectPath(attrSel);
+                    }
+                  : undefined
+              }
+            >
+              {' '}
+              <span className="text-ochre">{k}</span>=<span className="text-jade">"{v}"</span>
+            </span>
+          );
+        })}
         <span className="text-signal">{hasChildren || node.text ? '>' : ' />'}</span>
         {node.text && !hasChildren && (
           <>
@@ -384,7 +450,15 @@ function XmlTree({
       {open && hasChildren && (
         <>
           {node.children.map((child, i) => (
-            <XmlTree key={`${child.path}-${i}`} node={child} matches={matches} filter={filter} depth={depth + 1} />
+            <XmlTree
+              key={`${child.path}-${i}`}
+              node={child}
+              matches={matches}
+              filter={filter}
+              selectedPaths={selectedPaths}
+              onSelectPath={onSelectPath}
+              depth={depth + 1}
+            />
           ))}
           <div className="flex items-baseline gap-1.5 px-1.5 py-[3px]">
             <span className="w-3 shrink-0" />

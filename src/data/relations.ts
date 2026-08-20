@@ -39,6 +39,19 @@ export const RELATIONS: CatalogRelation[] = [
   { type: 'initiated_via', from: 'payment:wero', to: 'scheme:wero' },
   { type: 'variant_of', from: 'payment:wero', to: 'payment:sepa-instant' },
 
+  { type: 'settles_on', from: 'payment:instant-a2a', to: 'infrastructure:domestic-instant' },
+  { type: 'defined_by', from: 'payment:instant-a2a', to: 'scheme:instant-a2a' },
+  { type: 'initiated_via', from: 'payment:instant-a2a', to: 'scheme:instant-a2a' },
+
+  { type: 'uses_message', from: 'payment:pisp-a2a', to: 'message:pain.001' },
+  { type: 'uses_message', from: 'payment:pisp-a2a', to: 'message:pacs.008' },
+  { type: 'uses_message', from: 'payment:pisp-a2a', to: 'message:pacs.002' },
+  { type: 'settles_on', from: 'payment:pisp-a2a', to: 'infrastructure:tips' },
+  { type: 'settles_on', from: 'payment:pisp-a2a', to: 'infrastructure:rt1' },
+  { type: 'defined_by', from: 'payment:pisp-a2a', to: 'scheme:pisp-a2a' },
+  { type: 'initiated_via', from: 'payment:pisp-a2a', to: 'scheme:pisp-a2a' },
+  { type: 'variant_of', from: 'payment:pisp-a2a', to: 'payment:sepa-instant' },
+
   { type: 'uses_message', from: 'payment:paypal', to: 'message:pacs.008' },
   { type: 'settles_on', from: 'payment:paypal', to: 'infrastructure:card-schemes' },
   { type: 'defined_by', from: 'payment:paypal', to: 'scheme:paypal' },

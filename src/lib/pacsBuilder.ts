@@ -18,9 +18,28 @@ export interface PacsBuildInput {
   settlementDate: string;
   /** ISO datetime used as AccptncDtTm / CreDtTm */
   createdAt: string;
+  xmlns: string;
+  nbOfTxs: string;
+  ttlAmount: string;
+  ttlCurrency: string;
+  grpSettlementDate: string;
+  sttlmMtd: string;
+  instgAgtBic: string;
+  instdAgtBic: string;
+  svcLvl: string;
+  lclInstrm: string;
+  accptncDtTm: string;
+  chrgBr: string;
+  statusMsgId: string;
+  orgnlMsgNmId: string;
+  addtlInf: string;
 }
 
 export type Pacs002Outcome = 'ACSC' | 'RJCT';
+
+const now = new Date();
+const today = now.toISOString().slice(0, 10);
+const created = now.toISOString().replace(/\.\d{3}Z$/, '');
 
 export const DEFAULT_PACS_INPUT: PacsBuildInput = {
   amount: '42.50',
@@ -38,8 +57,23 @@ export const DEFAULT_PACS_INPUT: PacsBuildInput = {
   remittance: 'Try editor payment',
   clrSys: 'TIPS',
   instant: true,
-  settlementDate: new Date().toISOString().slice(0, 10),
-  createdAt: new Date().toISOString().replace(/\.\d{3}Z$/, ''),
+  settlementDate: today,
+  createdAt: created,
+  xmlns: 'urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08',
+  nbOfTxs: '1',
+  ttlAmount: '42.50',
+  ttlCurrency: 'EUR',
+  grpSettlementDate: today,
+  sttlmMtd: 'CLRG',
+  instgAgtBic: 'DEMOFRPPXXX',
+  instdAgtBic: 'COBADEFFXXX',
+  svcLvl: 'SEPA',
+  lclInstrm: 'INST',
+  accptncDtTm: created,
+  chrgBr: 'SLEV',
+  statusMsgId: 'PACS2-TRY-0001',
+  orgnlMsgNmId: 'pacs.008.001.08',
+  addtlInf: 'Synthetic reject from the Try Editor',
 };
 
 function esc(value: string): string {
@@ -57,43 +91,40 @@ function clrSysXml(code: PacsBuildInput['clrSys']): string {
 
 /** Build a synthetic pacs.008 from the Try Editor form. */
 export function buildPacs008(input: PacsBuildInput): string {
-  const localInstr = input.instant
+  const lcl = input.lclInstrm.trim()
     ? `
-      <PmtTpInf>
-        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
-        <LclInstrm><Cd>INST</Cd></LclInstrm>
-      </PmtTpInf>`
-    : `
-      <PmtTpInf>
-        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
-      </PmtTpInf>`;
+        <LclInstrm><Cd>${esc(input.lclInstrm)}</Cd></LclInstrm>`
+    : '';
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+<Document xmlns="${esc(input.xmlns)}">
   <FIToFICstmrCdtTrf>
     <GrpHdr>
       <MsgId>${esc(input.msgId)}</MsgId>
       <CreDtTm>${esc(input.createdAt)}</CreDtTm>
-      <NbOfTxs>1</NbOfTxs>
-      <TtlIntrBkSttlmAmt Ccy="${esc(input.currency)}">${esc(input.amount)}</TtlIntrBkSttlmAmt>
-      <IntrBkSttlmDt>${esc(input.settlementDate)}</IntrBkSttlmDt>
+      <NbOfTxs>${esc(input.nbOfTxs)}</NbOfTxs>
+      <TtlIntrBkSttlmAmt Ccy="${esc(input.ttlCurrency)}">${esc(input.ttlAmount)}</TtlIntrBkSttlmAmt>
+      <IntrBkSttlmDt>${esc(input.grpSettlementDate)}</IntrBkSttlmDt>
       <SttlmInf>
-        <SttlmMtd>CLRG</SttlmMtd>
+        <SttlmMtd>${esc(input.sttlmMtd)}</SttlmMtd>
         ${clrSysXml(input.clrSys)}
       </SttlmInf>
-      <InstgAgt><FinInstnId><BICFI>${esc(input.debtorBic)}</BICFI></FinInstnId></InstgAgt>
-      <InstdAgt><FinInstnId><BICFI>${esc(input.creditorBic)}</BICFI></FinInstnId></InstdAgt>
+      <InstgAgt><FinInstnId><BICFI>${esc(input.instgAgtBic)}</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>${esc(input.instdAgtBic)}</BICFI></FinInstnId></InstdAgt>
     </GrpHdr>
     <CdtTrfTxInf>
       <PmtId>
         <InstrId>${esc(input.instructionId)}</InstrId>
         <EndToEndId>${esc(input.endToEndId)}</EndToEndId>
         <TxId>${esc(input.txId)}</TxId>
-      </PmtId>${localInstr}
+      </PmtId>
+      <PmtTpInf>
+        <SvcLvl><Cd>${esc(input.svcLvl)}</Cd></SvcLvl>${lcl}
+      </PmtTpInf>
       <IntrBkSttlmAmt Ccy="${esc(input.currency)}">${esc(input.amount)}</IntrBkSttlmAmt>
       <IntrBkSttlmDt>${esc(input.settlementDate)}</IntrBkSttlmDt>
-      <AccptncDtTm>${esc(input.createdAt)}</AccptncDtTm>
-      <ChrgBr>SLEV</ChrgBr>
+      <AccptncDtTm>${esc(input.accptncDtTm)}</AccptncDtTm>
+      <ChrgBr>${esc(input.chrgBr)}</ChrgBr>
       <Dbtr><Nm>${esc(input.debtorName)}</Nm></Dbtr>
       <DbtrAcct><Id><IBAN>${esc(input.debtorIban)}</IBAN></Id></DbtrAcct>
       <DbtrAgt><FinInstnId><BICFI>${esc(input.debtorBic)}</BICFI></FinInstnId></DbtrAgt>
@@ -112,15 +143,15 @@ export function buildPacs002(
   outcome: Pacs002Outcome,
   reasonCode = 'AB05',
 ): string {
-  const statusMsgId = input.msgId.replace(/PACS8/i, 'PACS2') || 'PACS2-TRY-0001';
+  const statusMsgId = input.statusMsgId.trim() || input.msgId.replace(/PACS8/i, 'PACS2') || 'PACS2-TRY-0001';
   const statusBlock =
     outcome === 'ACSC'
       ? `<TxSts>ACSC</TxSts>
-      <AccptncDtTm>${esc(input.createdAt)}</AccptncDtTm>`
+      <AccptncDtTm>${esc(input.accptncDtTm)}</AccptncDtTm>`
       : `<TxSts>RJCT</TxSts>
       <StsRsnInf>
         <Rsn><Cd>${esc(reasonCode)}</Cd></Rsn>
-        <AddtlInf>Synthetic reject from the Try Editor</AddtlInf>
+        <AddtlInf>${esc(input.addtlInf)}</AddtlInf>
       </StsRsnInf>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -129,12 +160,12 @@ export function buildPacs002(
     <GrpHdr>
       <MsgId>${esc(statusMsgId)}</MsgId>
       <CreDtTm>${esc(input.createdAt)}</CreDtTm>
-      <InstgAgt><FinInstnId><BICFI>${esc(input.creditorBic)}</BICFI></FinInstnId></InstgAgt>
-      <InstdAgt><FinInstnId><BICFI>${esc(input.debtorBic)}</BICFI></FinInstnId></InstdAgt>
+      <InstgAgt><FinInstnId><BICFI>${esc(input.instdAgtBic)}</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>${esc(input.instgAgtBic)}</BICFI></FinInstnId></InstdAgt>
     </GrpHdr>
     <OrgnlGrpInfAndSts>
       <OrgnlMsgId>${esc(input.msgId)}</OrgnlMsgId>
-      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+      <OrgnlMsgNmId>${esc(input.orgnlMsgNmId)}</OrgnlMsgNmId>
       <OrgnlCreDtTm>${esc(input.createdAt)}</OrgnlCreDtTm>
     </OrgnlGrpInfAndSts>
     <TxInfAndSts>

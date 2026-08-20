@@ -48,14 +48,15 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
   }),
   g('sct-inst', 'SCT Inst', 'scheme', { en: 'SEPA Instant Credit Transfer', fr: 'Virement SEPA instantané' }, {
-    en: 'Euro instant credit transfer scheme: funds available in ≤10 seconds, 24/7. Clearing via TIPS, RT1 or equivalent with Local Instrument INST on pacs.008. IPR pairs it with mandatory VoP.',
-    fr: 'Schéma de virement euro instantané : fonds disponibles en ≤10 secondes, 24/7. Compensation via TIPS, RT1 ou équivalent avec Local Instrument INST sur pacs.008. L’IPR l’associe à une VoP obligatoire.',
+    en: 'Euro instant credit transfer scheme: funds available in ≤10 seconds, 24/7. Clearing via TIPS, RT1 or equivalent with Local Instrument INST on pacs.008. IPR pairs it with mandatory VoP. SCT Inst checkout is the rail itself — no proxy/wallet overlay (unlike Wero/Bizum).',
+    fr: 'Schéma de virement euro instantané : fonds disponibles en ≤10 secondes, 24/7. Compensation via TIPS, RT1 ou équivalent avec Local Instrument INST sur pacs.008. L’IPR l’associe à la VoP obligatoire. Le checkout SCT Inst est le rail lui-même — pas d’overlay proxy/wallet (contrairement à Wero/Bizum).',
   }, {
     aliases: { en: ['SCT Instant', 'instant SEPA', 'INST', 'SCT Inst'], fr: ['SCT Instant', 'SEPA Instant', 'virement instantané', 'INST'] },
-    seeAlso: ['sct', 'sepa', 'vop', 'ipr', 'ip', 'tips', 'rt1', 'wero'],
+    seeAlso: ['sct', 'sepa', 'vop', 'ipr', 'ip', 'tips', 'rt1', 'wero', 'a2a-overlay'],
     sources: ['konsentus'],
     links: [
       { label: 'Standard', href: '/standards/sct-inst' },
+      { label: 'SCT Inst checkout', href: '/payment/sepa-instant' },
       { label: 'Happy path', href: '/flows/sct-inst-happy-path' },
     ],
   }),
@@ -119,12 +120,16 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     links: [{ label: 'Berlin Group', href: '/standards/berlin-group' }],
   }),
   g('a2a', 'A2A', 'concept', { en: 'Account-to-account payment', fr: 'Paiement compte à compte' }, {
-    en: 'Payment that moves funds between payment accounts (credit transfer / instant / wallet-on-instant) rather than card rails. Wero, Payconiq and SCT Inst checkout are A2A; PIIS/CBPII still often sits in front of a card.',
-    fr: 'Paiement qui déplace des fonds entre comptes de paiement (virement / instantané / wallet sur instantané) plutôt que sur des rails carte. Wero, Payconiq et le checkout SCT Inst sont de l’A2A ; le PIIS/CBPII reste souvent devant une carte.',
+    en: 'Payment that moves funds between payment accounts (credit transfer / instant / overlay-on-instant) rather than card rails. A2A overlay (Wero, Bizum, …), Pix/UPI, SCT Inst checkout and PISP A2A are A2A; PIIS/CBPII still often sits in front of a card.',
+    fr: 'Paiement qui déplace des fonds entre comptes de paiement (virement / instantané / overlay-sur-instantané) plutôt que sur des rails carte. Overlay A2A (Wero, Bizum, …), Pix/UPI, checkout SCT Inst et PISP A2A sont de l’A2A ; le PIIS/CBPII reste souvent devant une carte.',
   }, {
     aliases: { en: ['account-to-account', 'A2A payment', 'account to account'], fr: ['compte à compte', 'paiement A2A'] },
-    seeAlso: ['sct-inst', 'wero', 'payconiq', 'ideal', 'bancontact', 'bizum', 'twint', 'pix', 'upi', 'ip', 'pis'],
-    links: [{ label: 'Wero A2A flow', href: '/flows/wero-a2a-payment' }],
+    seeAlso: ['a2a-overlay', 'sct-inst', 'wero', 'payconiq', 'ideal', 'bancontact', 'bizum', 'twint', 'pix', 'upi', 'ip', 'pis', 'pisp-a2a'],
+    links: [
+      { label: 'A2A overlay (Wero sample)', href: '/payment/wero' },
+      { label: 'Instant A2A (Pix, UPI)', href: '/payment/instant-a2a' },
+      { label: 'PISP A2A', href: '/payment/pisp-a2a' },
+    ],
   }),
   g('ip', 'IP', 'concept', { en: 'Instant Payment', fr: 'Paiement instantané' }, {
     en: 'Umbrella term for credit transfers that settle in seconds, 24/7, with immediate funds availability — not next-batch ACH. In the euro area that is usually SCT Inst (TIPS / RT1); in Switzerland SIC IP for CHF. IPR pushes euro IP as the default path and pairs it with VoP.',
@@ -140,13 +145,28 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       { label: 'SIC IP flow', href: '/flows/sic-ip-instant' },
     ],
   }),
+  g('a2a-overlay', 'A2A overlay', 'scheme', { en: 'A2A overlay', fr: 'Overlay A2A' }, {
+    en: 'Retail account-to-account overlay: wallet UX (intent, alias proxy, status) on top of an instant rail. Samples: Wero (FR/DE), Bizum (ES), Payconiq (BE/LU), iDEAL (NL), BLIK (PL), Swish (SE), Vipps MobilePay (NO/DK/FI), TWINT (CH). Distinct from Pix/UPI (the scheme is the rail), SCT Inst checkout, PISP A2A (TrueLayer-style XS2A), and digital wallets (PayPal, Alipay, Apple Pay).',
+    fr: 'Overlay compte-à-compte retail : UX wallet (intent, proxy alias, statut) au-dessus d’un rail instantané. Exemples : Wero (FR/DE), Bizum (ES), Payconiq (BE/LU), iDEAL (NL), BLIK (PL), Swish (SE), Vipps MobilePay (NO/DK/FI), TWINT (CH). Distinct de Pix/UPI (le schéma est le rail), du checkout SCT Inst, du PISP A2A (XS2A style TrueLayer) et des wallets numériques (PayPal, Alipay, Apple Pay).',
+  }, {
+    aliases: {
+      en: ['A2A overlay', 'retail A2A scheme', 'A2A wallet overlay'],
+      fr: ['overlay A2A', 'schéma A2A retail', 'wallet A2A'],
+    },
+    seeAlso: ['wero', 'a2a', 'ip', 'sct-inst', 'payconiq', 'ideal', 'bizum', 'twint', 'blik', 'swish', 'vipps-mobilepay', 'pix', 'upi', 'pisp-a2a', 'paypal'],
+    links: [
+      { label: 'Explorer (Wero sample)', href: '/payment/wero' },
+      { label: 'Scheme', href: '/scheme/wero' },
+    ],
+  }),
   g('wero', 'Wero', 'scheme', { en: 'Wero (European Payments Initiative)', fr: 'Wero (European Payments Initiative)' }, {
-    en: 'Pan-European account-to-account retail scheme from the European Payments Initiative (EPI). The wallet UX (proxy alias, merchant intent, status) sits on top; settlement still lands on instant rails such as SCT Inst. Debug both the scheme status and the underlying pacs.002.',
-    fr: 'Schéma de paiement retail pan-européen compte-à-compte de l’European Payments Initiative (EPI). L’UX wallet (alias proxy, intent commerçant, statut) est au-dessus ; le règlement reste sur des rails instantanés tels que SCT Inst. Déboguez à la fois le statut schéma et le pacs.002 sous-jacent.',
+    en: 'Pan-European A2A overlay sample from EPI. The wallet UX (proxy alias, merchant intent, status) sits on top; settlement still lands on instant rails such as SCT Inst. Same pattern as Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay, TWINT. Debug both the scheme status and the underlying pacs.002.',
+    fr: 'Exemple d’overlay A2A paneuropéen (EPI). L’UX wallet (alias proxy, intent commerçant, statut) est au-dessus ; le règlement reste sur des rails instantanés tels que SCT Inst. Même schéma que Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay, TWINT. Déboguez à la fois le statut schéma et le pacs.002 sous-jacent.',
   }, {
     aliases: { en: ['Wero', 'EPI', 'European Payments Initiative', 'EPI wallet'], fr: ['Wero', 'EPI', 'European Payments Initiative', 'portefeuille EPI'] },
-    seeAlso: ['a2a', 'ip', 'sct-inst', 'payconiq', 'epi', 'visa', 'mastercard', 'paypal'],
+    seeAlso: ['a2a-overlay', 'a2a', 'ip', 'sct-inst', 'payconiq', 'epi', 'visa', 'mastercard', 'paypal'],
     links: [
+      { label: 'A2A overlay explorer', href: '/payment/wero' },
       { label: 'Standard', href: '/standards/wero' },
       { label: 'Wero A2A flow', href: '/flows/wero-a2a-payment' },
     ],
@@ -163,7 +183,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Marque de paiement mobile / QR compte-à-compte du Benelux (Belgique et Luxembourg ; historiquement aussi les Pays-Bas). Souvent présentée comme Payconiq by Bancontact. Le PSU scanne ou ouvre un deep link ; l’argent circule en débit/crédit A2A plutôt que sur des rails carte.',
   }, {
     aliases: { en: ['Payconiq', 'Payconiq by Bancontact', 'Bancontact Payconiq', 'PQ'], fr: ['Payconiq', 'Payconiq by Bancontact', 'PQ'] },
-    seeAlso: ['bancontact', 'wero', 'a2a', 'ip', 'sct-inst'],
+    seeAlso: ['bancontact', 'wero', 'a2a', 'a2a-overlay', 'ip', 'sct-inst'],
     links: [{ label: 'Interop map', href: '/map' }],
   }),
   g('card-scheme', 'Card scheme', 'scheme', { en: 'Card scheme', fr: 'Schéma carte' }, {
@@ -236,7 +256,8 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Wallet appareil : le PAN est tokénisé (DPAN) et le jeton circule sur un schéma carte existant (Visa, Mastercard, Amex, CB…). Pas un rail A2A. La SCA est en général biométrie appareil plus 3-D Secure du schéma ou cryptogramme du jeton.',
   }, {
     aliases: { en: ['Apple Pay', 'ApplePay'], fr: ['Apple Pay', 'ApplePay'] },
-    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'curve'],
+    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'curve', 'paypal', 'a2a-overlay'],
+    links: [{ label: 'Digital Wallet explorer', href: '/payment/paypal' }],
   }),
   g('google-pay', 'Google Pay', 'scheme', { en: 'Google Pay', fr: 'Google Pay' }, {
     en: 'Google wallet for cards (and in some markets bank accounts). Like Apple Pay, card credentials are tokenised onto Visa/Mastercard/Amex rails rather than moving as a pacs credit transfer.',
@@ -246,11 +267,11 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['apple-pay', 'visa', 'mastercard', 'paypal'],
   }),
   g('paypal', 'PayPal', 'scheme', { en: 'PayPal', fr: 'PayPal' }, {
-    en: 'Third-party wallet / PSP: the customer pays from a PayPal balance, a linked card or a bank account. The merchant often sees PayPal as the acquirer of record, not Visa or SCT. Funding may still hit card schemes or A2A behind the wallet; merchant payout is often a later credit transfer.',
-    fr: 'Wallet / PSP tiers : le client paie depuis un solde PayPal, une carte liée ou un compte. Le commerçant voit souvent PayPal comme acquéreur, pas Visa ni un SCT. Le funding peut quand même taper schémas carte ou A2A derrière le wallet ; le paiement commerçant est souvent un virement plus tard.',
+    en: 'Third-party wallet / PSP: the customer pays from a PayPal balance, a linked card or a bank account. The merchant sees a PSP or a card token — not an A2A overlay. Funding may still hit card schemes or A2A behind the wallet; merchant payout is often a later credit transfer.',
+    fr: 'Wallet / PSP tiers : le client paie depuis un solde PayPal, une carte liée ou un compte. Le commerçant voit un PSP ou un jeton carte — pas un overlay A2A. Le funding peut quand même taper schémas carte ou A2A derrière le wallet ; le paiement commerçant est souvent un virement plus tard.',
   }, {
     aliases: { en: ['PayPal', 'Pay Pal'], fr: ['PayPal'] },
-    seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'emi', 'curve'],
+    seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'a2a-overlay', 'emi', 'curve', 'alipay', 'apple-pay'],
     links: [{ label: 'Digital Wallet explorer', href: '/payment/paypal' }],
   }),
   g('curve', 'Curve', 'scheme', { en: 'Curve', fr: 'Curve' }, {
@@ -287,56 +308,66 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Schéma de checkout compte-à-compte néerlandais : le PSU est redirigé vers sa banque pour autoriser un virement vers le commerçant. Désormais dans l’orbite EPI/Wero pour les Pays-Bas, toujours le rail e-commerce néerlandais par défaut.',
   }, {
     aliases: { en: ['iDEAL', 'iDeal', 'ideal'], fr: ['iDEAL', 'iDeal'] },
-    seeAlso: ['wero', 'epi', 'bancontact', 'a2a', 'sct-inst'],
+    seeAlso: ['wero', 'epi', 'bancontact', 'a2a', 'a2a-overlay', 'sct-inst'],
   }),
   g('twint', 'TWINT', 'scheme', { en: 'TWINT', fr: 'TWINT' }, {
     en: 'Swiss mobile A2A / wallet scheme. P2P and merchant QR; funding from Swiss bank accounts, with settlement in the SIC world rather than SEPA. Dominant domestic alternative to cards in Switzerland.',
     fr: 'Schéma suisse mobile A2A / wallet. P2P et QR commerçant ; funding depuis des comptes suisses, règlement dans le monde SIC plutôt que SEPA. Alternative domestique dominante aux cartes en Suisse.',
   }, {
     aliases: { en: ['TWINT', 'Twint'], fr: ['TWINT', 'Twint'] },
-    seeAlso: ['sic', 'sic-ip', 'wero', 'a2a', 'paypal'],
+    seeAlso: ['sic', 'sic-ip', 'wero', 'a2a', 'a2a-overlay', 'paypal'],
   }),
   g('swish', 'Swish', 'scheme', { en: 'Swish', fr: 'Swish' }, {
     en: 'Swedish mobile P2P and merchant payments on Bankgirot / instant Swedish rails, addressed by phone number. The Nordic pattern that Vipps MobilePay and Wero also chase: alias + instant A2A.',
     fr: 'Paiements mobiles suédois P2P et commerçant sur Bankgirot / rails instantanés suédois, adressés par numéro de téléphone. Le modèle nordique que Vipps MobilePay et Wero visent aussi : alias + A2A instantané.',
   }, {
     aliases: { en: ['Swish'], fr: ['Swish'] },
-    seeAlso: ['vipps-mobilepay', 'wero', 'a2a', 'ip'],
+    seeAlso: ['vipps-mobilepay', 'wero', 'a2a', 'a2a-overlay', 'ip'],
   }),
   g('vipps-mobilepay', 'Vipps MobilePay', 'scheme', { en: 'Vipps MobilePay', fr: 'Vipps MobilePay' }, {
     en: 'Merged Nordic mobile wallet (Vipps in Norway, MobilePay in Denmark and Finland). P2P and checkout on local instant / account rails, not card schemes.',
     fr: 'Wallet mobile nordique fusionné (Vipps en Norvège, MobilePay au Danemark et en Finlande). P2P et checkout sur rails instantanés / compte locaux, pas sur schémas carte.',
   }, {
     aliases: { en: ['Vipps', 'MobilePay', 'Vipps MobilePay'], fr: ['Vipps', 'MobilePay', 'Vipps MobilePay'] },
-    seeAlso: ['swish', 'wero', 'a2a', 'ip'],
+    seeAlso: ['swish', 'wero', 'a2a', 'a2a-overlay', 'ip'],
   }),
   g('blik', 'BLIK', 'scheme', { en: 'BLIK', fr: 'BLIK' }, {
     en: 'Polish mobile payments: a short-lived code (or in-app confirm) debits the PSU’s bank account. Standard at Polish e-commerce and ATMs; A2A rather than card.',
     fr: 'Paiements mobiles polonais : un code éphémère (ou une confirmation in-app) débite le compte du PSU. Standard de l’e-commerce et des DAB polonais ; de l’A2A plutôt que de la carte.',
   }, {
     aliases: { en: ['BLIK', 'Blik'], fr: ['BLIK', 'Blik'] },
-    seeAlso: ['a2a', 'ip', 'wero', 'ideal'],
+    seeAlso: ['a2a', 'a2a-overlay', 'ip', 'wero', 'ideal'],
   }),
   g('bizum', 'Bizum', 'scheme', { en: 'Bizum', fr: 'Bizum' }, {
     en: 'Spanish P2P and merchant payments via mobile number, settled between participating banks (instant where the rail allows). The Spanish household name for A2A, analogous to Wero/Payconiq elsewhere.',
     fr: 'Paiements P2P et commerçant espagnols via numéro de mobile, réglés entre banques participantes (instantané selon le rail). Le nom usuel de l’A2A en Espagne, analogue à Wero/Payconiq ailleurs.',
   }, {
     aliases: { en: ['Bizum'], fr: ['Bizum'] },
-    seeAlso: ['wero', 'a2a', 'sct-inst', 'payconiq'],
+    seeAlso: ['wero', 'a2a', 'a2a-overlay', 'sct-inst', 'payconiq'],
   }),
   g('pix', 'Pix', 'scheme', { en: 'Pix', fr: 'Pix' }, {
-    en: 'Brazilian instant payment scheme run by the central bank (BCB). Alias keys (CPF, phone, email, random) resolve to an account; settlement in seconds, 24/7. Often cited as the template for successful domestic instant A2A.',
-    fr: 'Schéma de paiement instantané brésilien opéré par la banque centrale (BCB). Des alias (CPF, téléphone, e-mail, clé aléatoire) résolvent vers un compte ; règlement en secondes, 24/7. Souvent cité comme modèle d’A2A instantané domestique réussi.',
+    en: 'Brazilian instant payment scheme run by the central bank (BCB). Alias keys (CPF, phone, email, random) resolve to an account; settlement in seconds, 24/7. The scheme is the retail product — not an overlay on SCT Inst. Sample of Instant A2A alongside UPI.',
+    fr: 'Schéma de paiement instantané brésilien opéré par la banque centrale (BCB). Des alias (CPF, téléphone, e-mail, clé aléatoire) résolvent vers un compte ; règlement en secondes, 24/7. Le schéma est le produit retail — pas un overlay sur SCT Inst. Exemple d’A2A instantané avec UPI.',
   }, {
     aliases: { en: ['Pix', 'PIX'], fr: ['Pix', 'PIX'] },
-    seeAlso: ['upi', 'ip', 'a2a', 'sct-inst'],
+    seeAlso: ['upi', 'ip', 'a2a', 'sct-inst', 'a2a-overlay', 'instant-a2a'],
+    links: [{ label: 'Instant A2A explorer', href: '/payment/instant-a2a' }],
   }),
   g('upi', 'UPI', 'scheme', { en: 'Unified Payments Interface', fr: 'Unified Payments Interface' }, {
-    en: 'Indian instant A2A scheme (NPCI). VPA aliases (name@bank) and QR via apps such as PhonePe, Google Pay India and Paytm. Volumes dwarf most European A2A schemes.',
-    fr: 'Schéma A2A instantané indien (NPCI). Alias VPA (nom@banque) et QR via des apps telles que PhonePe, Google Pay India et Paytm. Les volumes éclipsent la plupart des schémas A2A européens.',
+    en: 'Indian instant A2A scheme (NPCI). VPA aliases (name@bank) and QR via apps such as PhonePe, Google Pay India and Paytm. The scheme is the retail product — not an overlay on SCT Inst. Sample of Instant A2A alongside Pix.',
+    fr: 'Schéma A2A instantané indien (NPCI). Alias VPA (nom@banque) et QR via des apps telles que PhonePe, Google Pay India et Paytm. Le schéma est le produit retail — pas un overlay sur SCT Inst. Exemple d’A2A instantané avec Pix.',
   }, {
     aliases: { en: ['UPI', 'Unified Payments Interface', 'NPCI'], fr: ['UPI', 'Unified Payments Interface', 'NPCI'] },
-    seeAlso: ['pix', 'google-pay', 'ip', 'a2a'],
+    seeAlso: ['pix', 'google-pay', 'ip', 'a2a', 'a2a-overlay', 'instant-a2a'],
+    links: [{ label: 'Instant A2A explorer', href: '/payment/instant-a2a' }],
+  }),
+  g('instant-a2a', 'Instant A2A', 'scheme', { en: 'Instant A2A scheme', fr: 'Schéma A2A instantané' }, {
+    en: 'Domestic instant payment where the scheme is the retail product: alias + 24/7 settlement. Samples: Pix (BR), UPI (IN). Not an overlay on SCT Inst (that pattern is Wero/Bizum).',
+    fr: 'Paiement instantané domestique où le schéma est le produit retail : alias + règlement 24/7. Exemples : Pix (BR), UPI (IN). Pas un overlay sur SCT Inst (ce modèle est Wero/Bizum).',
+  }, {
+    aliases: { en: ['Instant A2A', 'instant A2A scheme'], fr: ['A2A instantané', 'schéma A2A instantané'] },
+    seeAlso: ['pix', 'upi', 'a2a', 'ip', 'sct-inst', 'a2a-overlay'],
+    links: [{ label: 'Explorer', href: '/payment/instant-a2a' }],
   }),
   g('ais', 'AIS', 'concept', { en: 'Account Information Service', fr: 'Service d’information sur les comptes' }, {
     en: 'PSD2 service that, with PSU consent, reads payment-account data (accounts, balances, transactions) held at an ASPSP. Provided by an AISP. Under FiDA the broader analogue is a FISP.',
@@ -367,8 +398,17 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'TPP réglementé autorisé à initier un ordre de paiement à la demande du PSU sur un compte tenu chez un autre PSP.',
   }, {
     aliases: { en: ['Payment Initiation Service Provider', 'payment initiation provider'], fr: ['prestataire d’initiation de paiement', 'PISP'] },
-    seeAlso: ['pis', 'tpp', 'aspsp', 'aisp', 'cbpii', 'psd2'],
+    seeAlso: ['pis', 'tpp', 'aspsp', 'aisp', 'cbpii', 'psd2', 'pisp-a2a', 'a2a'],
     sources: ['ukob', 'konsentus', 'bundesbank'],
+    links: [{ label: 'PISP A2A explorer', href: '/payment/pisp-a2a' }],
+  }),
+  g('pisp-a2a', 'PISP A2A', 'concept', { en: 'PISP A2A', fr: 'PISP A2A' }, {
+    en: 'Account-to-account checkout initiated by a TPP over XS2A (PSD2 PIS), e.g. TrueLayer-style pay-by-bank. Not a bank-consortium overlay: the PISP does not run a proxy directory or scheme status; the ASPSP still settles SCT or SCT Inst.',
+    fr: 'Checkout compte-à-compte initié par un TPP via XS2A (PIS PSD2), ex. pay-by-bank style TrueLayer. Pas un overlay de consortium bancaire : le PISP n’opère pas d’annuaire proxy ni de statut schéma ; l’ASPSP règle toujours en SCT ou SCT Inst.',
+  }, {
+    aliases: { en: ['PISP A2A', 'pay by bank', 'TrueLayer', 'open banking A2A'], fr: ['PISP A2A', 'paiement bancaire', 'TrueLayer', 'A2A open banking'] },
+    seeAlso: ['pisp', 'pis', 'a2a', 'a2a-overlay', 'sct-inst', 'xs2a'],
+    links: [{ label: 'Explorer', href: '/payment/pisp-a2a' }],
   }),
   g('cbpii', 'CBPII', 'concept', { en: 'Card Based Payment Instrument Issuer', fr: 'Émetteur d’instrument de paiement fondé sur une carte' }, {
     en: 'PSP that issues card-based instruments which can pull funds from a payment account at another PSP. Uses PIIS / funds confirmation. eIDAS role PSP_IC. Bundesbank calls this a third-party issuer: the card issuer is not the institution that holds the payer’s account.',
@@ -1070,11 +1110,43 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['vop', 'acmt-023', 'acmt-024'],
   }),
   g('csm', 'CSM', 'concept', { en: 'Clearing and Settlement Mechanism', fr: 'Mécanisme de compensation et de règlement' }, {
-    en: 'The rail that actually clears and settles: TIPS, RT1, STEP2, SIC, euroSIC. Distinct from the XS2A API the TPP talks to.',
-    fr: 'Le rail qui compense et règle vraiment : TIPS, RT1, STEP2, SIC, euroSIC. Distinct de l’API XS2A à laquelle parle le TPP.',
+    en: 'The rail that actually clears and settles between banks: TIPS, RT1, STEP2, SIC, euroSIC. Distinct from the payment scheme (SCT / SCT Inst rules) and from the XS2A API the TPP talks to. Regular SCT usually lands on a batch CSM; SCT Inst on an instant CSM.',
+    fr: 'Le rail qui compense et règle vraiment entre banques : TIPS, RT1, STEP2, SIC, euroSIC. Distinct du schéma de paiement (règles SCT / SCT Inst) et de l’API XS2A à laquelle parle le TPP. Le SCT classique aboutit en général sur un CSM de lots ; le SCT Inst sur un CSM instantané.',
   }, {
-    aliases: { en: ['clearing and settlement mechanism', 'clearing system', 'the rail'], fr: ['mécanisme de compensation', 'CSM', 'le rail'] },
-    seeAlso: ['tips', 'rt1', 'sic', 'pacs'],
+    aliases: {
+      en: ['clearing and settlement mechanism', 'clearing system', 'the rail', 'SCM'],
+      fr: ['mécanisme de compensation', 'CSM', 'le rail', 'SCM'],
+    },
+    seeAlso: ['tips', 'rt1', 'step2', 'sic', 'sct', 'sct-inst', 'pacs', 'debtor', 'creditor'],
+    links: [{ label: 'Home overview', href: '/' }],
+  }),
+  g('debtor', 'Debtor', 'concept', { en: 'Debtor (Dbtr)', fr: 'Débiteur (Dbtr)' }, {
+    en: 'ISO 20022 party whose account is debited. On a credit transfer the debtor is the payer / originator. On a direct debit the debtor is still the payer, but the creditor starts the collection.',
+    fr: 'Partie ISO 20022 dont le compte est débité. Sur un virement le débiteur est le payeur / originator. Sur un prélèvement le débiteur reste le payeur, mais c’est le créancier qui démarre la collecte.',
+  }, {
+    aliases: { en: ['Dbtr', 'debtor account', 'payer account'], fr: ['Dbtr', 'compte débiteur', 'payeur'] },
+    seeAlso: ['creditor', 'originator', 'beneficiary', 'sct', 'sdd'],
+  }),
+  g('creditor', 'Creditor', 'concept', { en: 'Creditor (Cdtr)', fr: 'Créancier (Cdtr)' }, {
+    en: 'ISO 20022 party whose account is credited. On SCT / SCT Inst that is the beneficiary. On SDD the creditor is also the originator of the collection.',
+    fr: 'Partie ISO 20022 dont le compte est crédité. Sur SCT / SCT Inst c’est le bénéficiaire. Sur SDD le créancier est aussi l’originator du prélèvement.',
+  }, {
+    aliases: { en: ['Cdtr', 'creditor account', 'payee'], fr: ['Cdtr', 'compte créancier', 'bénéficiaire'] },
+    seeAlso: ['debtor', 'originator', 'beneficiary', 'sct', 'sdd'],
+  }),
+  g('originator', 'Originator', 'concept', { en: 'Originator (Orig)', fr: 'Originator (Orig)' }, {
+    en: 'Party that starts the payment instruction. For credit transfers that is the debtor/payer; for direct debits it is the creditor. Not a synonym of Creditor — only of “who kicks off the message”.',
+    fr: 'Partie qui démarre l’instruction de paiement. Pour un virement c’est le débiteur/payeur ; pour un prélèvement c’est le créancier. Pas un synonyme de Créancier — seulement de « qui lance le message ».',
+  }, {
+    aliases: { en: ['Orig', 'originating party', 'instructing party'], fr: ['Orig', 'partie initiatrice'] },
+    seeAlso: ['beneficiary', 'debtor', 'creditor', 'sct', 'sdd'],
+  }),
+  g('beneficiary', 'Beneficiary', 'concept', { en: 'Beneficiary (Bene)', fr: 'Bénéficiaire (Bene)' }, {
+    en: 'Everyday / ops name for the party that receives a credit transfer — usually the ISO Creditor. Prefer Debtor/Creditor when reading pacs XML; Bene is fine in customer language.',
+    fr: 'Nom courant / ops pour la partie qui reçoit un virement — en général le Créancier ISO. Préférez Débiteur/Créancier en lisant le XML pacs ; Bene convient en langage client.',
+  }, {
+    aliases: { en: ['Bene', 'payee', 'beneficiary account'], fr: ['Bene', 'bénéficiaire', 'compte bénéficiaire'] },
+    seeAlso: ['creditor', 'originator', 'debtor', 'sct', 'vop'],
   }),
   g('sic', 'SIC', 'scheme', { en: 'Swiss Interbank Clearing', fr: 'Swiss Interbank Clearing' }, {
     en: 'SIX CHF high-value and retail clearing in central bank money. Fully ISO 20022. Instant CHF is SIC IP, not SCT Inst.',
@@ -1320,7 +1392,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Entité commerciale (Societas Europaea) de l’European Payments Initiative créée par les grandes banques et acquéreurs européens pour détenir, gouverner et opérer le schéma de paiement retail Wero.',
   }, {
     aliases: { en: ['EPI Company SE', 'EPI Company', 'EPI SE'], fr: ['EPI Company SE', 'EPI Company'] },
-    seeAlso: ['epi', 'wero', 'a2a', 'sct-inst'],
+    seeAlso: ['epi', 'wero', 'a2a', 'a2a-overlay', 'sct-inst'],
     links: [
       { label: 'Standard: Wero', href: '/standards/wero' },
       { label: 'Flow: Wero A2A', href: '/flows/wero-a2a-payment' },

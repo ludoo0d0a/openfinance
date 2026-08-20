@@ -16,6 +16,7 @@ import { SchemeView } from '@/views/SchemeView';
 import { InfrastructureView } from '@/views/InfrastructureView';
 import { VersionCompareView } from '@/views/VersionCompareView';
 import { DebugQuizView } from '@/views/DebugQuizView';
+import { LiveView } from '@/views/LiveView';
 import { codeByValue } from '@/data/glossary';
 
 export default function App() {
@@ -32,6 +33,9 @@ export default function App() {
         <Route path="message/:slug" element={<MessageAlias />} />
         <Route path="map" element={<MapView />} />
         <Route path="try" element={<TryEditorView />} />
+        <Route path="live" element={<LiveView />} />
+        <Route path="live/:sceneId" element={<LiveView />} />
+        <Route path="live/:sceneId/:scenarioId" element={<LiveView />} />
         <Route path="glossary" element={<GlossaryView />} />
         <Route path="about" element={<AboutView />} />
         <Route path="privacy" element={<PrivacyView />} />

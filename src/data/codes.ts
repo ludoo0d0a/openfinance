@@ -12,7 +12,7 @@ export const FAMILY_LABELS: Record<CodeFamily, string> = {
   'ukob-error': 'UK Open Banking error',
   'sca-status': 'SCA status',
   'consent-status': 'Consent status',
-  'scheme-status': 'Scheme status (Wero)',
+  'scheme-status': 'Scheme status (A2A overlay)',
 };
 
 /**
