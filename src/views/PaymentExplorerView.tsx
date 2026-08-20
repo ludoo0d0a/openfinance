@@ -2,7 +2,7 @@ import { useEffect, useMemo, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { paymentById, PAYMENTS } from '@/data/payments';
 import { infrastructureById } from '@/data/infrastructures';
-import { schemeById } from '@/data/schemes';
+import { schemeById, schemeHref } from '@/data/schemes';
 import { countryById, COUNTRIES } from '@/data/countries';
 import { flowById, isoMessagesInFlow } from '@/data/flows';
 import { liveScenarioHref, scenariosForPayment } from '@/data/lifeScenes';
@@ -120,7 +120,7 @@ export function PaymentExplorerView() {
         {scheme && (
           <p className="mt-2 text-[13px] text-muted">
             {t('explorer.scheme')}{' '}
-            <Link to={`/scheme/${scheme.id}`} className="text-signal hover:underline">
+            <Link to={schemeHref(scheme.id)} className="text-signal hover:underline">
               {scheme.name[locale]}
             </Link>
           </p>

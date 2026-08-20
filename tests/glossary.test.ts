@@ -7,6 +7,7 @@ import {
   localizeGlossaryEntry,
 } from '../src/data/glossary';
 import { ISO_MESSAGES } from '../src/data/iso20022';
+import { SCHEMES, schemeGlossaryId, schemeHref } from '../src/data/schemes';
 import { applySearchQueryToHref, createIndex, searchCatalog } from '../src/lib/search';
 
 describe('glossary', () => {
@@ -76,6 +77,17 @@ describe('glossary', () => {
     }
     expect(glossaryById('visa')!.category).toBe('scheme');
     expect(glossaryById('cartes-bancaires')!.aliases.fr).toEqual(expect.arrayContaining(['CB', 'carte bleue']));
+  });
+
+  it('maps every catalog scheme page into a glossary entry', () => {
+    for (const s of SCHEMES) {
+      const glossaryId = schemeGlossaryId(s.id);
+      expect(glossaryById(glossaryId), `${s.id} → ${glossaryId}`).toBeDefined();
+      expect(schemeHref(s.id)).toBe(`/glossary?id=${encodeURIComponent(glossaryId)}`);
+    }
+    expect(schemeGlossaryId('wero')).toBe('a2a-overlay');
+    expect(schemeGlossaryId('card')).toBe('card-scheme');
+    expect(schemeGlossaryId('sic-ch')).toBe('sic');
   });
 
   it('includes Mastercard Open Finance US terms', () => {

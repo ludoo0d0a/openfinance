@@ -5,7 +5,6 @@ import { FLOWS } from '@/data/flows';
 import { ALL_SAMPLES } from '@/data/samples';
 import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/data/glossary';
 import { PAYMENTS } from '@/data/payments';
-import { SCHEMES } from '@/data/schemes';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
 import { LIFE_SCENARIOS, LIFE_SCENES, liveScenarioHref } from '@/data/lifeScenes';
 import { compactMessageId, parseMessageId } from '@/lib/messageId';
@@ -61,19 +60,6 @@ function buildDocuments(): IndexedDoc[] {
         .filter(Boolean)
         .join(' '),
       tags: p.messageShorts.join(' '),
-    });
-  }
-
-  for (const s of SCHEMES) {
-    docs.push({
-      id: `scheme:${s.id}`,
-      kind: 'scheme',
-      title: s.name.en,
-      subtitle: s.operator,
-      body: `${s.summary.en} ${s.summary.fr}`,
-      href: `/scheme/${s.id}`,
-      keywords: [s.id, s.operator, s.explorePaymentId].join(' '),
-      tags: '',
     });
   }
 

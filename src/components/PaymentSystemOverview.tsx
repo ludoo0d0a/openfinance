@@ -73,9 +73,9 @@ export function PaymentSystemOverview() {
           title={t('home.overview.schemeTitle')}
           body={t('home.overview.schemeBody')}
           links={[
-            { to: '/scheme/sct', label: 'SCT' },
-            { to: '/scheme/sct-inst', label: 'SCT Inst' },
-            { to: '/scheme/sdd', label: 'SDD' },
+            { to: '/glossary?id=sct', label: 'SCT' },
+            { to: '/glossary?id=sct-inst', label: 'SCT Inst' },
+            { to: '/glossary?id=sdd', label: 'SDD' },
           ]}
         />
         <ConceptCard

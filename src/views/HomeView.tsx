@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PAYMENTS, paymentById } from '@/data/payments';
-import { SCHEMES } from '@/data/schemes';
+import { SCHEMES, schemeHref } from '@/data/schemes';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { GLOSSARY_CODES } from '@/data/glossary';
 import { UI_ICONS } from '@/lib/iconMeta';
@@ -136,13 +136,13 @@ export function HomeView() {
         <ul className="flex flex-wrap gap-3 text-[13px]">
           {SCHEMES.map((s) => (
             <li key={s.id}>
-              <Link to={`/scheme/${s.id}`} className="text-signal hover:underline">
+              <Link to={schemeHref(s.id)} className="text-signal hover:underline">
                 {s.name[locale]}
               </Link>
             </li>
           ))}
           <li>
-            <Link to="/glossary" className="text-signal hover:underline">
+            <Link to="/glossary?category=scheme" className="text-signal hover:underline">
               {t('nav.glossary')}
             </Link>
           </li>

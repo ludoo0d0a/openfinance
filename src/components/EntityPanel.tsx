@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { JourneyHopView, JourneyView } from '@/lib/paymentJourney';
 import { messageByShort } from '@/data/iso20022';
 import { infrastructureById } from '@/data/infrastructures';
-import { schemeById } from '@/data/schemes';
+import { schemeById, schemeHref } from '@/data/schemes';
 import { samplesForMessage } from '@/data/samples';
 import { relatedFrom, parseEntityRef, paymentsUsingMessage } from '@/data/relations';
 import { PAYMENTS } from '@/data/payments';
@@ -136,7 +136,7 @@ export function EntityPanel({
         <ul className="mt-2 space-y-1 text-[13px]">
           {scheme && (
             <li>
-              <Link to={`/scheme/${scheme.id}`} className="hover:underline">
+              <Link to={schemeHref(scheme.id)} className="hover:underline">
                 {scheme.name[locale]}
               </Link>
             </li>

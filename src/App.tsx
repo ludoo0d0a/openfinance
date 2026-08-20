@@ -12,12 +12,12 @@ import { AboutView } from '@/views/AboutView';
 import { ContactView, PrivacyView } from '@/views/LegalView';
 import { NotFoundView } from '@/views/NotFoundView';
 import { PaymentExplorerView } from '@/views/PaymentExplorerView';
-import { SchemeView } from '@/views/SchemeView';
 import { InfrastructureView } from '@/views/InfrastructureView';
 import { VersionCompareView } from '@/views/VersionCompareView';
 import { DebugQuizView } from '@/views/DebugQuizView';
 import { LiveView } from '@/views/LiveView';
 import { codeByValue } from '@/data/glossary';
+import { schemeById, schemeHref } from '@/data/schemes';
 
 export default function App() {
   return (
@@ -25,7 +25,7 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route index element={<HomeView />} />
         <Route path="payment/:paymentId" element={<PaymentExplorerView />} />
-        <Route path="scheme/:schemeId" element={<SchemeView />} />
+        <Route path="scheme/:schemeId" element={<SchemeToGlossary />} />
         <Route path="infrastructure/:infrastructureId" element={<InfrastructureView />} />
         <Route path="compare/:short" element={<VersionCompareView />} />
         <Route path="quiz/debug-reject" element={<DebugQuizView />} />
@@ -78,4 +78,13 @@ function CodesToGlossary() {
     if (entry) next.set('id', entry.id);
   }
   return <Navigate to={`/glossary?${next.toString()}`} replace />;
+}
+
+/** Legacy scheme pages live in the glossary now. */
+function SchemeToGlossary() {
+  const { schemeId } = useParams();
+  if (!schemeId || !schemeById(schemeId)) {
+    return <Navigate to="/glossary?category=scheme" replace />;
+  }
+  return <Navigate to={schemeHref(schemeId)} replace />;
 }

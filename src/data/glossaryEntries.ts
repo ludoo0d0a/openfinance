@@ -45,7 +45,10 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: { en: ['SEPA Credit Transfer', 'SEPA CT', 'credit transfer'], fr: ['virement SEPA', 'SCT', 'virement crédit'] },
     seeAlso: ['sepa', 'sct-inst', 'sdd', 'pacs', 'step2', 'epc'],
     sources: ['konsentus'],
-    links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
+    links: [
+      { label: 'Explorer', href: '/payment/sepa-credit-transfer' },
+      { label: 'pacs.008', href: '/messages/pacs.008' },
+    ],
   }),
   g('sct-inst', 'SCT Inst', 'scheme', { en: 'SEPA Instant Credit Transfer', fr: 'Virement SEPA instantané' }, {
     en: 'Euro instant credit transfer scheme: funds available in ≤10 seconds, 24/7. Clearing via TIPS, RT1 or equivalent with Local Instrument INST on pacs.008. IPR pairs it with mandatory VoP. SCT Inst checkout is the rail itself — no proxy/wallet overlay (unlike Wero/Bizum).',
@@ -67,7 +70,10 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: { en: ['SEPA Direct Debit', 'SDD Core', 'SDD B2B', 'direct debit'], fr: ['prélèvement SEPA', 'SDD Core', 'SDD B2B'] },
     seeAlso: ['sepa', 'sct', 'pain', 'epc'],
     sources: ['konsentus'],
-    links: [{ label: 'pain.008', href: '/messages/pain.008' }],
+    links: [
+      { label: 'Explorer', href: '/payment/sepa-direct-debit' },
+      { label: 'pain.008', href: '/messages/pain.008' },
+    ],
   }),
   g('sepa', 'SEPA', 'scheme', { en: 'Single Euro Payments Area', fr: 'Espace unique de paiements en euros' }, {
     en: 'Harmonised euro payments area: credit transfers and direct debits run under common EPC schemes, standards and infrastructure so a cross-border euro payment is processed like a domestic one.',
@@ -156,7 +162,6 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['wero', 'a2a', 'ip', 'sct-inst', 'payconiq', 'ideal', 'bizum', 'twint', 'blik', 'swish', 'vipps-mobilepay', 'pix', 'upi', 'pisp-a2a', 'paypal'],
     links: [
       { label: 'Explorer (Wero sample)', href: '/payment/wero' },
-      { label: 'Scheme', href: '/scheme/wero' },
     ],
   }),
   g('wero', 'Wero', 'scheme', { en: 'Wero (European Payments Initiative)', fr: 'Wero (European Payments Initiative)' }, {
@@ -195,7 +200,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       fr: ['réseau carte', 'schéma de cartes', 'schéma à quatre parties', 'schéma à trois parties'],
     },
     seeAlso: ['visa', 'mastercard', 'amex', 'cartes-bancaires', 'unionpay', '3ds', 'cbpii'],
-    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+    links: [{ label: 'Card payment', href: '/payment/card-payment' }],
   }),
   g('visa', 'Visa', 'scheme', { en: 'Visa', fr: 'Visa' }, {
     en: 'Global four-party card scheme (credit, debit, prepaid). Authorisation, clearing and settlement run on VisaNet; consumer brands include Visa Debit and historically V PAY in Europe. EMV 3-D Secure is the usual SCA path at checkout. Distinct from A2A schemes such as Wero or SCT Inst.',
@@ -203,7 +208,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['Visa', 'Visa Debit', 'VisaNet', 'V PAY', 'VPAY'], fr: ['Visa', 'Visa Debit', 'VisaNet', 'V PAY'] },
     seeAlso: ['card-scheme', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'apple-pay'],
-    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+    links: [{ label: 'Card payment', href: '/payment/card-payment' }],
   }),
   g('mastercard', 'Mastercard', 'scheme', { en: 'Mastercard', fr: 'Mastercard' }, {
     en: 'Global four-party card scheme (credit, debit, prepaid). Maestro is the historic debit brand in several European markets. Clearing via the Mastercard network; 3-D Secure at e-commerce. Do not confuse the card scheme with Mastercard Open Finance US (Data Connect) in this glossary.',
@@ -211,7 +216,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['Mastercard', 'MasterCard', 'Maestro', 'Mastercard Debit'], fr: ['Mastercard', 'Maestro', 'Mastercard Debit'] },
     seeAlso: ['card-scheme', 'visa', 'amex', 'cartes-bancaires', '3ds', 'data-connect', 'curve'],
-    links: [{ label: 'Card payment', href: '/payments/card-payment' }],
+    links: [{ label: 'Card payment', href: '/payment/card-payment' }],
   }),
   g('amex', 'Amex', 'scheme', { en: 'American Express', fr: 'American Express' }, {
     en: 'Mostly three-party card scheme: American Express is typically both issuer and acquirer of record, with a closed network and a merchant-acquiring arm. Cards still use EMV and 3-D Secure; PAN ranges and settlement are not Visa/Mastercard. Often listed separately in PSP checkout because of different fees and acceptance.',
@@ -1154,7 +1159,10 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['Swiss Interbank Clearing', 'SIC CHF'], fr: ['Swiss Interbank Clearing', 'SIC CHF'] },
     seeAlso: ['eurosic', 'sic-ip', 'csm'],
-    links: [{ label: 'Swiss SPS / SIC', href: '/standards/swiss-sps' }],
+    links: [
+      { label: 'Swiss SPS / SIC', href: '/standards/swiss-sps' },
+      { label: 'Swiss credit transfer', href: '/payment/swiss-credit-transfer' },
+    ],
   }),
   g('eurosic', 'euroSIC', 'scheme', { en: 'euroSIC', fr: 'euroSIC' }, {
     en: 'SIX EUR clearing for Swiss participants. EUR legs of Swiss traffic often settle here rather than in SEPA STEP2.',
@@ -1184,6 +1192,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['CBPR+', 'Cross-Border Payments and Reporting Plus'], fr: ['CBPR+'] },
     seeAlso: ['iso-20022', 'pacs', 'correspondent-banking', 'nostro'],
+    links: [{ label: 'SWIFT credit transfer', href: '/payment/swift-credit-transfer' }],
   }),
   g('ach', 'ACH', 'scheme', { en: 'Automated Clearing House', fr: 'Chambre de compensation automatisée' }, {
     en: 'Batch retail clearing (US ACH, and loosely any next-batch credit). Instant payments are defined against this: seconds, not next window. Mastercard Partner Linked often fetches ACH routing for US payouts.',

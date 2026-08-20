@@ -185,3 +185,22 @@ export const SCHEMES: Scheme[] = [
 ];
 
 export const schemeById = (id: string) => SCHEMES.find((s) => s.id === id);
+
+/**
+ * Legacy `/scheme/:id` pages redirect into the glossary. Most scheme ids match
+ * a glossary entry; a few catalog ids use a different glossary slug.
+ */
+const SCHEME_GLOSSARY_IDS: Record<string, string> = {
+  card: 'card-scheme',
+  'sic-ch': 'sic',
+  wero: 'a2a-overlay',
+};
+
+export function schemeGlossaryId(schemeId: string): string {
+  return SCHEME_GLOSSARY_IDS[schemeId] ?? schemeId;
+}
+
+/** Deep-link into the glossary entry that replaced the scheme page. */
+export function schemeHref(schemeId: string): string {
+  return `/glossary?id=${encodeURIComponent(schemeGlossaryId(schemeId))}`;
+}
