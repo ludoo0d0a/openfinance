@@ -7,6 +7,7 @@ import { GLOSSARY, glossaryHref, searchGlossary, type GlossaryEntry } from '@/da
 import { PAYMENTS } from '@/data/payments';
 import { SCHEMES } from '@/data/schemes';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
+import { LIFE_SCENARIOS, LIFE_SCENES, liveScenarioHref } from '@/data/lifeScenes';
 import { compactMessageId, parseMessageId } from '@/lib/messageId';
 import { extractPayloadTags, looksLikeIsoTag } from '@/lib/payloadTags';
 
@@ -20,7 +21,8 @@ export type ResultKind =
   | 'term'
   | 'payment'
   | 'scheme'
-  | 'infrastructure';
+  | 'infrastructure'
+  | 'live';
 
 export interface IndexedDoc {
   id: string;
@@ -171,6 +173,43 @@ function buildDocuments(): IndexedDoc[] {
     });
   }
 
+  for (const scene of LIFE_SCENES) {
+    docs.push({
+      id: `live-scene:${scene.id}`,
+      kind: 'live',
+      title: scene.title.en,
+      subtitle: scene.brand.en,
+      body: `${scene.blurb.en} ${scene.title.fr} ${scene.blurb.fr}`,
+      href: `/live/${scene.id}`,
+      keywords: [scene.id, scene.brand.en, scene.brand.fr, 'live', 'showcase', 'demo'].join(' '),
+      tags: '',
+    });
+  }
+
+  for (const scenario of LIFE_SCENARIOS) {
+    const flowIds = [
+      ...new Set(scenario.beats.flatMap((b) => (b.flowId ? [b.flowId] : []))),
+    ];
+    docs.push({
+      id: `live:${scenario.id}`,
+      kind: 'live',
+      title: scenario.title.en,
+      subtitle: scenario.title.fr,
+      body: `${scenario.blurb.en} ${scenario.blurb.fr}`,
+      href: liveScenarioHref(scenario),
+      keywords: [
+        scenario.id,
+        scenario.sceneId,
+        scenario.paymentId ?? '',
+        scenario.outcome,
+        'live',
+        'showcase',
+        ...flowIds,
+      ].join(' '),
+      tags: '',
+    });
+  }
+
   for (const e of GLOSSARY) {
     const isCode = e.category === 'code';
     docs.push({
@@ -286,6 +325,7 @@ const CATALOG_KIND_ORDER: ResultKind[] = [
   'scheme',
   'infrastructure',
   'flow',
+  'live',
   'standard',
   'sample',
   'endpoint',
@@ -315,4 +355,5 @@ export const KIND_LABELS: Record<ResultKind, string> = {
   payment: 'Payment',
   scheme: 'Scheme',
   infrastructure: 'Infrastructure',
+  live: 'Live',
 };

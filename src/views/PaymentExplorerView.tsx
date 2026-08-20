@@ -5,6 +5,7 @@ import { infrastructureById } from '@/data/infrastructures';
 import { schemeById } from '@/data/schemes';
 import { countryById, COUNTRIES } from '@/data/countries';
 import { flowById, isoMessagesInFlow } from '@/data/flows';
+import { liveScenarioHref, scenariosForPayment } from '@/data/lifeScenes';
 import { compareJourneys, getPaymentJourney, resolveJourneyOptions } from '@/lib/paymentJourney';
 import type { CountryId, InitiationChannel, PaymentOutcome } from '@/types';
 import { PaymentTimeline } from '@/components/PaymentTimeline';
@@ -65,6 +66,7 @@ export function PaymentExplorerView() {
   const compareName = payment.comparePaymentId
     ? PAYMENTS.find((p) => p.id === payment.comparePaymentId)?.name[locale]
     : undefined;
+  const liveHits = scenariosForPayment(payment.id);
 
   const outcomes: { id: string; label: string }[] = [
     { id: 'happy', label: t('explorer.happy') },
@@ -260,6 +262,24 @@ export function PaymentExplorerView() {
                 </li>
               );
             })}
+          </ul>
+        </section>
+      )}
+
+      {liveHits.length > 0 && (
+        <section className="mt-10 max-w-3xl">
+          <p className="eyebrow">{t('explorer.tryInLive')}</p>
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {liveHits.map(({ scenario, beatIndex }) => (
+              <li key={scenario.id}>
+                <Link
+                  to={liveScenarioHref(scenario, beatIndex)}
+                  className="border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                >
+                  {scenario.title[locale]}
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       )}

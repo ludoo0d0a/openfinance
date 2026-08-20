@@ -13,6 +13,7 @@ const kindColor: Record<ResultKind, string> = {
   payment: 'text-jade',
   scheme: 'text-signal',
   infrastructure: 'text-violet',
+  live: 'text-signal',
 };
 
 export function SearchHitList({

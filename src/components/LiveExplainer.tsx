@@ -101,6 +101,13 @@ export function LiveExplainer({ scenario, resolved, bankDeepLinkId }: Props) {
               </Link>
             </li>
           )}
+          {resolved.sample && (
+            <li>
+              <Link to={`/samples/${resolved.sample.id}`} className="text-signal hover:underline">
+                {t('live.openSample')}
+              </Link>
+            </li>
+          )}
           {resolved.messageShort && (
             <li>
               <Link to={`/messages/${resolved.messageShort}`} className="text-signal hover:underline">

@@ -989,3 +989,80 @@ export const lifeScenarioById = (id: string) => LIFE_SCENARIOS.find((s) => s.id 
 export function scenariosForScene(sceneId: LifeSceneId): LifeScenario[] {
   return LIFE_SCENARIOS.filter((s) => s.sceneId === sceneId);
 }
+
+export interface LifeScenarioHit {
+  scenario: LifeScenario;
+  /** 0-based beat index for `?beat=` deep links. */
+  beatIndex: number;
+}
+
+/** Deep link into a live scenario, optionally at a specific beat. */
+export function liveScenarioHref(scenario: LifeScenario, beatIndex = 0): string {
+  const base = `/live/${scenario.sceneId}/${scenario.id}`;
+  return beatIndex > 0 ? `${base}?beat=${beatIndex}` : base;
+}
+
+/** Live scenarios that walk this catalog flow (first matching beat). */
+export function scenariosForFlow(flowId: string): LifeScenarioHit[] {
+  return collectScenarioHits((beat) => beat.flowId === flowId);
+}
+
+/** Live scenarios that land on this flow step. */
+export function scenariosForFlowStep(flowId: string, step: number): LifeScenarioHit[] {
+  return collectScenarioHits((beat) => beat.flowId === flowId && beat.step === step);
+}
+
+/** Live scenarios that show this sample (direct or via flow step / payment hop). */
+export function scenariosForSample(sampleId: string): LifeScenarioHit[] {
+  const ids = sampleIdAliases(sampleId);
+  return collectScenarioHits((beat, scenario) => {
+    const resolved = resolvedBeatSampleId(beat, scenario);
+    return resolved != null && ids.has(resolved);
+  });
+}
+
+/** Live scenarios tied to this payment (scenario or beat paymentId). */
+export function scenariosForPayment(paymentId: string): LifeScenarioHit[] {
+  const out: LifeScenarioHit[] = [];
+  for (const scenario of LIFE_SCENARIOS) {
+    if (scenario.paymentId === paymentId) {
+      out.push({ scenario, beatIndex: 0 });
+      continue;
+    }
+    const beatIndex = scenario.beats.findIndex((b) => b.paymentId === paymentId);
+    if (beatIndex >= 0) out.push({ scenario, beatIndex });
+  }
+  return out;
+}
+
+function collectScenarioHits(
+  match: (beat: LifeBeat, scenario: LifeScenario) => boolean,
+): LifeScenarioHit[] {
+  const out: LifeScenarioHit[] = [];
+  for (const scenario of LIFE_SCENARIOS) {
+    const beatIndex = scenario.beats.findIndex((b) => match(b, scenario));
+    if (beatIndex >= 0) out.push({ scenario, beatIndex });
+  }
+  return out;
+}
+
+function resolvedBeatSampleId(beat: LifeBeat, scenario: LifeScenario): string | undefined {
+  if (beat.sampleId) return beat.sampleId;
+  if (beat.flowId && beat.step != null) {
+    const flow = flowById(beat.flowId);
+    return flow?.steps.find((s) => s.n === beat.step)?.sampleId;
+  }
+  const paymentId = beat.paymentId ?? scenario.paymentId;
+  if (beat.hopId && paymentId) {
+    const payment = paymentById(paymentId);
+    return payment?.hops.find((h) => h.id === beat.hopId)?.sampleId;
+  }
+  return undefined;
+}
+
+function sampleIdAliases(sampleId: string): Set<string> {
+  const ids = new Set([sampleId]);
+  if (sampleId.endsWith('-json')) ids.add(sampleId.slice(0, -5));
+  else ids.add(`${sampleId}-json`);
+  return ids;
+}

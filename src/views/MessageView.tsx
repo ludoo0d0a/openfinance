@@ -318,12 +318,17 @@ export function MessageView() {
                   initialFilter={tagQuery}
                 />
               </div>
-              <p className="mt-2 font-mono text-[11px] text-muted">
-                {t('message.editHint')} {edited !== null && `${t('message.modified')} `}
-                <button type="button" onClick={() => setEdited(null)} className="text-signal hover:underline">
-                  {t('message.reset')}
-                </button>
-              </p>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                <Link to={`/samples/${sample.id}`} className="font-mono text-[11px] text-signal hover:underline">
+                  {t('message.openSample')}
+                </Link>
+                <p className="font-mono text-[11px] text-muted">
+                  {t('message.editHint')} {edited !== null && `${t('message.modified')} `}
+                  <button type="button" onClick={() => setEdited(null)} className="text-signal hover:underline">
+                    {t('message.reset')}
+                  </button>
+                </p>
+              </div>
             </>
           ) : (
             <div className="panel px-4 py-8 text-sm text-muted">{t('message.noSample', { short: message.short })}</div>

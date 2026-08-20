@@ -2,13 +2,16 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { sampleById } from '@/data/samples';
 import { messageByShort } from '@/data/iso20022';
 import { standardById } from '@/data/standards';
+import { usagesOfSample } from '@/data/flows';
+import { liveScenarioHref, scenariosForSample } from '@/data/lifeScenes';
 import { PayloadInspector } from '@/components/PayloadInspector';
-import { useT } from '@/i18n';
+import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
 import { PageAd } from '@/components/PageAd';
 
 export function SampleView() {
   const t = useT();
+  const { locale } = useI18n();
   const { sampleId } = useParams();
   const [searchParams] = useSearchParams();
   const tagQuery = searchParams.get('q') ?? '';
@@ -18,6 +21,12 @@ export function SampleView() {
 
   const message = sample.messageShort ? messageByShort(sample.messageShort) : undefined;
   const standard = sample.standardId ? standardById(sample.standardId) : undefined;
+  const flowUsages = usagesOfSample(sample.id).map((u) => {
+    const flow = localizeFlow(u.flow, locale);
+    const steps = u.steps.map((s) => flow.steps.find((ls) => ls.n === s.n) ?? s);
+    return { flow, steps };
+  });
+  const liveHits = scenariosForSample(sample.id);
 
   return (
     <div className="page-fluid">
@@ -42,6 +51,43 @@ export function SampleView() {
             </Link>
           )}
         </div>
+        {flowUsages.length > 0 && (
+          <div className="mt-5">
+            <p className="eyebrow mb-2">{t('sample.usedInFlows')}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {flowUsages.map(({ flow, steps }) => (
+                <li key={flow.id}>
+                  <Link
+                    to={`/flows/${flow.id}?step=${steps[0].n}`}
+                    className="inline-flex items-center gap-1.5 border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                  >
+                    <span>{flow.name}</span>
+                    <span className="font-mono text-[10px] text-muted">
+                      {steps.map((s) => String(s.n).padStart(2, '0')).join(' · ')}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {liveHits.length > 0 && (
+          <div className="mt-5">
+            <p className="eyebrow mb-2">{t('sample.seeInLive')}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {liveHits.map(({ scenario, beatIndex }) => (
+                <li key={scenario.id}>
+                  <Link
+                    to={liveScenarioHref(scenario, beatIndex)}
+                    className="border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                  >
+                    {scenario.title[locale]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </header>
 
       <PageAd placement="mid" />

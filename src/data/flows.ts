@@ -1730,6 +1730,24 @@ export function usagesOfMessage(short: string): { flow: Flow; steps: FlowStep[] 
   return out;
 }
 
+/** Flows and steps that reference this sample (XML or its JSON companion). */
+export function usagesOfSample(sampleId: string): { flow: Flow; steps: FlowStep[] }[] {
+  const ids = sampleIdAliases(sampleId);
+  const out: { flow: Flow; steps: FlowStep[] }[] = [];
+  for (const flow of FLOWS) {
+    const steps = flow.steps.filter((s) => s.sampleId != null && ids.has(s.sampleId));
+    if (steps.length) out.push({ flow, steps });
+  }
+  return out;
+}
+
+function sampleIdAliases(sampleId: string): Set<string> {
+  const ids = new Set([sampleId]);
+  if (sampleId.endsWith('-json')) ids.add(sampleId.slice(0, -5));
+  else ids.add(`${sampleId}-json`);
+  return ids;
+}
+
 /** Distinct ISO message shorts in diagram order. */
 export function isoMessagesInFlow(flow: Flow): string[] {
   const ordered: string[] = [];
@@ -1740,6 +1758,23 @@ export function isoMessagesInFlow(flow: Flow): string[] {
     ordered.push(step.messageShort);
   }
   return ordered;
+}
+
+/** Distinct sample ids referenced by steps, in diagram order. */
+export function sampleIdsInFlow(flow: Flow): string[] {
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+  for (const step of flow.steps) {
+    if (!step.sampleId || seen.has(step.sampleId)) continue;
+    seen.add(step.sampleId);
+    ordered.push(step.sampleId);
+  }
+  return ordered;
+}
+
+/** True when the Try editor (pacs.008 → pacs.002) is useful for this flow. */
+export function flowSupportsTryEditor(flow: Flow): boolean {
+  return flow.steps.some((s) => s.messageShort === 'pacs.008' || s.messageShort === 'pacs.002');
 }
 
 export const CATEGORY_LABELS: Record<Flow['category'], string> = {

@@ -2,10 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { flowById, isoMessagesInFlow, usagesOfMessage } from '@/data/flows';
+import { flowById, isoMessagesInFlow, sampleIdsInFlow, flowSupportsTryEditor, usagesOfMessage } from '@/data/flows';
 import { messageByShort } from '@/data/iso20022';
 import { standardById } from '@/data/standards';
 import { sampleById, samplesForMessage } from '@/data/samples';
+import {
+  liveScenarioHref,
+  scenariosForFlow,
+  scenariosForFlowStep,
+} from '@/data/lifeScenes';
 import { outcomeForFlow, paymentExplorerHref, paymentsForFlow } from '@/lib/paymentJourney';
 import { FlowCanvas } from '@/components/FlowCanvas';
 import { EntityFlowDiagram } from '@/components/EntityFlowDiagram';
@@ -101,6 +106,12 @@ export function FlowView() {
   const flowMessages = flow ? isoMessagesInFlow(flow) : [];
   const pairedPayments = flow ? paymentsForFlow(flow.id) : [];
   const pairedOutcome = flow ? outcomeForFlow(flow.id) : 'happy';
+  const liveHits = flow ? scenariosForFlow(flow.id) : [];
+  const stepLiveHits = flow ? scenariosForFlowStep(flow.id, selected) : [];
+  const flowSampleIds = flow ? sampleIdsInFlow(flow) : [];
+  const showTryEditor = flow ? flowSupportsTryEditor(flow) : false;
+  const stepShowsTry =
+    step?.messageShort === 'pacs.008' || step?.messageShort === 'pacs.002';
 
   if (!flow || !step) return <NotFoundView />;
 
@@ -117,7 +128,59 @@ export function FlowView() {
         </div>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{flow.name}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{flow.summary}</p>
-        <p className="mt-3 border-l-2 border-ochre pl-3 text-[13px] leading-relaxed">{flow.useCase}</p>
+        <div className="mt-3 border-l-2 border-ochre pl-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-muted">{t('flow.useCase')}</p>
+          <p className="mt-1 text-[13px] leading-relaxed">{flow.useCase}</p>
+        </div>
+        {(showTryEditor || flowSampleIds.length > 0) && (
+          <div className="mt-3 space-y-3">
+            {showTryEditor && (
+              <p className="font-mono text-[12px]">
+                <Link to="/try" className="text-signal hover:underline">
+                  {t('flow.openTry')}
+                </Link>
+              </p>
+            )}
+            {flowSampleIds.length > 0 && (
+              <div>
+                <p className="eyebrow mb-2">{t('flow.samples')}</p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {flowSampleIds.map((id) => {
+                    const s = sampleById(id);
+                    if (!s) return null;
+                    return (
+                      <li key={id}>
+                        <Link
+                          to={`/samples/${id}`}
+                          className="border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                        >
+                          {s.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+        {liveHits.length > 0 && (
+          <div className="mt-3">
+            <p className="eyebrow mb-2">{t('flow.tryInLive')}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {liveHits.map(({ scenario, beatIndex }) => (
+                <li key={scenario.id}>
+                  <Link
+                    to={liveScenarioHref(scenario, beatIndex)}
+                    className="border border-rule bg-surface px-2 py-1 text-[13px] hover:border-ink"
+                  >
+                    {scenario.title[locale]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {pairedPayments.length > 0 && (
           <p className="mt-3 border-l-2 border-jade pl-3 text-[13px] leading-relaxed">
             {t('flow.technicalViewOf')}{' '}
@@ -345,12 +408,33 @@ export function FlowView() {
                     {t('flow.allSamples', { short: step.messageShort })}
                   </Link>
                 )}
+                {stepShowsTry && (
+                  <Link to="/try" className="font-mono text-[11px] text-signal hover:underline">
+                    {t('flow.openTry')}
+                  </Link>
+                )}
+                {stepLiveHits[0] && (
+                  <Link
+                    to={liveScenarioHref(stepLiveHits[0].scenario, stepLiveHits[0].beatIndex)}
+                    className="font-mono text-[11px] text-signal hover:underline"
+                  >
+                    {t('flow.seeStepInLive')}
+                  </Link>
+                )}
               </div>
             </div>
           ) : (
             <div className="panel px-4 py-6 text-sm text-muted">
               <p className="eyebrow mb-2">{t('flow.noPayload')}</p>
               <p>{t('flow.noPayloadBody')}</p>
+              {stepLiveHits[0] && (
+                <Link
+                  to={liveScenarioHref(stepLiveHits[0].scenario, stepLiveHits[0].beatIndex)}
+                  className="mt-3 inline-block font-mono text-[11px] text-signal hover:underline"
+                >
+                  {t('flow.seeStepInLive')}
+                </Link>
+              )}
             </div>
           )}
 

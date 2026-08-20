@@ -152,6 +152,11 @@ export function HomeView() {
             </Link>
           </li>
           <li>
+            <Link to="/live" className="text-signal hover:underline">
+              {t('nav.live')}
+            </Link>
+          </li>
+          <li>
             <Link to="/try" className="text-signal hover:underline">
               {t('nav.try')}
             </Link>
