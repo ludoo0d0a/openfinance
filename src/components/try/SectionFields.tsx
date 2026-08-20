@@ -23,7 +23,6 @@ export function SectionFields({
   onActivate,
   t,
   compact = false,
-  expert = false,
 }: {
   section: PacsSection;
   input: PacsBuildInput;
@@ -36,7 +35,6 @@ export function SectionFields({
   onActivate: ActivateFn;
   t: Translate;
   compact?: boolean;
-  expert?: boolean;
 }) {
   const cols = section.columns ?? 1;
   const icon = SECTION_ICONS[section.id] ?? Hash;
@@ -53,7 +51,7 @@ export function SectionFields({
                 t={t}
                 highlighted={highlighted === 'clrSys'}
                 onActivate={onActivate}
-                compact={compact || expert}
+                compact={compact}
               />
             );
           }
@@ -66,7 +64,7 @@ export function SectionFields({
                 t={t}
                 highlighted={highlighted === 'instant'}
                 onActivate={onActivate}
-                compact={compact || expert}
+                compact={compact}
               />
             );
           }
@@ -108,8 +106,7 @@ export function SectionFields({
               highlighted={highlighted === key}
               onActivate={onActivate}
               t={t}
-              compact={compact || expert}
-              showPath={expert}
+              compact={compact}
             />
           );
         })}

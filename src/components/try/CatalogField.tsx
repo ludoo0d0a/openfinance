@@ -15,7 +15,6 @@ export function CatalogField({
   onActivate,
   t,
   compact,
-  showPath,
 }: {
   spec: PacsFieldSpec;
   value: string;
@@ -24,10 +23,8 @@ export function CatalogField({
   onActivate: ActivateFn;
   t: Translate;
   compact: boolean;
-  showPath: boolean;
 }) {
   const definition = t(spec.defKey);
-  const path = spec.xmlSelectors[0];
   return (
     <label
       data-field-key={spec.key}
@@ -39,7 +36,6 @@ export function CatalogField({
       onFocusCapture={() => onActivate(spec.key, 'form')}
     >
       <span className="font-mono text-[10px] uppercase tracking-wider text-muted">{t(spec.labelKey)}</span>
-      {showPath && path && <span className="mt-0.5 block truncate font-mono text-[9px] text-muted">{path}</span>}
       {spec.kind === 'date' && (
         <PresetRow ariaLabel={t('try.datePresets')}>
           {DATE_ONLY_PRESETS.map((p) => (

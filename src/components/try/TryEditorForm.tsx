@@ -90,7 +90,7 @@ export function TryEditorForm({
 
       {expert ? (
         sections.map((section) => (
-          <SectionFields key={section.id} section={section} expert {...sectionProps} />
+          <SectionFields key={section.id} section={section} {...sectionProps} />
         ))
       ) : (
         <>
