@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { PencilLine } from 'lucide-react';
 import { Tag } from '@/components/Chips';
 import { TryEditorForm } from '@/components/try/TryEditorForm';
-import { TryEditorPanes } from '@/components/try/TryEditorPanes';
+import { TryEditorPanes, type PaneMode } from '@/components/try/TryEditorPanes';
 import { freshInput } from '@/components/try/freshInput';
 import type { FieldKey, Selection } from '@/components/try/types';
 import {
@@ -30,7 +30,7 @@ export function TryEditorView() {
   const [outcome, setOutcome] = useState<Pacs002Outcome>('ACSC');
   const [rejectReason, setRejectReason] = useState('AB05');
   const [edited008, setEdited008] = useState<string | null>(null);
-  const [activePane, setActivePane] = useState<'008' | '002'>('008');
+  const [paneMode, setPaneMode] = useState<PaneMode>('both');
   const [expert, setExpert] = useState(false);
   const [selection, setSelection] = useState<Selection | null>(null);
 
@@ -103,7 +103,7 @@ export function TryEditorView() {
   }
 
   return (
-    <div className="page-fluid flex min-h-0 flex-col gap-4 xl:h-[calc(100dvh-11rem)] xl:overflow-hidden xl:py-4">
+    <div className="page-fluid flex flex-col gap-4">
       <header className="shrink-0">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 max-w-4xl">
@@ -123,7 +123,7 @@ export function TryEditorView() {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(18rem,26%)_minmax(0,1fr)]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(18rem,26%)_minmax(0,1fr)] xl:items-start">
         <TryEditorForm
           formRef={formRef}
           input={input}
@@ -144,8 +144,8 @@ export function TryEditorView() {
           pacs002={pacs002}
           outcome={outcome}
           rejectReason={rejectReason}
-          activePane={activePane}
-          setActivePane={setActivePane}
+          paneMode={paneMode}
+          setPaneMode={setPaneMode}
           selectedPaths={selectedPaths}
           onSelectPath={selectFromXml}
           onEdit008={setEdited008}

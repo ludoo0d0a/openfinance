@@ -533,6 +533,8 @@ export const fr: MessageTree = {
     datePlus1d: '+1j',
     dateStartToday: '00:00 UTC',
     dateNoonToday: '12:00 UTC',
+    paneMode: 'Panneaux XML',
+    paneBoth: 'Les deux',
     modeSimple: 'Simple',
     modeExpert: 'Expert',
     expertHint:

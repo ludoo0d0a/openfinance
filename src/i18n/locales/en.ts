@@ -525,6 +525,8 @@ export const en: MessageTree = {
     datePlus1d: '+1d',
     dateStartToday: '00:00 UTC',
     dateNoonToday: '12:00 UTC',
+    paneMode: 'XML panes',
+    paneBoth: 'Both',
     modeSimple: 'Simple',
     modeExpert: 'Expert',
     expertHint:

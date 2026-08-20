@@ -53,7 +53,7 @@ export function TryEditorForm({
   };
 
   return (
-    <aside ref={formRef} className="panel scroll-paper space-y-3 overflow-y-auto p-3 xl:min-h-0">
+    <aside ref={formRef} className="panel space-y-3 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="eyebrow">{t('try.fields')}</h2>
         <div className="flex items-center gap-px">
