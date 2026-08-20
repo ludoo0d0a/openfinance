@@ -328,10 +328,10 @@ export const STANDARDS: Standard[] = [
     version: 'SPS 2026 / SIC5',
     status: 'current',
     summary:
-      'Customer-bank Swiss Payment Standards (pain/camt) plus the SIC, euroSIC and SIC Instant Payment rails. Fully ISO 20022; CHF settles in SIC, EUR in euroSIC, sub-10s CHF in SIC IP.',
+      'Customer-bank Swiss Payment Standards (pain/camt) plus the SIX SIC RTGS, euroSIC and SIC Instant Payment (SIC IP on SIC5) rails. Fully ISO 20022; CHF settles in SIC, EUR in euroSIC, sub-10s CHF in SIC IP in central bank money.',
     security: {
-      clientAuth: 'Bank channel credentials or EBICS; SIC participants use SIX network access.',
-      messageSigning: 'Channel-specific; interbank traffic authenticated on the SIC network.',
+      clientAuth: 'Bank channel credentials or EBICS; SIC participants use SIX SSFN (Secure Swiss Finance Network) or SWIFT.',
+      messageSigning: 'Channel-specific; interbank traffic authenticated on the SIX network / SSFN gateway.',
       tokens: 'Not an XS2A API — customer-bank exchange is file/API per bank; clearing is ISO 20022 XML.',
       certificates: 'Participant certificates via SIX; QR-bill validation is local.',
     },
@@ -365,10 +365,12 @@ export const STANDARDS: Standard[] = [
       },
     ],
     gotchas: [
-      'QR-bill is the only retail credit-transfer remittance form; DTA is decommissioned.',
-      'SIC IP targets ~10 seconds in central bank money — treat timeouts like SCT Inst, not like batch SIC.',
-      'ClrSys codes and Swiss IG versions are binding for SIC participants; SEPA IGs do not apply to CHF SIC traffic.',
-      'CHF amounts use Ccy="CHF"; do not reuse EUR SEPA service-level codes on SIC CHF payments.',
+      'QR-bill is the only retail credit-transfer remittance form in Switzerland; DTA is decommissioned.',
+      'SIC requires 100% pre-funding (no overdraft). Uncovered transactions enter the SIC wait file queue.',
+      'SIC IP (SIC5) targets <10 seconds 24/7/365 in SNB central bank money — treat timeouts like SCT Inst with pacs.028.',
+      'ClrSys/Cd=SIC and Swiss IG guidelines are binding for SIC participants; SEPA IGs do not apply to CHF SIC traffic.',
+      'CHF amounts use Ccy="CHF"; do not reuse EUR SEPA service-level codes (e.g. SEPA/SEPA Inst) on SIC CHF payments.',
+      'Phase-in mandates: August 2024 for major Swiss banks (>95% market volume); all remaining banks by end of 2026; SNB PSSF weekend liquidity by end of 2027.',
     ],
   },
   {

@@ -220,6 +220,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sepa-instant-timeout',
       'hub-ip-transaction-flow',
       'hub-non-ip-transaction-flow',
+      'target2-regular-payment',
     ],
     tags: ['interbank', 'sepa', 'sct', 'instant', 'pacs', 'sic', 'eurosic', 'wero', 'sct-inst', 'tips', 'cbpr+'],
     versions: [
@@ -294,6 +295,7 @@ export const ISO_MESSAGES: Iso20022Message[] = [
       'sct-inst-vop',
       'hub-ip-transaction-flow',
       'hub-non-ip-transaction-flow',
+      'target2-regular-payment',
     ],
     tags: ['status', 'acsc', 'rjct', 'instant', 'pacs', 'sic', 'sct-inst', 'ack', 'cbpr+'],
     versions: [

@@ -550,26 +550,52 @@ export const FLOWS_FR: Record<string, FlowI18n> = {
   'sic-ip-instant': {
     name: 'SIC Instant Payment (SIC IP)',
     summary:
-      'Paiement CHF instantané sur le service SIC5 Instant Payments — règlement <10 s avec le même vocabulaire pacs que SCT Inst.',
+      'Paiement CHF instantané sur la plateforme SIX SIC5 — règlement en monnaie de banque centrale en <10 s, 24/7/365.',
     useCase:
-      'A2A suisse instantané. Timeouts et investigations pacs.028 s’appliquent ; ne traitez pas l’absence de pacs.002 comme un échec sûr.',
+      'Paiement compte-à-compte suisse instantané selon les spécifications SIX. Obligatoire pour les grandes banques depuis août 2024 et toutes les banques d’ici fin 2026.',
     steps: {
       1: {
         label: 'Soumission pacs.008 SIC IP',
         detail:
-          'Fonds réservés chez la banque débitrice. La fenêtre SIC IP se compte en secondes, pas en cycles batch.',
+          'La banque débitrice réserve les fonds et soumet le pacs.008 avec ClrSys=SIC et LclInstrm=INST dans SIC5. Le SLA <10s démarre.',
       },
       2: {
         label: 'Transmission au participant créancier',
-        detail: 'SIC IP route vers la banque réceptrice pour décision de crédit immédiate.',
+        detail: 'SIC IP route vers la banque réceptrice pour décision de crédit immédiate en temps réel.',
       },
       3: {
         label: 'pacs.002 ACSC',
-        detail: 'La banque créancière accepte et crédite. ACSC clôt le chemin heureux dans le SLA.',
+        detail: 'La banque créancière accepte et crédite immédiatement. ACSC clôt le chemin heureux dans le SLA <10s.',
       },
       4: {
         label: 'Statut retour banque débitrice',
-        detail: 'La banque débitrice libère la réservation comme réglée (ou l’annule sur RJCT).',
+        detail: 'La banque débitrice libère la réservation comme réglée en comptes de dépôt à vue BNS (ou l’annule sur RJCT).',
+      },
+    },
+  },
+
+  'target2-regular-payment': {
+    name: 'Virement régulier TARGET2 / T2',
+    summary:
+      'Virement euro régulier réglé en monnaie de banque centrale via TARGET2 (T2) RTGS durant les heures ouvrées, pendant du paiement instantané TIPS.',
+    useCase:
+      'Virements euro réguliers ou gros montants réglés en monnaie banque centrale Eurosystem lorsque le traitement instantané n’est pas utilisé.',
+    steps: {
+      1: {
+        label: 'pacs.008 dans T2 RTGS',
+        detail: 'La banque débitrice soumet le pacs.008 avec ClrSys=TGT dans TARGET2 (T2) RTGS pour règlement en monnaie de banque centrale.',
+      },
+      2: {
+        label: 'pacs.008 livré au PSP créancier',
+        detail: 'TARGET2 valide la liquidité et livre le virement pacs.008 réglé au participant récepteur.',
+      },
+      3: {
+        label: 'Confirmation pacs.002 ACSC',
+        detail: 'La banque créancière confirme la réception et la fin du règlement avec TxSts=ACSC.',
+      },
+      4: {
+        label: 'pacs.002 relayé au PSP débiteur',
+        detail: 'T2 relaie le statut ACSC final à la banque débitrice pour achever le cycle de paiement régulier.',
       },
     },
   },
