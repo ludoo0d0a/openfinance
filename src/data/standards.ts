@@ -373,13 +373,13 @@ export const STANDARDS: Standard[] = [
   },
   {
     id: 'wero',
-    name: 'Wero (European Payments Initiative)',
-    publisher: 'EPI Company',
+    name: 'A2A overlay (Wero / EPI)',
+    publisher: 'EPI Company (sample)',
     region: 'Pan-European',
     version: '1.0',
     status: 'current',
     summary:
-      'Account-to-account retail payment scheme (P2P, P2Pro, online checkout) sitting above ASPSPs and SCT Instant. Not an XS2A API itself — it orchestrates wallet UX, proxy lookup and instant settlement.',
+      'Retail A2A overlay (sample: Wero). Wallet UX (P2P, P2Pro, checkout) sits above ASPSPs and an instant rail such as SCT Inst. Not an XS2A API itself — it orchestrates intent, proxy lookup and instant settlement. Same split as Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay, TWINT.',
     security: {
       clientAuth: 'Scheme participant credentials; merchant integrations via PSPs.',
       messageSigning: 'Scheme-level; underlying bank rails use existing PSD2 / SCT Inst security.',
@@ -391,9 +391,9 @@ export const STANDARDS: Standard[] = [
     apis: [
       {
         id: 'wero-wallet',
-        name: 'Wero wallet / merchant',
+        name: 'A2A overlay wallet / merchant (Wero sample)',
         role: 'Scheme',
-        summary: 'Initiate A2A payment, resolve proxy (phone/email), confirm and settle via SCT Inst.',
+        summary: 'Initiate A2A overlay payment, resolve proxy (phone/email), confirm and settle via SCT Inst (Wero-shaped API).',
         endpoints: [
           { method: 'POST', path: '/wero/v1/payments', summary: 'Create a Wero payment intent' },
           { method: 'GET', path: '/wero/v1/payments/{id}', summary: 'Read payment status' },
@@ -403,7 +403,7 @@ export const STANDARDS: Standard[] = [
       },
     ],
     gotchas: [
-      'Wero settles on SCT Inst (or national instant where applicable) — clearing timeouts and pacs.002 semantics still apply.',
+      'A2A overlays settle on SCT Inst (or national instant where applicable) — clearing timeouts and pacs.002 semantics still apply.',
       'Proxy resolution is not Confirmation of Payee; still run VoP where the Instant Payments Regulation requires it.',
       'Cancellation after settlement is a recall/return path, not a wallet undo.',
     ],

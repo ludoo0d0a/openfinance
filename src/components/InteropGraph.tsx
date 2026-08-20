@@ -28,7 +28,7 @@ const STANDARD_LABEL: Record<string, string> = {
   'polish-api': 'PolishAPI',
   'czech-obs': 'Czech OBS',
   'swiss-sps': 'Swiss SPS',
-  wero: 'Wero',
+  wero: 'A2A overlay',
   'sct-inst': 'SCT Inst',
 };
 

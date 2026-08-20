@@ -47,7 +47,14 @@ function buildDocuments(): IndexedDoc[] {
       subtitle: p.name.fr,
       body: `${p.summary.en} ${p.summary.fr}`,
       href: `/payment/${p.id}`,
-      keywords: [p.kind, p.schemeId, ...p.infrastructureIds, ...p.messageShorts].join(' '),
+      keywords: [
+        p.kind,
+        p.schemeId,
+        p.name.en,
+        p.name.fr,
+        ...p.infrastructureIds,
+        ...p.messageShorts,
+      ].join(' '),
       tags: p.messageShorts.join(' '),
     });
   }

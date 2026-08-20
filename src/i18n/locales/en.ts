@@ -66,7 +66,7 @@ export const en: MessageTree = {
     'ukob-error': 'UK Open Banking error',
     'sca-status': 'SCA status',
     'consent-status': 'Consent status',
-    'scheme-status': 'Scheme status (Wero)',
+    'scheme-status': 'Scheme status (A2A overlay)',
   },
   search: {
     title: 'Search',
@@ -221,7 +221,7 @@ export const en: MessageTree = {
     viaHint: 'The payer at their own bank, or a payment app they authorised (a PISP).',
     viaBank: 'Bank',
     viaPisp: 'App (PISP)',
-    viaWero: 'Wero',
+    viaWero: 'A2A overlay',
     viaMerchant: 'Merchant',
     viaCreditor: 'Creditor',
     country: 'Payer country',

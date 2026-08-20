@@ -41,6 +41,24 @@ const SRC_CURVE: SourceRef = {
   lastUpdated: '2026-08-18',
 };
 
+const SRC_PIX: SourceRef = {
+  name: 'Banco Central do Brasil — Pix',
+  url: 'https://www.bcb.gov.br/en/financialstability/pix',
+  lastUpdated: '2026-08-20',
+};
+
+const SRC_UPI: SourceRef = {
+  name: 'NPCI — UPI',
+  url: 'https://www.npci.org.in/what-we-do/upi/product-overview',
+  lastUpdated: '2026-08-20',
+};
+
+const SRC_TRUELAYER: SourceRef = {
+  name: 'TrueLayer',
+  url: 'https://truelayer.com/',
+  lastUpdated: '2026-08-20',
+};
+
 const DISCLAIMER = L(
   'Teaching model of a typical path — not the EPC rulebook or a particular CSM implementation.',
   'Modèle pédagogique d’un parcours typique — pas le rulebook EPC ni l’implémentation d’un CSM particulier.',
@@ -432,29 +450,44 @@ const instHops: PaymentHop[] = [
 
 const weroHops: PaymentHop[] = [
   hop('wero-intent', 'payer', 'scheme', {
-    simple: L('The payer starts a Wero payment (checkout or P2P).', 'Le payeur démarre un paiement Wero (checkout ou P2P).'),
-    expert: L('Wero payment intent (amount, payee alias, return URLs)', 'Intention de paiement Wero (montant, alias, URLs de retour)'),
+    simple: L(
+      'The payer starts an A2A overlay payment (e.g. Wero checkout or P2P).',
+      'Le payeur démarre un paiement overlay A2A (ex. checkout ou P2P Wero).',
+    ),
+    expert: L(
+      'Overlay payment intent (amount, payee alias, return URLs) — Wero sample',
+      'Intention overlay (montant, alias, URLs de retour) — exemple Wero',
+    ),
     tOffset: L('t+0', 't+0'),
     flowId: 'wero-a2a-payment',
     step: 1,
     sampleId: 'wero-payment-create',
   }),
   hop('wero-proxy', 'scheme', 'scheme', {
-    simple: L('Wero resolves the phone or email to an IBAN.', 'Wero résout le téléphone ou l’e-mail en IBAN.'),
+    simple: L(
+      'The overlay resolves the phone or email to an IBAN (Wero directory; Bizum/Swish do the same with a mobile number).',
+      'L’overlay résout le téléphone ou l’e-mail en IBAN (annuaire Wero ; Bizum/Swish font de même avec un mobile).',
+    ),
     expert: L('Proxy directory lookup; still run VoP where required', 'Annuaire proxy ; VoP toujours si la régulation l’exige'),
     flowId: 'wero-a2a-payment',
     step: 2,
     sampleId: 'wero-proxy-resolve',
   }),
   hop('wero-auth', 'payer', 'bankA', {
-    simple: L('The payer confirms in the bank or Wero app.', 'Le payeur confirme dans l’app banque ou Wero.'),
+    simple: L(
+      'The payer confirms in the bank or overlay app (e.g. Wero).',
+      'Le payeur confirme dans l’app banque ou overlay (ex. Wero).',
+    ),
     expert: L('ASPSP authentication / SCA when required', 'Authentification ASPSP / SCA si requise'),
     flowId: 'wero-a2a-payment',
     step: 3,
   }),
   hop('wero-008-out', 'bankA', 'csm', {
     messageShort: 'pacs.008',
-    simple: L('The bank settles on SEPA Instant (TIPS or RT1).', 'La banque règle en SEPA Instant (TIPS ou RT1).'),
+    simple: L(
+      'The bank settles on the instant rail (SEPA Instant on TIPS or RT1 for Wero).',
+      'La banque règle sur le rail instantané (SEPA Instant sur TIPS ou RT1 pour Wero).',
+    ),
     expert: L('Underlying SCT Inst pacs.008 INST', 'pacs.008 INST SCT Inst sous-jacent'),
     sla: L('≤10 seconds', '≤10 secondes'),
     flowId: 'wero-a2a-payment',
@@ -471,7 +504,7 @@ const weroHops: PaymentHop[] = [
   }),
   hop('wero-002', 'bankB', 'csm', {
     messageShort: 'pacs.002',
-    simple: L('Settlement completes; Wero tracks the same outcome.', 'Le règlement se termine ; Wero suit le même résultat.'),
+    simple: L('Settlement completes; the overlay tracks the same outcome.', 'Le règlement se termine ; l’overlay suit le même résultat.'),
     expert: L('pacs.002 ACSC; scheme status tracks clearing', 'pacs.002 ACSC ; le statut schéma suit la compensation'),
     flowId: 'wero-a2a-payment',
     step: 5,
@@ -480,14 +513,14 @@ const weroHops: PaymentHop[] = [
   }),
   hop('wero-done', 'scheme', 'beneficiary', {
     simple: L('The beneficiary (or merchant) is paid.', 'Le bénéficiaire (ou le commerçant) est payé.'),
-    expert: L('Wero completion + SCT Inst credit', 'Fin Wero + crédit SCT Inst'),
+    expert: L('Overlay completion + SCT Inst credit', 'Fin overlay + crédit SCT Inst'),
     flowId: 'wero-a2a-payment',
     step: 5,
     outcomes: ['happy'],
   }),
   hop('wero-rjct', 'bankB', 'csm', {
     messageShort: 'pacs.002',
-    simple: L('Instant settlement is refused; Wero marks the intent failed.', 'Le règlement instantané est refusé ; Wero marque l’intention en échec.'),
+    simple: L('Instant settlement is refused; the overlay marks the intent failed.', 'Le règlement instantané est refusé ; l’overlay marque l’intention en échec.'),
     expert: L('pacs.002 RJCT; scheme status failed', 'pacs.002 RJCT ; statut schéma failed'),
     flowId: 'sct-inst-reject',
     step: 2,
@@ -749,6 +782,111 @@ const swiftHops: PaymentHop[] = [
   }),
 ];
 
+const instantA2aHops: PaymentHop[] = [
+  hop('ia2a-alias', 'payer', 'scheme', {
+    simple: L(
+      'The payer addresses the payee with a scheme alias (Pix key, UPI VPA) — not an overlay on SCT Inst.',
+      'Le payeur adresse le bénéficiaire avec un alias du schéma (clé Pix, VPA UPI) — pas un overlay sur SCT Inst.',
+    ),
+    expert: L('Alias directory is the scheme itself (Pix / UPI)', 'L’annuaire d’alias est le schéma (Pix / UPI)'),
+    tOffset: L('t+0', 't+0'),
+    initiation: ['merchant'],
+  }),
+  hop('ia2a-auth', 'payer', 'bankA', {
+    simple: L(
+      'The payer confirms in a participating app (bank, PhonePe, Google Pay India, …).',
+      'Le payeur confirme dans une app participante (banque, PhonePe, Google Pay India, …).',
+    ),
+    expert: L('In-scheme SCA / device auth', 'SCA / auth appareil dans le schéma'),
+  }),
+  hop('ia2a-out', 'bankA', 'csm', {
+    simple: L(
+      'The domestic instant rail settles in seconds, 24/7 (Pix SPI, UPI).',
+      'Le rail instantané domestique règle en secondes, 24/7 (Pix SPI, UPI).',
+    ),
+    expert: L('National instant CSM — not TIPS/RT1', 'CSM instantané national — pas TIPS/RT1'),
+    sla: L('Seconds, 24/7', 'Secondes, 24/7'),
+    outcomes: ['happy', 'reject'],
+  }),
+  hop('ia2a-in', 'csm', 'bankB', {
+    simple: L('The payee’s account is credited immediately.', 'Le compte du bénéficiaire est crédité immédiatement.'),
+    expert: L('Immediate funds availability on the scheme clock', 'Disponibilité immédiate des fonds sur l’horloge du schéma'),
+    outcomes: ['happy'],
+  }),
+  hop('ia2a-done', 'scheme', 'beneficiary', {
+    simple: L('The scheme shows paid. There is no separate wallet status vs clearing status.', 'Le schéma affiche payé. Pas de statut wallet distinct du clearing.'),
+    expert: L('Retail product = instant scheme', 'Produit retail = schéma instantané'),
+    outcomes: ['happy'],
+  }),
+  hop('ia2a-rjct', 'bankB', 'csm', {
+    simple: L('The instant credit is refused; the scheme marks the payment failed.', 'Le crédit instantané est refusé ; le schéma marque l’échec.'),
+    expert: L('Scheme-level reject, not an overlay intent fail on SCT Inst', 'Rejet schéma, pas un échec d’intent overlay sur SCT Inst'),
+    outcomes: ['reject'],
+  }),
+];
+
+const pispA2aHops: PaymentHop[] = [
+  hop('pisp-choose', 'payer', 'merchant', {
+    simple: L(
+      'The payer chooses pay-by-bank at checkout (e.g. TrueLayer). A TPP — not a bank consortium overlay.',
+      'Le payeur choisit le paiement bancaire au checkout (ex. TrueLayer). Un TPP — pas un overlay de consortium bancaire.',
+    ),
+    expert: L('Merchant checkout → PISP (XS2A), not Wero/Bizum proxy', 'Checkout commerçant → PISP (XS2A), pas de proxy Wero/Bizum'),
+    tOffset: L('t+0', 't+0'),
+    initiation: ['pisp'],
+  }),
+  hop('pisp-xs2a', 'scheme', 'bankA', {
+    messageShort: 'pain.001',
+    simple: L(
+      'The PISP initiates the transfer at the payer’s bank over open banking (Berlin Group / STET).',
+      'Le PISP initie le virement chez la banque du payeur via l’open banking (Berlin Group / STET).',
+    ),
+    expert: L('PISP XS2A payment initiation → pain.001 at the ASPSP', 'Initiation PISP XS2A → pain.001 chez l’ASPSP'),
+    flowId: 'bg-pis-sepa-redirect',
+    step: 1,
+    sampleId: 'pain-001-sct',
+    initiation: ['pisp'],
+  }),
+  hop('pisp-sca', 'payer', 'bankA', {
+    simple: L('The payer authenticates at their bank (SCA), not in a scheme wallet.', 'Le payeur s’authentifie chez sa banque (SCA), pas dans un wallet schéma.'),
+    expert: L('ASPSP SCA (redirect or decoupled)', 'SCA ASPSP (redirect ou découplée)'),
+    flowId: 'bg-pis-sepa-redirect',
+    step: 4,
+  }),
+  hop('pisp-008', 'bankA', 'csm', {
+    messageShort: 'pacs.008',
+    simple: L('The ASPSP sends SCT Inst (or SCT) into clearing — same rail as a bank-channel transfer.', 'L’ASPSP envoie du SCT Inst (ou SCT) en compensation — même rail qu’un virement canal banque.'),
+    expert: L('pacs.008 INST on TIPS/RT1 when instant', 'pacs.008 INST sur TIPS/RT1 si instantané'),
+    sla: L('≤10 seconds if SCT Inst', '≤10 secondes si SCT Inst'),
+    flowId: 'sct-inst-happy-path',
+    step: 4,
+    sampleId: 'pacs-008-sct-inst',
+  }),
+  hop('pisp-002', 'bankB', 'csm', {
+    messageShort: 'pacs.002',
+    simple: L('Settlement completes. The PISP polls payment status; it does not run the CSM.', 'Le règlement se termine. Le PISP interroge le statut ; il n’opère pas le CSM.'),
+    expert: L('pacs.002 ACSC; TPP GET /status is not clearing', 'pacs.002 ACSC ; le GET /status TPP n’est pas la compensation'),
+    flowId: 'sct-inst-happy-path',
+    step: 6,
+    sampleId: 'pacs-002-sct-inst',
+    outcomes: ['happy'],
+  }),
+  hop('pisp-done', 'scheme', 'merchant', {
+    simple: L('The PISP tells the merchant the payment succeeded.', 'Le PISP informe le commerçant que le paiement a réussi.'),
+    expert: L('PISP webhook / status to merchant', 'Webhook / statut PISP vers le commerçant'),
+    outcomes: ['happy'],
+  }),
+  hop('pisp-rjct', 'bankB', 'csm', {
+    messageShort: 'pacs.002',
+    simple: L('Clearing refuses; the PISP surfaces the bank/ISO reason, not a wallet undo.', 'La compensation refuse ; le PISP remonte le motif banque/ISO, pas un undo wallet.'),
+    expert: L('pacs.002 RJCT → PISP payment RJCT', 'pacs.002 RJCT → paiement PISP RJCT'),
+    flowId: 'sct-inst-reject',
+    step: 2,
+    sampleId: 'pacs-002-sct-inst-reject',
+    outcomes: ['reject'],
+  }),
+];
+
 export const PAYMENTS: Payment[] = [
   {
     id: 'sepa-credit-transfer',
@@ -786,8 +924,8 @@ export const PAYMENTS: Payment[] = [
     kind: 'instant',
     name: L('SEPA Instant', 'SEPA Instant'),
     summary: L(
-      'A €100 instant euro transfer France → Germany: Verification of Payee, then TIPS or RT1, funds in ≤10 seconds.',
-      'Un virement euro instantané de 100 € France → Allemagne : Verification of Payee, puis TIPS ou RT1, fonds en ≤10 secondes.',
+      'SCT Inst checkout: the rail itself (TIPS or RT1), no proxy/wallet overlay. A €100 instant euro transfer France → Germany: Verification of Payee, funds in ≤10 seconds.',
+      'Checkout SCT Inst : le rail lui-même (TIPS ou RT1), pas d’overlay proxy/wallet. Un virement euro instantané de 100 € France → Allemagne : Verification of Payee, fonds en ≤10 secondes.',
     ),
     schemeId: 'sct-inst',
     infrastructureIds: ['tips', 'rt1'],
@@ -821,10 +959,10 @@ export const PAYMENTS: Payment[] = [
   {
     id: 'wero',
     kind: 'wallet',
-    name: L('Wero', 'Wero'),
+    name: L('A2A Overlay', 'Overlay A2A'),
     summary: L(
-      'Account-to-account via Wero: intent and proxy on the scheme, settlement as SEPA Instant.',
-      'Compte-à-compte via Wero : intention et proxy côté schéma, règlement en SEPA Instant.',
+      'Retail A2A overlay: intent and proxy on the scheme, settlement on an instant rail. Samples: Wero (FR/DE), Bizum (ES), Payconiq (BE/LU), iDEAL (NL), BLIK (PL), Swish (SE), Vipps MobilePay (NO/DK/FI), TWINT (CH). Not Pix/UPI, not SCT Inst checkout, not PISP A2A, not PayPal/Alipay/Apple Pay.',
+      'Overlay A2A retail : intention et proxy côté schéma, règlement sur un rail instantané. Exemples : Wero (FR/DE), Bizum (ES), Payconiq (BE/LU), iDEAL (NL), BLIK (PL), Swish (SE), Vipps MobilePay (NO/DK/FI), TWINT (CH). Pas Pix/UPI, pas le checkout SCT Inst, pas le PISP A2A, pas PayPal/Alipay/Apple Pay.',
     ),
     schemeId: 'wero',
     infrastructureIds: ['wero-platform', 'tips', 'rt1'],
@@ -835,9 +973,69 @@ export const PAYMENTS: Payment[] = [
     relatedFlowIds: ['wero-a2a-payment', 'sct-inst-happy-path'],
     initiationChannels: ['wero'],
     comparePaymentId: 'sepa-instant',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 move on an A2A overlay (e.g. Wero) from France to Germany?',
+        'Comment 100 € circulent-ils sur un overlay A2A (ex. Wero) de la France vers l’Allemagne ?',
+      ),
+    },
     countryIds: ['FR', 'DE'],
     defaultCountryId: 'FR',
     sources: [SRC_EPI, SRC_EPC],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'instant-a2a',
+    kind: 'instant',
+    name: L('Instant A2A scheme', 'Schéma A2A instantané'),
+    summary: L(
+      'The instant scheme is the retail product (alias + 24/7), not an overlay on SCT Inst. Samples: Pix (BR), UPI (IN).',
+      'Le schéma instantané est le produit retail (alias + 24/7), pas un overlay sur SCT Inst. Exemples : Pix (BR), UPI (IN).',
+    ),
+    schemeId: 'instant-a2a',
+    infrastructureIds: ['domestic-instant'],
+    defaultRailId: 'domestic-instant',
+    messageShorts: [],
+    actors: ['payer', 'scheme', 'bankA', 'csm', 'bankB', 'beneficiary'],
+    hops: instantA2aHops,
+    relatedFlowIds: [],
+    initiationChannels: ['merchant'],
+    comparePaymentId: 'wero',
+    sources: [SRC_PIX, SRC_UPI],
+    disclaimer: DISCLAIMER,
+  },
+  {
+    id: 'pisp-a2a',
+    kind: 'instant',
+    name: L('PISP A2A', 'PISP A2A'),
+    summary: L(
+      'TPP on XS2A (TrueLayer-style pay-by-bank): not a bank-consortium overlay. The PISP initiates; the ASPSP still settles SCT Inst (or SCT).',
+      'TPP sur XS2A (pay-by-bank style TrueLayer) : pas un overlay de consortium bancaire. Le PISP initie ; l’ASPSP règle toujours en SCT Inst (ou SCT).',
+    ),
+    schemeId: 'pisp-a2a',
+    infrastructureIds: ['tips', 'rt1'],
+    defaultRailId: 'tips',
+    messageShorts: ['pain.001', 'pacs.008', 'pacs.002'],
+    actors: ['payer', 'merchant', 'scheme', 'bankA', 'csm', 'bankB'],
+    hops: pispA2aHops,
+    relatedFlowIds: ['bg-pis-sepa-redirect', 'sct-inst-happy-path'],
+    initiationChannels: ['pisp'],
+    comparePaymentId: 'wero',
+    story: {
+      amountLabel: L('€100', '100 €'),
+      fromCountry: 'FR',
+      toCountry: 'DE',
+      headline: L(
+        'How does €100 go through a PISP (e.g. TrueLayer) from France to Germany?',
+        'Comment 100 € passent-ils par un PISP (ex. TrueLayer) de la France vers l’Allemagne ?',
+      ),
+    },
+    countryIds: ['FR', 'DE'],
+    defaultCountryId: 'FR',
+    sources: [SRC_TRUELAYER, SRC_EPC],
     disclaimer: DISCLAIMER,
   },
   {
@@ -845,8 +1043,8 @@ export const PAYMENTS: Payment[] = [
     kind: 'wallet',
     name: L('Digital Wallet', 'Portefeuille numérique (Wallet)'),
     summary: L(
-      'A €100 third party digital wallet checkout (e.g. PayPal, Apple Pay, Google Pay, Alipay, WeChat Pay): the merchant sees the wallet/PSP, not a card. Funding may hit a card scheme, bank account, or wallet balance; the merchant is paid later by transfer.',
-      'Un checkout wallet numérique tiers de 100 € (ex. PayPal, Apple Pay, Google Pay, Alipay, WeChat Pay) : le commerçant voit le wallet/PSP, pas une carte. Le funding peut taper un schéma carte, un compte ou le solde wallet ; le commerçant est payé plus tard par virement.',
+      'A €100 third party digital wallet checkout (PayPal, Alipay, Apple Pay, Google Pay, WeChat Pay): the merchant sees a PSP or a card token — not an A2A overlay. Funding may hit a card scheme, bank account, or wallet balance; the merchant is paid later by transfer.',
+      'Un checkout wallet numérique tiers de 100 € (PayPal, Alipay, Apple Pay, Google Pay, WeChat Pay) : le commerçant voit un PSP ou un jeton carte — pas un overlay A2A. Le funding peut taper un schéma carte, un compte ou le solde wallet ; le commerçant est payé plus tard par virement.',
     ),
     schemeId: 'paypal',
     infrastructureIds: ['card-schemes'],

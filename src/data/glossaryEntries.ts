@@ -256,7 +256,8 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Wallet appareil : le PAN est tokénisé (DPAN) et le jeton circule sur un schéma carte existant (Visa, Mastercard, Amex, CB…). Pas un rail A2A. La SCA est en général biométrie appareil plus 3-D Secure du schéma ou cryptogramme du jeton.',
   }, {
     aliases: { en: ['Apple Pay', 'ApplePay'], fr: ['Apple Pay', 'ApplePay'] },
-    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'curve'],
+    seeAlso: ['google-pay', 'visa', 'mastercard', 'amex', 'cartes-bancaires', '3ds', 'curve', 'paypal', 'a2a-overlay'],
+    links: [{ label: 'Digital Wallet explorer', href: '/payment/paypal' }],
   }),
   g('google-pay', 'Google Pay', 'scheme', { en: 'Google Pay', fr: 'Google Pay' }, {
     en: 'Google wallet for cards (and in some markets bank accounts). Like Apple Pay, card credentials are tokenised onto Visa/Mastercard/Amex rails rather than moving as a pacs credit transfer.',
