@@ -114,7 +114,7 @@ export function AppShell() {
           <NavItem
             key={p.id}
             to={`/payment/${p.id}`}
-            label={p.name[locale]}
+            label={p.shortName ? `${p.name[locale]} (${p.shortName})` : p.name[locale]}
             icon={<UI_ICONS.flow size={14} />}
             onNavigate={closeNav}
           />

@@ -898,6 +898,7 @@ export const PAYMENTS: Payment[] = [
     id: 'sepa-credit-transfer',
     kind: 'credit-transfer',
     name: L('SEPA Credit Transfer', 'Virement SEPA'),
+    shortName: 'SCT',
     summary: L(
       'A non-urgent euro credit transfer: the payer’s bank, STEP2 (or TARGET2 T2 RTGS), the beneficiary’s bank.',
       'Un virement euro non urgent : banque du payeur, STEP2 (ou TARGET2 T2 RTGS), banque du bénéficiaire.',
@@ -929,6 +930,7 @@ export const PAYMENTS: Payment[] = [
     id: 'sepa-instant',
     kind: 'instant',
     name: L('SEPA Instant', 'SEPA Instant'),
+    shortName: 'SCT Inst',
     summary: L(
       'SCT Inst checkout: the rail itself (TIPS or RT1), no proxy/wallet overlay. A €100 instant euro transfer France → Germany: Verification of Payee, funds in ≤10 seconds.',
       'Checkout SCT Inst : le rail lui-même (TIPS ou RT1), pas d’overlay proxy/wallet. Un virement euro instantané de 100 € France → Allemagne : Verification of Payee, fonds en ≤10 secondes.',
@@ -1110,6 +1112,7 @@ export const PAYMENTS: Payment[] = [
     id: 'sepa-direct-debit',
     kind: 'direct-debit',
     name: L('SEPA Direct Debit', 'Prélèvement SEPA'),
+    shortName: 'SDD',
     summary: L(
       'A €100 euro direct debit: creditor mandate, pain.008 collection, STEP2, debit on the payer.',
       'Un prélèvement euro de 100 € : mandat créancier, collecte pain.008, STEP2, débit chez le payeur.',

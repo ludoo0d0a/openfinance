@@ -54,9 +54,12 @@ function buildDocuments(): IndexedDoc[] {
         p.schemeId,
         p.name.en,
         p.name.fr,
+        p.shortName,
         ...p.infrastructureIds,
         ...p.messageShorts,
-      ].join(' '),
+      ]
+        .filter(Boolean)
+        .join(' '),
       tags: p.messageShorts.join(' '),
     });
   }

@@ -294,6 +294,8 @@ export interface Payment {
   id: string;
   kind: PaymentKind;
   name: LocalizedText;
+  /** Industry short name shown in the nav (e.g. SCT, SDD). */
+  shortName?: string;
   summary: LocalizedText;
   schemeId: string;
   infrastructureIds: string[];
