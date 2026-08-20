@@ -343,5 +343,9 @@ export interface Infrastructure {
   relatedMessageShorts: string[];
   /** Node on /map when set */
   mapFlowHref?: string;
+  /** Explicit instant payment flow href */
+  instantFlowHref?: string;
+  /** Explicit regular payment flow href */
+  regularFlowHref?: string;
   sources: SourceRef[];
 }
