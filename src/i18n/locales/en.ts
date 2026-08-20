@@ -104,7 +104,7 @@ export const en: MessageTree = {
       'This portal gathers information about financial processes to explain standards, actors, terms, flows and related concepts.',
     noticeAi: 'Powered by AI — some errors may be present.',
     noticeNoMoney: 'No real money is involved here.',
-    noticePublic: 'All data shown are public.',
+    noticePublic: 'All data in this website are from public sources.',
     noticeInfoOnly: 'This is an informative website only.',
     searchPrompt: 'What do you want to explore?',
     explorePayment: 'Explore a payment',
