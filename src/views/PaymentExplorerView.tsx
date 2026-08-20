@@ -43,10 +43,10 @@ export function PaymentExplorerView() {
   const selectedHopId = useMemo(() => {
     if (!journey) return undefined;
     if (focus) {
-      const byMsg = journey.hops.find((h) => h.messageShort === focus);
-      if (byMsg) return byMsg.id;
       const byId = journey.hops.find((h) => h.id === focus);
       if (byId) return byId.id;
+      const byMsg = journey.hops.find((h) => h.messageShort === focus);
+      if (byMsg) return byMsg.id;
     }
     return journey.hops[0]?.id;
   }, [journey, focus]);
@@ -90,8 +90,7 @@ export function PaymentExplorerView() {
   }
 
   function selectHop(id: string) {
-    const hop = journey!.hops.find((h) => h.id === id);
-    setParam('focus', hop?.messageShort ?? id);
+    setParam('focus', id);
   }
 
   const viaKey = (c: InitiationChannel) =>
