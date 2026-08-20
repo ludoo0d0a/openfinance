@@ -21,6 +21,7 @@ describe('i18n', () => {
     for (const key of [
       'nav.overview',
       'nav.try',
+      'nav.live',
       'nav.glossary',
       'nav.about',
       'nav.privacy',
@@ -44,6 +45,10 @@ describe('i18n', () => {
       'flow.entities',
       'flow.fullscreen',
       'try.modeExpert',
+      'live.title',
+      'live.lead',
+      'live.outcome.happy',
+      'live.scene.receive',
     ]) {
       expect(resolveMessage(en, key), key).toBeTypeOf('string');
       expect(resolveMessage(fr, key), key).toBeTypeOf('string');

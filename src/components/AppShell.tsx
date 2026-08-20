@@ -141,6 +141,7 @@ export function AppShell() {
 
       <NavSection title={t('nav.tools')}>
         <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
+        <NavItem to="/live" label={t('nav.live')} icon={<UI_ICONS.instant size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem to="/quiz/debug-reject" label={t('nav.quiz')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
         <NavItem
           to="/compare/pacs.008"

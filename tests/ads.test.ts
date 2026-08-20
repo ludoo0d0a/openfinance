@@ -32,6 +32,8 @@ describe('ads', () => {
   it('skips screens without publisher article content', () => {
     expect(adsDisabledForPath('/try')).toBe(true);
     expect(adsDisabledForPath('/try/')).toBe(true);
+    expect(adsDisabledForPath('/live')).toBe(true);
+    expect(adsDisabledForPath('/live/shop')).toBe(true);
     expect(adsDisabledForPath('/map')).toBe(true);
     expect(adsDisabledForPath('/quiz/debug-reject')).toBe(true);
     expect(adsDisabledForPath('/privacy')).toBe(true);
@@ -42,6 +44,8 @@ describe('ads', () => {
     expect(isContentPath('/')).toBe(true);
     expect(isContentPath('/about')).toBe(true);
     expect(isContentPath('/map')).toBe(false);
+    expect(isContentPath('/live')).toBe(false);
+    expect(isContentPath('/live/receive/pocket-recv-instant')).toBe(false);
   });
 
   it('remounts ads when the catalog page or glossary term changes', () => {
