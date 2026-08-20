@@ -398,6 +398,22 @@ function descendantHits(field: PacsFieldSpec, clicked: string): boolean {
 }
 
 /**
+ * Resolve a path to a catalog field without simple-mode aliasing.
+ * Exact path wins; a unique descendant under a parent tag is next.
+ */
+export function resolveXmlField(selector: string): PacsFieldSpec | null {
+  const exact = PACS_FIELDS.filter((f) => selectorHits(f, selector));
+  const pool = exact.length > 0 ? exact : PACS_FIELDS.filter((f) => descendantHits(f, selector));
+  if (pool.length === 0) return null;
+  if (exact.length === 0 && pool.length > 1) return null;
+
+  if (exact.length > 1) {
+    return pool.find((f) => f.kind !== 'checkbox') ?? pool[0];
+  }
+  return pool[0];
+}
+
+/**
  * Map a clicked XML selector to a form field.
  * Exact path wins; a unique descendant under a parent tag is next.
  */

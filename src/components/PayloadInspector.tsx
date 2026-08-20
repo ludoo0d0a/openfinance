@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FileCode2, Braces } from 'lucide-react';
+import { XmlTagTooltip } from '@/components/XmlTagTooltip';
 import { parseXml, searchNodes, xmlElementPath, xmlSelector, type XmlNode } from '@/lib/xml';
 import { tryJsonToXml, tryPrettyJson, tryXmlToJsonString, tryXmlToSourceJson } from '@/lib/isoCodec';
+import { xmlTagTooltip } from '@/lib/xmlTagTooltip';
 import { cn } from '@/lib/cn';
 import type { ValidationResult } from '@/types';
-import { useT } from '@/i18n';
+import { useI18n, useT } from '@/i18n';
 
 interface Props {
   content: string;
@@ -361,14 +363,16 @@ function XmlTree({
   onSelectPath?: (selector: string) => void;
   depth?: number;
 }) {
+  const { t, locale } = useI18n();
   const rel = xmlSelector(node);
+  const tagTip = xmlTagTooltip({ selector: rel, localName: node.name, t, locale });
   const ancestorOfSelection =
     selectedPaths.size > 0 &&
     [...selectedPaths].some((p) => {
       const el = xmlElementPath(p);
       return el === rel || el.startsWith(`${rel}/`);
     });
-  const [open, setOpen] = useState(depth < 4 || ancestorOfSelection);
+  const [open, setOpen] = useState(true);
   useEffect(() => {
     if (ancestorOfSelection) setOpen(true);
   }, [ancestorOfSelection]);
@@ -412,9 +416,12 @@ function XmlTree({
           <span className="w-3 shrink-0" />
         )}
         <span className="text-signal">{'<'}</span>
-        <span className="text-[#9ecbff]">{node.name}</span>
+        <XmlTagTooltip text={tagTip}>
+          <span className="text-[#9ecbff]">{node.name}</span>
+        </XmlTagTooltip>
         {Object.entries(node.attributes).map(([k, v]) => {
           const attrSel = xmlSelector(node, k);
+          const attrTip = xmlTagTooltip({ selector: attrSel, localName: k, t, locale });
           return (
             <span
               key={k}
@@ -429,7 +436,10 @@ function XmlTree({
               }
             >
               {' '}
-              <span className="text-ochre">{k}</span>=<span className="text-jade">"{v}"</span>
+              <XmlTagTooltip text={attrTip}>
+                <span className="text-ochre">{k}</span>
+              </XmlTagTooltip>
+              =<span className="text-jade">"{v}"</span>
             </span>
           );
         })}
@@ -437,13 +447,13 @@ function XmlTree({
         {node.text && !hasChildren && (
           <>
             <span className="text-[#dfe5ee]">{node.text}</span>
-            <CloseTag name={node.name} />
+            <CloseTag name={node.name} tip={tagTip} />
           </>
         )}
         {hasChildren && !open && (
           <>
             <span className="text-muted-dark">…</span>
-            <CloseTag name={node.name} />
+            <CloseTag name={node.name} tip={tagTip} />
           </>
         )}
       </div>
@@ -462,7 +472,7 @@ function XmlTree({
           ))}
           <div className="flex items-baseline gap-1.5 px-1.5 py-[3px]">
             <span className="w-3 shrink-0" />
-            <CloseTag name={node.name} />
+            <CloseTag name={node.name} tip={tagTip} />
           </div>
         </>
       )}
@@ -470,11 +480,13 @@ function XmlTree({
   );
 }
 
-function CloseTag({ name }: { name: string }) {
+function CloseTag({ name, tip }: { name: string; tip?: string }) {
   return (
     <span>
       <span className="text-signal">{'</'}</span>
-      <span className="text-[#9ecbff]">{name}</span>
+      <XmlTagTooltip text={tip}>
+        <span className="text-[#9ecbff]">{name}</span>
+      </XmlTagTooltip>
       <span className="text-signal">{'>'}</span>
     </span>
   );
@@ -498,7 +510,7 @@ function JsonTree({
   depth: number;
   isLast: boolean;
 }) {
-  const [open, setOpen] = useState(depth < 4);
+  const [open, setOpen] = useState(true);
   const q = filter.trim().toLowerCase();
   const selfMatch =
     !q ||
