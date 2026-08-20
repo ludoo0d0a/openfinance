@@ -7,7 +7,6 @@ import { liveScenarioHref, scenariosForSample } from '@/data/lifeScenes';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
-import { PageAd } from '@/components/PageAd';
 
 export function SampleView() {
   const t = useT();
@@ -89,8 +88,6 @@ export function SampleView() {
           </div>
         )}
       </header>
-
-      <PageAd placement="mid" />
 
       <div className="h-[calc(100dvh-10rem)] min-h-[560px]">
         <PayloadInspector

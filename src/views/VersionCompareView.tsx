@@ -3,7 +3,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { messageByShort, versionsFor } from '@/data/iso20022';
 import { useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
-import { PageAd } from '@/components/PageAd';
 import { cn } from '@/lib/cn';
 import { Tag } from '@/components/Chips';
 
@@ -79,7 +78,6 @@ export function VersionCompareView() {
         </Link>
       </p>
 
-      <PageAd placement="mid" />
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <VersionPicker
           label={t('compare.from')}

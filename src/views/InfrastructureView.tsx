@@ -5,7 +5,6 @@ import { relatedTo, parseEntityRef } from '@/data/relations';
 import { paymentById } from '@/data/payments';
 import { useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
-import { PageAd } from '@/components/PageAd';
 
 export function InfrastructureView() {
   const t = useT();
@@ -58,7 +57,6 @@ export function InfrastructureView() {
           )}
         </div>
       )}
-      <PageAd placement="mid" />
       {infra.relatedMessageShorts.length > 0 && (
         <p className="mt-4 font-mono text-[13px]">
           {infra.relatedMessageShorts.map((s, i) => (

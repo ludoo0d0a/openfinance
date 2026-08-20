@@ -3,17 +3,17 @@ import {
   ADSENSE_PAUSED,
   adsDisabledForPath,
   adsTxtBody,
-  adsenseClient,
   adRefreshKey,
   isContentPath,
   publisherIdFromClient,
 } from '../src/lib/ads';
 
 describe('ads', () => {
-  it('pauses display ads until the site is approved', () => {
-    expect(ADSENSE_PAUSED).toBe(true);
-    expect(adsenseClient()).toBe('');
-    expect(adsDisabledForPath('/')).toBe(true);
+  it('serves display ads on catalog pages when not paused', () => {
+    expect(ADSENSE_PAUSED).toBe(false);
+    expect(adsDisabledForPath('/')).toBe(false);
+    expect(adsDisabledForPath('/payment/wero')).toBe(false);
+    expect(adsDisabledForPath('/glossary')).toBe(false);
   });
 
   it('derives ads.txt publisher ids from ca-pub clients', () => {
@@ -39,8 +39,6 @@ describe('ads', () => {
     expect(adsDisabledForPath('/privacy')).toBe(true);
     expect(adsDisabledForPath('/contact')).toBe(true);
     expect(adsDisabledForPath('/this-path-does-not-exist')).toBe(true);
-    expect(adsDisabledForPath('/payment/wero')).toBe(true);
-    expect(adsDisabledForPath('/glossary')).toBe(true);
     expect(isContentPath('/')).toBe(true);
     expect(isContentPath('/about')).toBe(true);
     expect(isContentPath('/map')).toBe(false);

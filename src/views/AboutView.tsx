@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Info } from 'lucide-react';
 import { GLOSSARY, GLOSSARY_SOURCES } from '@/data/glossary';
 import { useT } from '@/i18n';
-import { PageAd } from '@/components/PageAd';
 
 export function AboutView() {
   const t = useT();
@@ -27,8 +26,6 @@ export function AboutView() {
           </Link>
         </p>
       </header>
-
-      <PageAd placement="mid" />
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold">{t('about.glossaryTitle')}</h2>

@@ -3,7 +3,7 @@ import { adsenseClient, ensureAdsScript } from '@/lib/ads';
 import { cn } from '@/lib/cn';
 import { useT } from '@/i18n';
 
-type AdFormat = 'horizontal' | 'rectangle' | 'inarticle';
+type AdFormat = 'horizontal' | 'rectangle';
 
 declare global {
   interface Window {
@@ -66,9 +66,8 @@ export function AdSlot({
         style={{ display: 'block' }}
         data-ad-client={client}
         data-ad-slot={slot}
-        data-ad-format={format === 'inarticle' ? 'fluid' : format}
-        data-ad-layout={format === 'inarticle' ? 'in-article' : undefined}
-        data-full-width-responsive={format === 'inarticle' ? undefined : 'true'}
+        data-ad-format={format}
+        data-full-width-responsive="true"
       />
     </aside>
   );

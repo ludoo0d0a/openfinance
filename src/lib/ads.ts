@@ -1,8 +1,9 @@
 /**
- * Display ads are paused until geoking.fr is approved. Flip to `false` to
- * serve units again (env `VITE_ADSENSE_CLIENT` / slots still required).
+ * Kill switch for display units. Auto ads stay off in the AdSense console
+ * (`geoking.fr`); this app only loads `adsbygoogle.js` after a catalog page
+ * mounts. Env `VITE_ADSENSE_CLIENT` / slots are still required.
  */
-export const ADSENSE_PAUSED = true;
+export const ADSENSE_PAUSED = false;
 
 /** AdSense client looks like `ca-pub-123…`. Empty means ads are off. */
 export function adsenseClient(): string {
@@ -10,16 +11,11 @@ export function adsenseClient(): string {
   return String(import.meta.env.VITE_ADSENSE_CLIENT ?? '').trim();
 }
 
-export type AdPlacement = 'intro' | 'mid' | 'end';
+export type AdPlacement = 'intro' | 'end';
 
 export function adsenseSlot(placement: AdPlacement): string {
   const env = import.meta.env;
-  const specific =
-    placement === 'intro'
-      ? env.VITE_ADSENSE_SLOT_INTRO
-      : placement === 'mid'
-        ? env.VITE_ADSENSE_SLOT_MID
-        : env.VITE_ADSENSE_SLOT_END;
+  const specific = placement === 'intro' ? env.VITE_ADSENSE_SLOT_INTRO : env.VITE_ADSENSE_SLOT_END;
   const trimmed = String(specific ?? '').trim();
   if (trimmed) return trimmed;
   return String(env.VITE_ADSENSE_SLOT ?? '').trim();

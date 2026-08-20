@@ -22,7 +22,6 @@ import { ActorIcon, MessageTypeIcon } from '@/lib/icons';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { localizeFlow, useI18n, useT } from '@/i18n';
 import { NotFoundView } from './NotFoundView';
-import { PageAd } from '@/components/PageAd';
 
 type DiagramMode = 'sequence' | 'entities';
 
@@ -220,8 +219,6 @@ export function FlowView() {
           ))}
         </div>
       </header>
-
-      <PageAd placement="mid" />
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_460px]">
         <div className="min-w-0 space-y-6">

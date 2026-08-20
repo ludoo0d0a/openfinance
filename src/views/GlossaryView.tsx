@@ -19,7 +19,6 @@ import { useSearchIndex } from '@/hooks/useSearchIndex';
 import { applySearchQueryToHref, type SearchHit } from '@/lib/search';
 import { SearchHitList } from '@/components/SearchHitList';
 import { SearchInput } from '@/components/SearchInput';
-import { PageAd } from '@/components/PageAd';
 
 const CATEGORIES = Object.keys(GLOSSARY_CATEGORY_LABELS) as GlossaryCategory[];
 
@@ -298,8 +297,6 @@ export function GlossaryView() {
             <h2 className="mt-2 font-mono text-2xl font-bold text-signal">{active.term}</h2>
             <p className="mt-1 text-lg font-semibold">{active.displayName}</p>
             <p className="mt-4 text-[15px] leading-relaxed">{active.displayDefinition}</p>
-
-            <PageAd placement="mid" />
 
             {active.action && (
               <p className="mt-4 border-l-2 border-signal pl-3 text-[13px] leading-relaxed text-muted">

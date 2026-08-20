@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { DocumentMeta } from './DocumentMeta';
+import { PageAd } from './PageAd';
 import { useSearchQuery } from '@/hooks/searchQuery';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
@@ -292,7 +293,9 @@ export function AppShell() {
         </nav>
 
         <main className="min-w-0">
+          <PageAd placement="intro" />
           <Outlet />
+          <PageAd placement="end" />
           <SiteFooter />
         </main>
       </div>

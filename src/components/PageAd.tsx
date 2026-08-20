@@ -10,7 +10,6 @@ import {
 
 const FORMAT = {
   intro: 'horizontal',
-  mid: 'inarticle',
   end: 'rectangle',
 } as const;
 
@@ -30,7 +29,7 @@ export function PageAd({ placement }: { placement: AdPlacement }) {
       slot={slot}
       format={FORMAT[placement]}
       refreshKey={refreshKey}
-      className={placement === 'intro' ? 'px-4 pt-6 lg:px-8' : placement === 'end' ? 'px-4 pb-8 lg:px-8' : 'my-8'}
+      className={placement === 'intro' ? 'px-4 pt-6 lg:px-8' : 'px-4 pb-8 lg:px-8'}
     />
   );
 }

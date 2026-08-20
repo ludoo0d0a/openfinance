@@ -6,7 +6,6 @@ import { GLOSSARY_CODES } from '@/data/glossary';
 import { UI_ICONS } from '@/lib/iconMeta';
 import { useI18n, useT } from '@/i18n';
 import { CommandPalette } from '@/components/CommandPalette';
-import { PageAd } from '@/components/PageAd';
 import { PaymentSystemOverview } from '@/components/PaymentSystemOverview';
 import { useEffect, useState } from 'react';
 
@@ -98,8 +97,6 @@ export function HomeView() {
         </ul>
         <p className="mt-4 text-[13px] leading-relaxed text-muted">{t('home.thenTrace')}</p>
       </section>
-
-      <PageAd placement="mid" />
 
       <section className="mt-10">
         <h2 className="eyebrow mb-3">{t('home.popular')}</h2>
