@@ -35,6 +35,19 @@ export function HomeView() {
         <p className="eyebrow">{t('home.eyebrow')}</p>
         <h1 className="mt-3 text-4xl leading-[1.05] font-bold sm:text-5xl">{t('home.title1')}</h1>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">{t('home.lead')}</p>
+        <aside
+          className="mt-6 border border-rule bg-paper-raised px-4 py-3 text-[13px] leading-relaxed text-muted"
+          aria-label={t('home.noticeTitle')}
+        >
+          <p className="font-mono text-[11px] uppercase tracking-widest text-ink">{t('home.noticeTitle')}</p>
+          <p className="mt-2">{t('home.noticePurpose')}</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4">
+            <li>{t('home.noticeAi')}</li>
+            <li>{t('home.noticeNoMoney')}</li>
+            <li>{t('home.noticePublic')}</li>
+            <li>{t('home.noticeInfoOnly')}</li>
+          </ul>
+        </aside>
       </header>
 
       <button

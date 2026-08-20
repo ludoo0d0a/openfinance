@@ -97,6 +97,13 @@ export const fr: MessageTree = {
     title2: '',
     lead:
       'Commencez par la différence entre paiements classiques et instantanés face au CSM au milieu, puis explorez flux, messages ISO 20022, schémas et rails.',
+    noticeTitle: 'À propos de ce portail',
+    noticePurpose:
+      'Ce portail rassemble des informations sur les processus financiers pour expliquer standards, acteurs, termes, flux et concepts associés.',
+    noticeAi: 'Propulsé par l’IA — des erreurs peuvent être présentes.',
+    noticeNoMoney: 'Aucun argent réel n’est en jeu ici.',
+    noticePublic: 'Toutes les données présentées sont publiques.',
+    noticeInfoOnly: 'Il s’agit uniquement d’un site informatif.',
     searchPrompt: 'Que voulez-vous explorer ?',
     explorePayment: 'Explorer un paiement',
     thenTrace: 'Commencez par le récit, puis ouvrez la trace technique hop par hop.',

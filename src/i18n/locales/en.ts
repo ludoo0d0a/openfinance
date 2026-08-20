@@ -96,6 +96,13 @@ export const en: MessageTree = {
     title2: '',
     lead:
       'Start with how regular and instant payments differ from the CSM in the middle, then explore flows, ISO 20022 messages, schemes and rails.',
+    noticeTitle: 'What this portal is',
+    noticePurpose:
+      'This portal gathers information about financial processes to explain standards, actors, terms, flows and related concepts.',
+    noticeAi: 'Powered by AI — some errors may be present.',
+    noticeNoMoney: 'No real money is involved here.',
+    noticePublic: 'All data shown are public.',
+    noticeInfoOnly: 'This is an informative website only.',
     searchPrompt: 'What do you want to explore?',
     explorePayment: 'Explore a payment',
     thenTrace: 'Start with the story, then open the technical trace hop by hop.',
