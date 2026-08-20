@@ -100,7 +100,7 @@ function freshInput(): PacsBuildInput {
  */
 export function TryEditorView() {
   const t = useT();
-  const formRef = useRef<HTMLAsideElement>(null);
+  const formRef = useRef<HTMLElement>(null);
   const [input, setInput] = useState<PacsBuildInput>(freshInput);
   const [outcome, setOutcome] = useState<Pacs002Outcome>('ACSC');
   const [rejectReason, setRejectReason] = useState('AB05');
