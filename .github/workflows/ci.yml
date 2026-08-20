@@ -48,7 +48,7 @@ jobs:
       - run: npm run test -- --reporter=verbose
       - run: npm run build
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -66,14 +66,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
 
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -96,8 +96,21 @@ jobs:
           done
           [ "$code" = "200" ] || { echo "Site did not come up (last status $code)"; exit 1; }
 
-          catalog=$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/catalog" || true)
-          [ "$catalog" = "200" ] || { echo "Catalog function returned $catalog"; exit 1; }
+          # Static assets can answer 200 before Pages Functions are attached.
+          catalog_ok=
+          for i in 1 2 3 4 5 6 7 8; do
+            catalog_tmp=$(mktemp)
+            catalog_code=$(curl -sS -o "$catalog_tmp" -w '%{http_code}' "$URL/api/catalog" || true)
+            if [ "$catalog_code" = "200" ] && grep -q '"counts"' "$catalog_tmp"; then
+              catalog_ok=1
+              rm -f "$catalog_tmp"
+              break
+            fi
+            echo "catalog attempt $i returned $catalog_code, retrying"
+            rm -f "$catalog_tmp"
+            sleep 6
+          done
+          [ -n "$catalog_ok" ] || { echo "Catalog function did not return JSON (last status $catalog_code)"; exit 1; }
 
           # Deep-link refresh must serve prerendered article HTML (not a bare 404).
           deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
@@ -143,14 +156,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
 
       - name: Deploy preview
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

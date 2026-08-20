@@ -2,62 +2,9 @@ import { Link } from 'react-router-dom';
 import { PayloadInspector } from '@/components/PayloadInspector';
 import { TryItPanel } from '@/components/TryItPanel';
 import { flowById } from '@/data/flows';
-import { sampleById } from '@/data/samples';
-import { paymentById } from '@/data/payments';
+import type { ResolvedBeat } from '@/components/live/resolveLiveBeat';
 import { localizeFlow, useI18n, useT } from '@/i18n';
-import type { LifeBeat, LifeScenario } from '@/types';
-
-interface ResolvedBeat {
-  beat: LifeBeat;
-  flowName?: string;
-  stepLabel?: string;
-  stepDetail?: string;
-  hopExpert?: { en: string; fr: string };
-  hopSimple?: { en: string; fr: string };
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  path?: string;
-  sample?: ReturnType<typeof sampleById>;
-  messageShort?: string;
-  flowId?: string;
-  step?: number;
-  paymentId?: string;
-  showTryIt: boolean;
-}
-
-export function resolveLiveBeat(beat: LifeBeat, scenario: LifeScenario): ResolvedBeat {
-  const flow = beat.flowId ? flowById(beat.flowId) : undefined;
-  const step = flow && beat.step ? flow.steps.find((s) => s.n === beat.step) : undefined;
-  const payment = beat.paymentId
-    ? paymentById(beat.paymentId)
-    : scenario.paymentId
-      ? paymentById(scenario.paymentId)
-      : undefined;
-  const hop = beat.hopId && payment ? payment.hops.find((h) => h.id === beat.hopId) : undefined;
-
-  const sampleId = beat.sampleId ?? step?.sampleId ?? hop?.sampleId;
-  const sample = sampleId ? sampleById(sampleId) : undefined;
-  const messageShort = step?.messageShort ?? hop?.messageShort;
-  const method = step?.method;
-  const path = step?.path;
-  const showTryIt = Boolean(flow?.standardId === 'berlin-group' && step?.layer === 'api' && method && path);
-
-  return {
-    beat,
-    flowName: flow?.name,
-    stepLabel: step?.label,
-    stepDetail: step?.detail,
-    hopExpert: hop?.expertLabel,
-    hopSimple: hop?.simpleText,
-    method,
-    path,
-    sample,
-    messageShort,
-    flowId: beat.flowId ?? hop?.flowId,
-    step: beat.step ?? hop?.step,
-    paymentId: beat.paymentId ?? scenario.paymentId,
-    showTryIt,
-  };
-}
+import type { LifeScenario } from '@/types';
 
 interface Props {
   scenario: LifeScenario;

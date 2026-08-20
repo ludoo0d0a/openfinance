@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { createIndex, searchCatalog, type SearchHit } from '@/lib/search';
-import { useSearchQuery } from './SearchQueryContext';
+import { useSearchQuery } from './searchQuery';
 
 export type { SearchHit };
 

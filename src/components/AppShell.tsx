@@ -4,7 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { DocumentMeta } from './DocumentMeta';
-import { useSearchQuery } from '@/hooks/SearchQueryContext';
+import { useSearchQuery } from '@/hooks/searchQuery';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';

@@ -1,10 +1,7 @@
 import { cn } from '@/lib/cn';
 import { useT } from '@/i18n';
+import { outcomeShort } from '@/components/live/outcomeShort';
 import type { LifeOutcome } from '@/types';
-
-export function outcomeShort(outcome: LifeOutcome, t: (k: string) => string): string {
-  return t(`live.outcome.${outcome}`);
-}
 
 export function OutcomeChip({ outcome }: { outcome: LifeOutcome }) {
   const t = useT();

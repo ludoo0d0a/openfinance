@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LiveAppFrame } from '@/components/LiveAppFrame';
-import { LiveExplainer, resolveLiveBeat } from '@/components/LiveExplainer';
-import { OutcomeChip, outcomeShort } from '@/components/live/OutcomeChip';
+import { LiveExplainer } from '@/components/LiveExplainer';
+import { OutcomeChip } from '@/components/live/OutcomeChip';
+import { outcomeShort } from '@/components/live/outcomeShort';
+import { resolveLiveBeat } from '@/components/live/resolveLiveBeat';
 import { lifeScenarioById, lifeSceneById, scenariosForScene } from '@/data/lifeScenes';
 import { cn } from '@/lib/cn';
 import { useI18n, useT } from '@/i18n';
