@@ -499,8 +499,8 @@ const weroHops: PaymentHop[] = [
 const paypalHops: PaymentHop[] = [
   hop('paypal-choose', 'payer', 'merchant', {
     simple: L(
-      'The payer chooses PayPal at checkout for €100.',
-      'Le payeur choisit PayPal au checkout pour 100 €.',
+      'The payer chooses a digital wallet (e.g. PayPal, Apple Pay, Google Pay) at checkout for €100.',
+      'Le payeur choisit un wallet numérique (ex. PayPal, Apple Pay, Google Pay) au checkout pour 100 €.',
     ),
     expert: L(
       'Wallet checkout — merchant has not seen a card PAN yet',
@@ -511,42 +511,42 @@ const paypalHops: PaymentHop[] = [
   }),
   hop('paypal-auth', 'payer', 'scheme', {
     simple: L(
-      'The payer signs in at PayPal and confirms (SCA).',
-      'Le payeur s’identifie chez PayPal et confirme (SCA).',
+      'The payer authenticates at the wallet provider (SCA) and confirms.',
+      'Le payeur s’identifie chez le fournisseur de wallet (SCA) et confirme.',
     ),
-    expert: L('PayPal customer authentication / SCA', 'Authentification client PayPal / SCA'),
+    expert: L('Wallet customer authentication / SCA (e.g. PayPal, Apple Pay)', 'Authentification client wallet / SCA (ex. PayPal, Apple Pay)'),
   }),
   hop('paypal-fund', 'scheme', 'bankA', {
     simple: L(
-      'PayPal takes €100 from the linked card — or from the PayPal balance.',
-      'PayPal prélève 100 € sur la carte liée — ou sur le solde PayPal.',
+      'The wallet takes €100 from a linked card, bank account, or internal balance (e.g. PayPal balance).',
+      'Le wallet prélève 100 € sur la carte liée, le compte bancaire ou le solde interne (ex. solde PayPal).',
     ),
     expert: L(
-      'Funding: card-scheme auth on the linked PAN, or internal e-money ledger',
-      'Funding : auth schéma carte sur le PAN lié, ou ledger de monnaie électronique',
+      'Funding: card-scheme auth on linked PAN, SEPA direct debit, or e-money ledger',
+      'Funding : auth schéma carte sur PAN lié, prélèvement SEPA, ou ledger de monnaie électronique',
     ),
     outcomes: ['happy', 'reject'],
   }),
   hop('paypal-notify', 'scheme', 'merchant', {
     simple: L(
-      'PayPal tells the merchant the order is paid. The merchant never sees the card.',
-      'PayPal informe le commerçant que la commande est payée. Le commerçant ne voit pas la carte.',
+      'The wallet tells the merchant the order is paid. The merchant never sees the card.',
+      'Le wallet informe le commerçant que la commande est payée. Le commerçant ne voit pas la carte.',
     ),
     expert: L(
-      'Capture / webhook — PayPal is the acquirer of record',
-      'Capture / webhook — PayPal est l’acquéreur de record',
+      'Capture / webhook notification — wallet provider is acquirer of record',
+      'Capture / notification webhook — le fournisseur de wallet est l’acquéreur de record',
     ),
     outcomes: ['happy'],
   }),
   hop('paypal-payout', 'scheme', 'bankB', {
     messageShort: 'pacs.008',
     simple: L(
-      'Later, PayPal pays the merchant — often a SEPA credit transfer, not the card rail.',
-      'Plus tard, PayPal paie le commerçant — souvent un virement SEPA, pas le rail carte.',
+      'Later, the wallet provider pays the merchant — often via SEPA credit transfer.',
+      'Plus tard, le fournisseur de wallet paie le commerçant — souvent par virement SEPA.',
     ),
     expert: L(
-      'Merchant settlement; often SCT pacs.008 from PayPal’s bank',
-      'Règlement commerçant ; souvent un pacs.008 SCT depuis la banque PayPal',
+      'Merchant settlement; often SCT pacs.008 from wallet provider bank',
+      'Règlement commerçant ; souvent un pacs.008 SCT depuis la banque du wallet',
     ),
     tOffset: L('D+1 or batch', 'J+1 ou lot'),
     sampleId: 'pacs-008-sct',
@@ -554,8 +554,8 @@ const paypalHops: PaymentHop[] = [
   }),
   hop('paypal-rjct', 'bankA', 'scheme', {
     simple: L(
-      'The linked card (or bank) refuses. PayPal does not capture; the merchant is not paid.',
-      'La carte liée (ou la banque) refuse. PayPal ne capture pas ; le commerçant n’est pas payé.',
+      'The linked card or bank refuses. The wallet does not capture; the merchant is not paid.',
+      'La carte liée ou la banque refuse. Le wallet ne capture pas ; le commerçant n’est pas payé.',
     ),
     expert: L('Funding decline — no merchant capture', 'Refus du funding — pas de capture commerçant'),
     outcomes: ['reject'],
@@ -565,29 +565,29 @@ const paypalHops: PaymentHop[] = [
 const curveHops: PaymentHop[] = [
   hop('curve-tap', 'payer', 'merchant', {
     simple: L(
-      'The payer pays with their Curve card — a Mastercard in front of their real cards.',
-      'Le payeur paie avec sa carte Curve — un Mastercard devant ses vraies cartes.',
+      'The payer pays with a card overlay (e.g. Curve card) — a Mastercard in front of real cards.',
+      'Le payeur paie avec un overlay carte (ex. carte Curve) — une Mastercard devant ses vraies cartes.',
     ),
     expert: L(
-      'Card present / e-com with Curve PAN (Mastercard BIN)',
-      'Carte présente / e-com avec PAN Curve (BIN Mastercard)',
+      'Card present / e-com with overlay PAN (e.g. Curve Mastercard BIN)',
+      'Carte présente / e-com avec PAN overlay (ex. BIN Mastercard Curve)',
     ),
     tOffset: L('t+0', 't+0'),
     initiation: ['merchant'],
   }),
   hop('curve-acq', 'merchant', 'acquirer', {
     simple: L(
-      'The merchant’s acquirer forwards the authorization — they see Curve, not the bank card.',
-      'L’acquéreur du commerçant relaie l’autorisation — il voit Curve, pas la carte bancaire.',
+      'The merchant’s acquirer forwards authorization — seeing the overlay card, not underlying bank card.',
+      'L’acquéreur du commerçant relaie l’autorisation — il voit la carte d’overlay, pas la carte bancaire.',
     ),
-    expert: L('Acquirer auth on the Curve PAN', 'Auth acquéreur sur le PAN Curve'),
+    expert: L('Acquirer auth on overlay PAN', 'Auth acquéreur sur le PAN overlay'),
   }),
   hop('curve-route', 'acquirer', 'scheme', {
     simple: L(
-      'Mastercard routes to Curve as the issuer of that PAN.',
-      'Mastercard route vers Curve, émetteur de ce PAN.',
+      'Card scheme routes to the overlay provider (e.g. Curve) as issuer of that PAN.',
+      'Le schéma carte route vers l’émetteur d’overlay (ex. Curve), émetteur de ce PAN.',
     ),
-    expert: L('Scheme switch to Curve BIN / issuer', 'Commutateur schéma vers BIN / émetteur Curve'),
+    expert: L('Scheme switch to overlay BIN / issuer (e.g. Curve)', 'Commutateur schéma vers BIN / émetteur overlay (ex. Curve)'),
   }),
   hop('curve-pull', 'scheme', 'bankA', {
     simple: L(
@@ -843,10 +843,10 @@ export const PAYMENTS: Payment[] = [
   {
     id: 'paypal',
     kind: 'wallet',
-    name: L('PayPal', 'PayPal'),
+    name: L('Digital Wallet', 'Portefeuille numérique (Wallet)'),
     summary: L(
-      'A €100 third party wallet checkout: the merchant sees PayPal, not a card. Funding may still hit a card scheme or the PayPal balance; the merchant is often paid later by transfer.',
-      'Un checkout wallet tiers de 100 € : le commerçant voit PayPal, pas une carte. Le funding peut quand même taper un schéma carte ou le solde PayPal ; le commerçant est souvent payé plus tard par virement.',
+      'A €100 third party digital wallet checkout (e.g. PayPal, Apple Pay, Google Pay, Alipay, WeChat Pay): the merchant sees the wallet/PSP, not a card. Funding may hit a card scheme, bank account, or wallet balance; the merchant is paid later by transfer.',
+      'Un checkout wallet numérique tiers de 100 € (ex. PayPal, Apple Pay, Google Pay, Alipay, WeChat Pay) : le commerçant voit le wallet/PSP, pas une carte. Le funding peut taper un schéma carte, un compte ou le solde wallet ; le commerçant est payé plus tard par virement.',
     ),
     schemeId: 'paypal',
     infrastructureIds: ['card-schemes'],
@@ -862,8 +862,8 @@ export const PAYMENTS: Payment[] = [
       fromCountry: 'FR',
       toCountry: 'DE',
       headline: L(
-        'How does €100 go through PayPal from France to a German merchant?',
-        'Comment 100 € passent-ils par PayPal de la France vers un commerçant allemand ?',
+        'How does €100 go through a digital wallet (e.g. PayPal, Apple Pay) from France to a German merchant?',
+        'Comment 100 € passent-ils par un wallet numérique (ex. PayPal, Apple Pay) de la France vers un commerçant allemand ?',
       ),
     },
     countryIds: ['FR', 'DE', 'CH'],
@@ -874,10 +874,10 @@ export const PAYMENTS: Payment[] = [
   {
     id: 'curve',
     kind: 'card',
-    name: L('Curve', 'Curve'),
+    name: L('Card Overlay', 'Overlay carte'),
     summary: L(
-      'A €100 third party card overlay: the merchant sees a Curve Mastercard. Curve then authorizes the payer’s real card underneath — two schemes, one checkout.',
-      'Un overlay carte tiers de 100 € : le commerçant voit un Mastercard Curve. Curve autorise ensuite la vraie carte du payeur en dessous — deux schémas, un checkout.',
+      'A €100 third party card overlay (e.g. Curve, Privacy.com): the merchant sees a primary card PAN (e.g. Mastercard). The overlay provider then authorizes the payer’s real underlying card — two schemes, one checkout.',
+      'Un overlay carte tiers de 100 € (ex. Curve, Privacy.com) : le commerçant voit un PAN carte primaire (ex. Mastercard). L’overlay autorise ensuite la vraie carte sous-jacente du payeur — deux schémas, un checkout.',
     ),
     schemeId: 'curve',
     infrastructureIds: ['card-schemes'],
@@ -893,8 +893,8 @@ export const PAYMENTS: Payment[] = [
       fromCountry: 'FR',
       toCountry: 'DE',
       headline: L(
-        'How does €100 travel when the payer uses Curve?',
-        'Comment 100 € voyagent-ils quand le payeur utilise Curve ?',
+        'How does €100 travel when using a card overlay (e.g. Curve)?',
+        'Comment 100 € voyagent-ils lors de l’utilisation d’un overlay carte (ex. Curve) ?',
       ),
     },
     countryIds: ['FR', 'DE', 'CH'],
@@ -928,8 +928,8 @@ export const PAYMENTS: Payment[] = [
     kind: 'card',
     name: L('Card payment', 'Paiement par carte'),
     summary: L(
-      'A €100 card payment: authorization through the scheme, then clearing and settlement — not pacs rails.',
-      'Un paiement carte de 100 € : autorisation via le schéma, puis compensation et règlement — pas des rails pacs.',
+      'A €100 card payment (e.g. Visa, Mastercard, Cartes Bancaires, American Express): authorization through the scheme, then clearing and settlement — not pacs rails.',
+      'Un paiement carte de 100 € (ex. Visa, Mastercard, Cartes Bancaires, American Express) : autorisation via le schéma, puis compensation et règlement — pas des rails pacs.',
     ),
     schemeId: 'card',
     infrastructureIds: ['card-schemes'],

@@ -251,7 +251,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['PayPal', 'Pay Pal'], fr: ['PayPal'] },
     seeAlso: ['visa', 'mastercard', 'wero', 'a2a', 'emi', 'curve'],
-    links: [{ label: 'PayPal explorer', href: '/payment/paypal' }],
+    links: [{ label: 'Digital Wallet explorer', href: '/payment/paypal' }],
   }),
   g('curve', 'Curve', 'scheme', { en: 'Curve', fr: 'Curve' }, {
     en: 'Third-party card overlay (card-on-card): Curve issues a Mastercard PAN in front of the payer’s existing cards. The merchant authorizes Curve; Curve then authorizes the selected underlying card. Close to a CBPII / third-party issuer pattern, not an A2A wallet like Wero or PayPal.',
@@ -259,7 +259,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   }, {
     aliases: { en: ['Curve', 'Curve card', 'card-on-card'], fr: ['Curve', 'carte Curve', 'carte-sur-carte'] },
     seeAlso: ['mastercard', 'card-scheme', 'cbpii', 'third-party-issuer', 'paypal', 'apple-pay'],
-    links: [{ label: 'Curve explorer', href: '/payment/curve' }],
+    links: [{ label: 'Card Overlay explorer', href: '/payment/curve' }],
   }),
   g('alipay', 'Alipay', 'scheme', { en: 'Alipay', fr: 'Alipay' }, {
     en: 'Ant Group wallet dominant in mainland China (QR, in-app). European acquirers offer it for inbound Chinese spend; settlement to the merchant is usually in local currency via an acquirer, not a SEPA pacs from the consumer.',
