@@ -39,6 +39,7 @@ describe('i18n', () => {
       'home.overview.title',
       'ad.label',
       'footer.version',
+      'footer.build',
       'footer.copyright',
       'footer.license',
       'locale.fr',

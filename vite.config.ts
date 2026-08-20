@@ -8,6 +8,9 @@ const { version: appVersion } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
 ) as { version: string };
 
+/** CI sets APP_BUILD (or GITHUB_RUN_NUMBER); local builds stay at 0. */
+const appBuild = String(process.env.APP_BUILD ?? process.env.GITHUB_RUN_NUMBER ?? '0');
+
 function adsenseAssets(): Plugin {
   const client = () => String(process.env.VITE_ADSENSE_CLIENT ?? '').trim();
 
@@ -31,6 +34,7 @@ function adsenseAssets(): Plugin {
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_BUILD__: JSON.stringify(appBuild),
   },
   plugins: [react(), tailwindcss(), adsenseAssets()],
   resolve: {

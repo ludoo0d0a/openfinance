@@ -10,6 +10,7 @@ export const fr: MessageTree = {
   },
   footer: {
     version: 'v{{version}}',
+    build: '#{{build}}',
     copyright: '© {{year}} GeoKing',
     license: 'GPL-3.0',
   },

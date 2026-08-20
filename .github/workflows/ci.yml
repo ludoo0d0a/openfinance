@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
+      APP_BUILD: ${{ github.run_number }}
       VITE_ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
       VITE_ADSENSE_SLOT: ${{ vars.ADSENSE_SLOT }}
       VITE_ADSENSE_SLOT_INTRO: ${{ vars.ADSENSE_SLOT_INTRO }}

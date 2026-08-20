@@ -231,6 +231,15 @@ export function AppShell() {
             </span>
           </NavLink>
 
+          <span
+            className="hidden shrink-0 items-center gap-1.5 font-mono text-[10px] text-muted sm:inline-flex"
+            title={`${t('footer.version', { version: __APP_VERSION__ })} ${t('footer.build', { build: __APP_BUILD__ })}`}
+          >
+            <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
+            <span aria-hidden>·</span>
+            <span>{t('footer.build', { build: __APP_BUILD__ })}</span>
+          </span>
+
           <div className="ml-auto flex min-h-10 min-w-[9.5rem] flex-1 items-center gap-2 border border-rule bg-surface px-3 py-1 hover:border-ink sm:min-h-0 sm:min-w-[240px] sm:max-w-xl lg:max-w-2xl">
             <button
               type="button"
@@ -330,6 +339,8 @@ function SiteFooter() {
     <footer className="mt-8 border-t border-rule px-4 py-4 lg:px-6">
       <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted">
         <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
+        <span aria-hidden>·</span>
+        <span>{t('footer.build', { build: __APP_BUILD__ })}</span>
         <span aria-hidden>·</span>
         <span>{t('footer.copyright', { year: 2026 })}</span>
         <span aria-hidden>·</span>
