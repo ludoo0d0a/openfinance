@@ -113,9 +113,7 @@ Local preview: `VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run bui
 
 | Workflow | Trigger |
 | --- | --- |
-| `ci.yml` | push / PR — lint, typecheck, test, build |
-| `deploy.yml` | main / manual — deploy + smoke `/` and `/api/catalog` |
-| `pr-preview.yml` | same-repo PRs — preview URL comment |
+| `ci.yml` | PR — verify; main / manual — verify + deploy + smoke; same-repo PRs — preview URL comment |
 
 Manual: `npm run deploy`.
 

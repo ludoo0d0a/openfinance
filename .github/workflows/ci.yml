@@ -5,13 +5,22 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: production
+        type: choice
+        options: [production, preview]
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
+  deployments: write
+  pull-requests: write
 
 jobs:
   verify:
@@ -32,24 +41,117 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test -- --reporter=verbose
+      - run: npm run build
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm run test -- --reporter=verbose
-
-      - name: Build
-        run: npm run build
-
-      - name: Upload build output
-        uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v5
         with:
-          name: dist-${{ github.sha }}
+          name: dist
           path: dist
           retention-days: 7
+
+  deploy:
+    name: Cloudflare Pages
+    needs: verify
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: ${{ inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy dist
+            --project-name=openfinance
+            --branch=${{ github.ref_name }}
+            --commit-hash=${{ github.sha }}
+            --commit-dirty=true
+
+      - name: Smoke test the deployment
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          echo "Checking $URL"
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL" || true)
+            [ "$code" = "200" ] && break
+            echo "attempt $i returned $code, retrying"
+            sleep 6
+          done
+          [ "$code" = "200" ] || { echo "Site did not come up (last status $code)"; exit 1; }
+
+          catalog=$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/catalog" || true)
+          [ "$catalog" = "200" ] || { echo "Catalog function returned $catalog"; exit 1; }
+
+          # Deep-link refresh must serve the SPA shell (not a bare 404).
+          deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
+          [ "$deep" = "200" ] || { echo "SPA deep link returned $deep"; exit 1; }
+
+          ads_body=$(curl -s "$URL/ads.txt" || true)
+          echo "$ads_body" | grep -q 'google.com, pub-' || {
+            echo "ads.txt is missing or is the SPA shell"
+            echo "$ads_body" | head -c 200
+            exit 1
+          }
+          echo "Deployment healthy."
+
+  preview:
+    name: PR preview
+    needs: verify
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy preview
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy dist
+            --project-name=openfinance
+            --branch=pr-${{ github.event.pull_request.number }}
+            --commit-dirty=true
+
+      - name: Comment the preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.deployment-url }}';
+            const marker = '<!-- openfinance-preview -->';
+            const body = `${marker}\nPreview for \`${{ github.event.pull_request.head.sha }}\`: ${url}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
