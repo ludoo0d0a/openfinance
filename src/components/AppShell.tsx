@@ -1,14 +1,13 @@
 import { useEffect, useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { ChevronDown, Menu, Moon, Search, Sun, X } from 'lucide-react';
+import { Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { useSearchQuery } from '@/hooks/SearchQueryContext';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
 import { ISO_MESSAGES } from '@/data/iso20022';
 import { PAYMENTS } from '@/data/payments';
-import { SCHEMES } from '@/data/schemes';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
 import { cn } from '@/lib/cn';
 import { UI_ICONS } from '@/lib/iconMeta';
@@ -41,7 +40,6 @@ export function AppShell() {
   const { query, clearQuery } = useSearchQuery();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const [catalogOpen, setCatalogOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     typeof document !== 'undefined' ? readTheme() : 'light',
   );
@@ -83,152 +81,123 @@ export function AppShell() {
   const localizedFlows = localizeFlows(FLOWS, locale);
   const flowsByCategory = groupBy(localizedFlows, (f) => f.category);
 
-  const primaryPayments = PAYMENTS.filter((p) =>
-    ['sepa-credit-transfer', 'sepa-instant', 'wero'].includes(p.id),
+  const sortedPayments = [...PAYMENTS].sort((a, b) =>
+    a.name[locale].localeCompare(b.name[locale], locale),
   );
-  const morePayments = PAYMENTS.filter((p) => !primaryPayments.includes(p));
+  const sortedInfrastructures = INFRASTRUCTURES.filter((i) =>
+    ['step2', 'tips', 'rt1', 'sic', 'eurosic', 'wero-platform'].includes(i.id),
+  ).sort((a, b) => a.name[locale].localeCompare(b.name[locale], locale));
+  const sortedStandards = [...STANDARDS].sort((a, b) => a.name.localeCompare(b.name, locale));
+  const sortedFlowCategories = Object.entries(flowsByCategory).sort(([a], [b]) =>
+    t(`category.${a}`).localeCompare(t(`category.${b}`), locale),
+  );
+  const sortedMessageAreas = Object.entries(messagesByArea).sort(([a], [b]) =>
+    a.localeCompare(b, locale),
+  );
+  const toolItems = [
+    { to: '/about', label: t('nav.about'), icon: <UI_ICONS.about size={14} /> },
+    { to: '/compare/pacs.008', label: t('nav.compareVersions'), icon: <UI_ICONS.xml size={14} /> },
+    { to: '/quiz/debug-reject', label: t('nav.quiz'), icon: <UI_ICONS.try size={14} /> },
+    { to: '/glossary', label: t('nav.glossary'), icon: <UI_ICONS.glossary size={14} /> },
+    { to: '/map', label: t('nav.map'), icon: <UI_ICONS.map size={14} /> },
+    { to: '/live', label: t('nav.live'), icon: <UI_ICONS.instant size={14} /> },
+    { to: '/try', label: t('nav.try'), icon: <UI_ICONS.try size={14} /> },
+  ].sort((a, b) => a.label.localeCompare(b.label, locale));
+
+  const closeNav = () => setNavOpen(false);
 
   const navBody = (
     <>
       <NavSection title={t('nav.start')}>
-        <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact onNavigate={() => setNavOpen(false)} />
-        {primaryPayments.map((p) => (
-          <NavItem
-            key={p.id}
-            to={`/payment/${p.id}`}
-            label={p.name[locale]}
-            icon={<UI_ICONS.instant size={14} />}
-            onNavigate={() => setNavOpen(false)}
-          />
-        ))}
-        {morePayments.map((p) => (
+        <NavItem to="/" label={t('nav.overview')} icon={<UI_ICONS.overview size={14} />} exact onNavigate={closeNav} />
+        {sortedPayments.map((p) => (
           <NavItem
             key={p.id}
             to={`/payment/${p.id}`}
             label={p.name[locale]}
             icon={<UI_ICONS.flow size={14} />}
-            onNavigate={() => setNavOpen(false)}
-          />
-        ))}
-      </NavSection>
-
-      <NavSection title={t('nav.schemes')}>
-        {SCHEMES.map((s) => (
-          <NavItem
-            key={s.id}
-            to={`/scheme/${s.id}`}
-            label={s.name[locale]}
-            icon={<UI_ICONS.standard size={14} />}
-            onNavigate={() => setNavOpen(false)}
+            onNavigate={closeNav}
           />
         ))}
       </NavSection>
 
       <NavSection title={t('nav.infrastructure')}>
-        {INFRASTRUCTURES.filter((i) => ['step2', 'tips', 'rt1', 'sic', 'eurosic', 'wero-platform'].includes(i.id)).map(
-          (i) => (
-            <NavItem
-              key={i.id}
-              to={`/infrastructure/${i.id}`}
-              label={i.name[locale]}
-              hint={i.operator}
-              icon={<UI_ICONS.map size={14} />}
-              onNavigate={() => setNavOpen(false)}
-            />
-          ),
-        )}
+        {sortedInfrastructures.map((i) => (
+          <NavItem
+            key={i.id}
+            to={`/infrastructure/${i.id}`}
+            label={i.name[locale]}
+            hint={i.operator}
+            icon={<UI_ICONS.map size={14} />}
+            onNavigate={closeNav}
+          />
+        ))}
       </NavSection>
 
       <NavSection title={t('nav.tools')}>
-        <NavItem to="/try" label={t('nav.try')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem to="/live" label={t('nav.live')} icon={<UI_ICONS.instant size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem to="/quiz/debug-reject" label={t('nav.quiz')} icon={<UI_ICONS.try size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem
-          to="/compare/pacs.008"
-          label={t('nav.compareVersions')}
-          icon={<UI_ICONS.xml size={14} />}
-          onNavigate={() => setNavOpen(false)}
-        />
-        <NavItem
-          to="/glossary"
-          label={t('nav.glossary')}
-          icon={<UI_ICONS.glossary size={14} />}
-          onNavigate={() => setNavOpen(false)}
-        />
-        <NavItem to="/map" label={t('nav.map')} icon={<UI_ICONS.map size={14} />} onNavigate={() => setNavOpen(false)} />
-        <NavItem
-          to="/about"
-          label={t('nav.about')}
-          icon={<UI_ICONS.about size={14} />}
-          onNavigate={() => setNavOpen(false)}
-        />
+        {toolItems.map((item) => (
+          <NavItem
+            key={item.to}
+            to={item.to}
+            label={item.label}
+            icon={item.icon}
+            onNavigate={closeNav}
+          />
+        ))}
       </NavSection>
 
-      <section className="mb-6">
-        <button
-          type="button"
-          onClick={() => setCatalogOpen((v) => !v)}
-          className="mb-2 flex w-full items-center justify-between gap-2 pl-2 text-left"
-          aria-expanded={catalogOpen}
-        >
-          <span className="text-[13px] font-bold tracking-tight text-ink">{t('nav.catalog')}</span>
-          <ChevronDown
-            size={14}
-            className={cn('shrink-0 text-muted transition-transform', catalogOpen && 'rotate-180')}
-            aria-hidden
-          />
-        </button>
-        {catalogOpen && (
-          <div className="space-y-4">
-            <NavGroup label={t('nav.standards')}>
-              {STANDARDS.map((s) => (
+      <NavSection title={t('nav.flows')}>
+        {sortedFlowCategories.map(([category, flows]) => (
+          <div key={category} className="mb-2">
+            <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{t(`category.${category}`)}</p>
+            {[...flows]
+              .sort((a, b) => a.name.localeCompare(b.name, locale))
+              .map((f) => (
                 <NavItem
-                  key={s.id}
-                  to={`/standards/${s.id}`}
-                  label={s.name}
-                  hint={s.region}
-                  icon={<UI_ICONS.standard size={14} />}
-                  onNavigate={() => setNavOpen(false)}
+                  key={f.id}
+                  to={`/flows/${f.id}`}
+                  label={f.name}
+                  icon={<UI_ICONS.flow size={14} />}
+                  onNavigate={closeNav}
                 />
               ))}
-            </NavGroup>
-            <NavGroup label={t('nav.flows')}>
-              {Object.entries(flowsByCategory).map(([category, flows]) => (
-                <div key={category} className="mb-2">
-                  <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{t(`category.${category}`)}</p>
-                  {flows.map((f) => (
-                    <NavItem
-                      key={f.id}
-                      to={`/flows/${f.id}`}
-                      label={f.name}
-                      icon={<UI_ICONS.flow size={14} />}
-                      onNavigate={() => setNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              ))}
-            </NavGroup>
-            <NavGroup label={t('nav.messages')}>
-              {Object.entries(messagesByArea).map(([area, messages]) => (
-                <div key={area} className="mb-2">
-                  <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{area}</p>
-                  {messages.map((m) => (
-                    <NavItem
-                      key={m.short}
-                      to={`/messages/${m.short}`}
-                      label={m.short}
-                      hint={m.name}
-                      mono
-                      icon={<UI_ICONS.xml size={14} />}
-                      onNavigate={() => setNavOpen(false)}
-                    />
-                  ))}
-                </div>
-              ))}
-            </NavGroup>
           </div>
-        )}
-      </section>
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.standards')}>
+        {sortedStandards.map((s) => (
+          <NavItem
+            key={s.id}
+            to={`/standards/${s.id}`}
+            label={s.name}
+            hint={s.region}
+            icon={<UI_ICONS.standard size={14} />}
+            onNavigate={closeNav}
+          />
+        ))}
+      </NavSection>
+
+      <NavSection title={t('nav.messages')}>
+        {sortedMessageAreas.map(([area, messages]) => (
+          <div key={area} className="mb-2">
+            <p className="mb-1 pl-2 text-[11px] font-semibold text-muted">{area}</p>
+            {[...messages]
+              .sort((a, b) => a.short.localeCompare(b.short, locale))
+              .map((m) => (
+                <NavItem
+                  key={m.short}
+                  to={`/messages/${m.short}`}
+                  label={m.short}
+                  hint={m.name}
+                  mono
+                  icon={<UI_ICONS.xml size={14} />}
+                  onNavigate={closeNav}
+                />
+              ))}
+          </div>
+        ))}
+      </NavSection>
     </>
   );
 
@@ -388,15 +357,6 @@ function NavSection({ title, children }: { title: string; children: ReactNode })
       <h2 className="mb-2 pl-2 text-[13px] font-bold tracking-tight text-ink">{title}</h2>
       <div className="space-y-px">{children}</div>
     </section>
-  );
-}
-
-function NavGroup({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <p className="mb-1 pl-2 text-[12px] font-bold text-ink">{label}</p>
-      <div className="space-y-px">{children}</div>
-    </div>
   );
 }
 
