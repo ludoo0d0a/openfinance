@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
+import { DocumentMeta } from './DocumentMeta';
 import { useSearchQuery } from '@/hooks/SearchQueryContext';
 import { STANDARDS } from '@/data/standards';
 import { FLOWS } from '@/data/flows';
@@ -16,6 +17,7 @@ import { LocaleSwitcher, localizeFlows, useI18n, useT } from '@/i18n';
 const THEME_KEY = 'openfinance.theme';
 
 function readTheme(): 'light' | 'dark' {
+  if (typeof localStorage === 'undefined') return 'light';
   try {
     const v = localStorage.getItem(THEME_KEY);
     if (v === 'dark' || v === 'light') return v;
@@ -26,7 +28,9 @@ function readTheme(): 'light' | 'dark' {
 }
 
 function applyTheme(theme: 'light' | 'dark') {
+  if (typeof document === 'undefined') return;
   document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : '';
+  if (typeof localStorage === 'undefined') return;
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {
@@ -40,9 +44,7 @@ export function AppShell() {
   const { query, clearQuery } = useSearchQuery();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
-    typeof document !== 'undefined' ? readTheme() : 'light',
-  );
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => readTheme());
   const navTitleId = useId();
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export function AppShell() {
   }, [theme]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     function onKey(e: KeyboardEvent) {
       if (isSearchToggleHotkey(e)) {
         e.preventDefault();
@@ -69,7 +72,7 @@ export function AppShell() {
   }, [navOpen]);
 
   useEffect(() => {
-    if (!navOpen) return;
+    if (!navOpen || typeof document === 'undefined') return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -203,6 +206,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-dvh">
+      <DocumentMeta />
       <header className="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur">
         <div className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 lg:gap-4 lg:px-6">
           <button

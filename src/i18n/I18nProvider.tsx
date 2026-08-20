@@ -13,8 +13,15 @@ import { I18nContext, type I18nContextValue } from './context';
 
 const DICTS: Record<Locale, MessageTree> = { en, fr };
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => detectLocale());
+export function I18nProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  /** Force locale (prerender). Omit to detect from storage / navigator. */
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(() => initialLocale ?? detectLocale());
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);

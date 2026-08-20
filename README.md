@@ -75,7 +75,8 @@ Requires Node 22 (see `.nvmrc`).
 npm install
 npm start          # Vite :5173 + Wrangler Functions on :8788 (preferred)
 npm run start:ui   # Vite only — UI works, /api/* returns 404
-npm run build      # production build → dist/
+npm run build      # tsc + vite + prerender catalog HTML → dist/
+npm run prerender  # re-run static HTML only (needs an existing dist/)
 npm run serve      # build then serve dist + Functions on :8788
 npm run preview    # Vite preview of dist (no Functions) on :4173
 ```
@@ -97,19 +98,7 @@ Cloudflare Pages project with Functions in `functions/`.
 1. Create a Pages project named `openfinance` (or change `--project-name` in the workflows).
 2. Add secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 3. Optionally bind KV (`PSD2_STATE`) as documented in `wrangler.toml`.
-4. For AdSense, add **repository variables** (Settings → Secrets and variables → Actions → Variables):
-
-| Variable | Example | Role |
-| --- | --- | --- |
-| `ADSENSE_CLIENT` | `ca-pub-1234567890123456` | Publisher id (required to show ads) |
-| `ADSENSE_SLOT` | `1234567890` | Default display unit (used when a placement has no override) |
-| `ADSENSE_SLOT_INTRO` | | Optional top banner unit |
-| `ADSENSE_SLOT_MID` | | Optional in-article unit |
-| `ADSENSE_SLOT_END` | | Optional footer rectangle |
-
-Create the units in AdSense as **Display** (responsive) and optionally **In-article**. Enable **Privacy & messaging** for the EEA. The production build writes `/ads.txt` and injects `adsbygoogle.js`. Ads remount on each catalog URL (payment, scheme, message, flow, …) and when the glossary term or message version changes. They stay off on `/try`.
-
-Local preview: `VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run build`.
+4. For AdSense, set the GitHub variables below (see [AdSense](#adsense)).
 
 | Workflow | Trigger |
 | --- | --- |
@@ -117,14 +106,75 @@ Local preview: `VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run bui
 
 Manual: `npm run deploy`.
 
+## AdSense
+
+OpenFinance is covered by the parent AdSense site **`geoking.fr`**. Google previously rejected the property for *ads on pages or screens without publisher content* — the empty Vite SPA shell plus Auto ads / early `adsbygoogle.js` looked like ads with no article.
+
+### How it works now
+
+| Piece | Role |
+| --- | --- |
+| Build prerender (`scripts/prerender.mts`) | Emits `dist/<path>/index.html` for every catalog URL (~179) so View Source / crawlers see prose without JS |
+| `src/lib/prerenderUrls.ts` | Inventory (payments, flows, messages, samples, standards, infrastructures + about/privacy/contact/glossary) |
+| `src/lib/ads.ts` | `ADSENSE_PAUSED`, content-path gating, delayed script load |
+| `PageAd` | In-article units on catalog views only |
+| `/ads.txt` | Written at build from `VITE_ADSENSE_CLIENT` (`pub-…`, not `ca-pub-…`) |
+| `/privacy`, `/contact`, `/about` | Legal / publisher pages (required for review; no display ads on privacy/contact) |
+
+**Ads stay off** on `/try`, `/map`, `/live`, `/quiz`, `/privacy`, `/contact`, and unknown URLs. The script is **not** injected into the empty shell — it loads only after a content page mounts.
+
+Display units are gated by `ADSENSE_PAUSED` in [`src/lib/ads.ts`](src/lib/ads.ts) (`true` until approval). Env slots alone are not enough while paused.
+
+### GitHub / local variables
+
+Repository variables (Settings → Secrets and variables → Actions → Variables), mapped to `VITE_*` at build:
+
+| Variable | Example | Role |
+| --- | --- | --- |
+| `ADSENSE_CLIENT` | `ca-pub-1234567890123456` | Publisher id |
+| `ADSENSE_SLOT` | `1234567890` | Default display unit |
+| `ADSENSE_SLOT_INTRO` | | Optional top banner |
+| `ADSENSE_SLOT_MID` | | Optional in-article |
+| `ADSENSE_SLOT_END` | | Optional footer rectangle |
+
+Create units in AdSense as **Display** (responsive) and optionally **In-article**. Enable **Privacy & messaging** (Funding Choices) for the EEA.
+
+Local:
+
+```bash
+VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run build
+```
+
+### Approval checklist
+
+1. In AdSense → Sites → **`geoking.fr`**: turn **Auto ads OFF** (or restrict to pages with real prose only).
+2. Deploy a build that includes prerender (`npm run build` / CI on `main`).
+3. Confirm in the browser: **View page source** on e.g. `/payment/sepa-instant` or `/flows/sct-inst-happy-path` — article text must appear inside `#root`, not an empty div. Also check `/ads.txt` returns `google.com, pub-…, DIRECT, …`.
+4. Set `ADSENSE_PAUSED = false` in `src/lib/ads.ts`, commit, redeploy.
+5. AdSense → Sites → **Request review**. Review often takes a few days to a few weeks.
+
+Do **not** re-enable Auto ads on tool screens or thin URLs after approval.
+
+### Verify prerender locally
+
+```bash
+npm run build
+grep -F 'SEPA Instant' dist/payment/sepa-instant/index.html | head
+grep -F '<url>' dist/sitemap.xml | wc -l   # should match catalog inventory (~179)
+```
+
+Adding a payment / flow / message / sample / standard / infrastructure automatically extends the next prerender via the data exports — no manual URL list.
+
 ## Architecture
 
 ```
 src/
 ├── data/          catalog (TypeScript, CI-checked cross-refs)
-├── lib/           xml, messageId, search
+├── lib/           xml, messageId, search, prerenderUrls, seo, ads
+├── entry-server.tsx  StaticRouter render for prerender
 ├── components/    FlowCanvas (SVG), InteropGraph (Cytoscape), PayloadInspector, …
 ├── views/         routes including /map
+scripts/           prerender.mts (post-vite static HTML)
 functions/         Cloudflare Pages Functions
 ```
 

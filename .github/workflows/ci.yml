@@ -99,9 +99,30 @@ jobs:
           catalog=$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/catalog" || true)
           [ "$catalog" = "200" ] || { echo "Catalog function returned $catalog"; exit 1; }
 
-          # Deep-link refresh must serve the SPA shell (not a bare 404).
+          # Deep-link refresh must serve prerendered article HTML (not a bare 404).
           deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
-          [ "$deep" = "200" ] || { echo "SPA deep link returned $deep"; exit 1; }
+          [ "$deep" = "200" ] || { echo "Catalog deep link returned $deep"; exit 1; }
+
+          prose=$(curl -s "$URL/flows/sct-inst-happy-path" || true)
+          echo "$prose" | grep -qi 'sct inst\|instant\|payment' || {
+            echo "Prerendered flow page is missing article prose"
+            echo "$prose" | head -c 400
+            exit 1
+          }
+
+          payment_html=$(curl -s "$URL/payment/sepa-instant" || true)
+          echo "$payment_html" | grep -qi 'sepa instant\|instant' || {
+            echo "Prerendered payment page is missing article prose"
+            echo "$payment_html" | head -c 400
+            exit 1
+          }
+
+          privacy_html=$(curl -s "$URL/privacy" || true)
+          echo "$privacy_html" | grep -qi 'privacy\|AdSense\|cookie' || {
+            echo "Prerendered privacy page is missing legal prose"
+            echo "$privacy_html" | head -c 400
+            exit 1
+          }
 
           ads_body=$(curl -s "$URL/ads.txt" || true)
           echo "$ads_body" | grep -q 'google.com, pub-' || {

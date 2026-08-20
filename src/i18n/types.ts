@@ -10,13 +10,15 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 export const STORAGE_KEY = 'openfinance.locale';
 
 export function detectLocale(): Locale {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'en' || stored === 'fr') return stored;
-  } catch {
-    /* ignore */
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === 'en' || stored === 'fr') return stored;
+    } catch {
+      /* ignore */
+    }
   }
-  if (typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('fr')) {
+  if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('fr')) {
     return 'fr';
   }
   return 'en';
