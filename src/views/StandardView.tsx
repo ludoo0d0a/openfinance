@@ -22,7 +22,7 @@ export function StandardView() {
   const samples = samplesForStandard(standard.id);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <header className="max-w-3xl">
         <p className="eyebrow">{standard.publisher}</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{standard.name}</h1>

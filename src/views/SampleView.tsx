@@ -20,7 +20,7 @@ export function SampleView() {
   const standard = sample.standardId ? standardById(sample.standardId) : undefined;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <header className="mb-6">
         <p className="eyebrow">{sample.format === 'xml' ? t('sample.iso') : t('sample.api')}</p>
         <h1 className="mt-2 text-3xl font-bold">{sample.label}</h1>
@@ -46,7 +46,7 @@ export function SampleView() {
 
       <PageAd placement="mid" />
 
-      <div className="h-[74vh] min-h-[540px]">
+      <div className="h-[calc(100dvh-10rem)] min-h-[560px]">
         <PayloadInspector
           key={sample.id}
           content={sample.content}

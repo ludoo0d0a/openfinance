@@ -37,7 +37,7 @@ describe('i18n', () => {
       'locale.fr',
       'flow.entities',
       'flow.fullscreen',
-      'flow.exitFullscreen',
+      'try.modeExpert',
     ]) {
       expect(resolveMessage(en, key), key).toBeTypeOf('string');
       expect(resolveMessage(fr, key), key).toBeTypeOf('string');

@@ -30,7 +30,7 @@ export function HomeView() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-14">
+    <div className="page-fluid lg:py-10">
       <header className="max-w-3xl">
         <p className="eyebrow">{t('home.eyebrow')}</p>
         <h1 className="mt-3 text-4xl leading-[1.05] font-bold sm:text-5xl">{t('home.title1')}</h1>

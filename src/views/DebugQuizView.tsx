@@ -38,7 +38,7 @@ export function DebugQuizView() {
   const percentScore = Math.round((score / totalQuestions) * 100);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
+    <div className="page-fluid">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-rule pb-4">
         <div>
           <p className="eyebrow">{t('quiz.eyebrow')}</p>
@@ -220,7 +220,7 @@ export function DebugQuizView() {
 
           {/* Sample Payload Inspector */}
           {sample && (
-            <div className="mt-10">
+            <div className="mt-10 h-[min(70vh,640px)]">
               <p className="eyebrow mb-3">{t('quiz.payload')}</p>
               <PayloadInspector
                 title={sample.label}

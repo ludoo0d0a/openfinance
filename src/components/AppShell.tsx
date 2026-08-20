@@ -357,7 +357,7 @@ export function AppShell() {
 function SiteFooter() {
   const t = useT();
   return (
-    <footer className="mt-16 border-t border-rule px-4 py-5 lg:px-8">
+    <footer className="mt-8 border-t border-rule px-4 py-4 lg:px-6">
       <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted">
         <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
         <span aria-hidden>·</span>
