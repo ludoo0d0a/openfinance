@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Building2, Landmark, Network, UserRound, Zap, Clock } from 'lucide-react';
+import { Building2, Landmark, Network, UserRound, Zap, Clock } from 'lucide-react';
+import { ActorBox } from '@/components/overview/ActorBox';
+import { ConceptCard } from '@/components/overview/ConceptCard';
+import { HopArrow } from '@/components/overview/HopArrow';
+import { RoleRow } from '@/components/overview/RoleRow';
 import { JargonText } from '@/components/JargonText';
 import { cn } from '@/lib/cn';
 import { useT } from '@/i18n';
@@ -242,99 +245,5 @@ export function PaymentSystemOverview() {
         </div>
       </div>
     </section>
-  );
-}
-
-function ConceptCard({
-  title,
-  body,
-  links,
-  accent = 'signal',
-}: {
-  title: string;
-  body: string;
-  links: { to: string; label: string }[];
-  accent?: 'signal' | 'violet' | 'jade';
-}) {
-  const bar =
-    accent === 'violet' ? 'border-violet' : accent === 'jade' ? 'border-jade' : 'border-signal';
-  return (
-    <div className={cn('bg-surface px-4 py-4 sm:px-5', 'border-t-2', bar)}>
-      <h3 className="text-[15px] font-semibold">{title}</h3>
-      <p className="mt-2 text-[13px] leading-relaxed text-muted">
-        <JargonText text={body} />
-      </p>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {links.map((l) => (
-          <li key={l.to}>
-            <Link
-              to={l.to}
-              className="inline-block border border-rule px-2 py-0.5 font-mono text-[11px] hover:border-ink"
-            >
-              {l.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function ActorBox({
-  Icon,
-  title,
-  lines,
-  tone,
-  highlight,
-}: {
-  Icon: typeof UserRound;
-  title: string;
-  lines: string[];
-  tone: 'jade' | 'signal' | 'violet';
-  highlight?: boolean;
-}) {
-  const color =
-    tone === 'jade' ? 'text-jade border-jade bg-jade-soft' : tone === 'violet' ? 'text-violet border-violet bg-violet-soft' : 'text-signal border-signal bg-signal-soft';
-  return (
-    <div
-      className={cn(
-        'flex w-[7.5rem] shrink-0 flex-col border px-2.5 py-2.5 sm:w-36',
-        highlight ? 'border-violet bg-violet-soft' : 'border-rule bg-paper-raised',
-      )}
-    >
-      <span
-        className={cn('mb-2 inline-flex h-7 w-7 items-center justify-center border', color)}
-        aria-hidden
-      >
-        <Icon size={14} strokeWidth={2.25} />
-      </span>
-      <p className="text-[12px] leading-snug font-semibold">{title}</p>
-      {lines.map((line) => (
-        <p key={line} className="mt-0.5 font-mono text-[10px] text-muted">
-          {line}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-function HopArrow({ label }: { label: string }) {
-  return (
-    <div className="flex w-12 shrink-0 flex-col items-center justify-center gap-1 self-center sm:w-14">
-      <ArrowRight size={16} className="text-ink" aria-hidden />
-      <span className="font-mono text-[9px] text-violet">{label}</span>
-    </div>
-  );
-}
-
-function RoleRow({ iso, isoTag, plain }: { iso: string; isoTag: string; plain: string }) {
-  return (
-    <li className="flex gap-3 border border-rule-soft px-3 py-2.5">
-      <span className="w-12 shrink-0 font-mono text-[11px] text-violet">{isoTag}</span>
-      <div className="min-w-0">
-        <p className="text-[13px] font-semibold">{iso}</p>
-        <p className="mt-0.5 text-[12px] leading-snug text-muted">{plain}</p>
-      </div>
-    </li>
   );
 }
