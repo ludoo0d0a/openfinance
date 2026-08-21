@@ -25,9 +25,65 @@ describe('glossary', () => {
   });
 
   it('covers core payments acronyms', () => {
-    for (const id of ['sct', 'sepa', 'stet', 'tips', 'piis', 'a2a', 'sct-inst', 'ais', 'pis', 'xs2a']) {
+    for (const id of [
+      'sct',
+      'sepa',
+      'stet',
+      'tips',
+      'piis',
+      'a2a',
+      'sct-inst',
+      'ais',
+      'pis',
+      'xs2a',
+      'swift',
+      'cbpr-plus',
+      'rtgs',
+      'six',
+      'snb',
+      'sps',
+      'mx',
+      'mt',
+      'ebics',
+      'hvps',
+      'ig',
+      'xsd',
+      'sla',
+      'p2p',
+      'pan',
+      'bin',
+      'jws',
+      'pkce',
+      'par',
+      'eea',
+      'qr-bill',
+      'b2b',
+      'eod',
+      'vpa',
+    ]) {
       expect(glossaryById(id), id).toBeDefined();
     }
+    expect(glossaryById('swift')!.term).toBe('SWIFT');
+    expect(glossaryById('cbpr-plus')!.term).toBe('CBPR+');
+    expect(glossaryById('cbpr-plus')!.aliases.en).toEqual(expect.arrayContaining(['CBPR']));
+    expect(glossaryById('swift')!.seeAlso).toEqual(expect.arrayContaining(['cbpr-plus']));
+  });
+
+  it('covers PSP licence types vs neobank marketing label', () => {
+    for (const id of ['emi', 'pi', 'credit-institution', 'neobank', 'aspsp', 'psp']) {
+      expect(glossaryById(id), id).toBeDefined();
+    }
+    expect(glossaryById('neobank')!.aliases.en).toEqual(
+      expect.arrayContaining(['virtual bank', 'digital bank', 'online bank']),
+    );
+    expect(glossaryById('neobank')!.aliases.fr).toEqual(
+      expect.arrayContaining(['néobanque', 'banque en ligne']),
+    );
+    expect(glossaryById('credit-institution')!.name.fr).toMatch(/établissement de crédit/i);
+    expect(glossaryById('pi')!.name.fr).toMatch(/établissement de paiement/i);
+    expect(glossaryById('neobank')!.seeAlso).toEqual(
+      expect.arrayContaining(['credit-institution', 'emi', 'pi', 'aspsp']),
+    );
   });
 
   it('covers nostro / correspondent banking and AML screening', () => {
@@ -135,6 +191,8 @@ describe('glossary', () => {
     expect(glossaryById('pacs')?.category).toBe('message');
     expect(glossaryById('camt')?.category).toBe('message');
     expect(glossaryById('acmt')?.category).toBe('message');
+    expect(glossaryById('mx')?.category).toBe('message');
+    expect(glossaryById('mt')?.category).toBe('message');
   });
 
   it('every entry has EN and FR name + definition', () => {
@@ -198,6 +256,8 @@ describe('glossary', () => {
     expect(index.search('Data Connect').some((h) => String(h.id) === 'term:data-connect')).toBe(true);
     expect(index.search('PayPal').some((h) => String(h.id) === 'term:paypal')).toBe(true);
     expect(index.search('Curve').some((h) => String(h.id) === 'term:curve')).toBe(true);
+    expect(index.search('SWIFT').some((h) => String(h.id) === 'term:swift')).toBe(true);
+    expect(index.search('CBPR+').some((h) => String(h.id) === 'term:cbpr-plus')).toBe(true);
   });
 
   it('puts AML first when searching the thesaurus for AML', () => {

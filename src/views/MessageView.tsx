@@ -154,10 +154,31 @@ export function MessageView() {
         )}
       </header>
 
-      {versions.length > 1 && (
-        <section className="mt-8 max-w-4xl">
-          <h2 className="eyebrow mb-1">{t('message.versions')}</h2>
-          <p className="mb-3 max-w-2xl text-[13px] leading-relaxed text-muted">{t('message.versionsLead')}</p>
+      <section className="mt-8 max-w-4xl">
+        <h2 className="eyebrow mb-1">{t('message.versions')}</h2>
+        <p className="mb-2 max-w-2xl text-[13px] leading-relaxed text-muted">{t('message.versionsLead')}</p>
+        <p className="mb-3 flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
+          <a
+            href="https://www.iso20022.org/iso-20022-message-definitions"
+            target="_blank"
+            rel="noreferrer"
+            className="text-signal hover:underline"
+          >
+            {t('message.versionsXsd')} ↗
+          </a>
+          <a
+            href="https://www.swift.com/standards/iso-20022/iso-20022-standards"
+            target="_blank"
+            rel="noreferrer"
+            className="text-signal hover:underline"
+          >
+            {t('message.versionsSwift')} ↗
+          </a>
+          <Link to="/glossary?id=swift" className="text-signal hover:underline">
+            {t('message.versionsGlossary')} →
+          </Link>
+        </p>
+        {versions.length > 1 && (
           <div className="flex flex-wrap gap-2">
             {versions.map((v) => {
               const vp = parseMessageId(v.id);
@@ -187,21 +208,21 @@ export function MessageView() {
               );
             })}
           </div>
-          <div className="panel mt-3 space-y-2 p-4">
-            <p className="text-[13px] leading-relaxed">{selectedVersion.notes[locale] ?? selectedVersion.notes.en}</p>
-            {selectedVersion.markets.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                  {t('message.markets')}
-                </span>
-                {selectedVersion.markets.map((m) => (
-                  <Tag key={m}>{MESSAGE_MARKET_LABELS[m]?.[locale] ?? MESSAGE_MARKET_LABELS[m]?.en ?? m}</Tag>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+        )}
+        <div className="panel mt-3 space-y-2 p-4">
+          <p className="text-[13px] leading-relaxed">{selectedVersion.notes[locale] ?? selectedVersion.notes.en}</p>
+          {selectedVersion.markets.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                {t('message.markets')}
+              </span>
+              {selectedVersion.markets.map((m) => (
+                <Tag key={m}>{MESSAGE_MARKET_LABELS[m]?.[locale] ?? MESSAGE_MARKET_LABELS[m]?.en ?? m}</Tag>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[420px_1fr]">
         <div className="space-y-5">

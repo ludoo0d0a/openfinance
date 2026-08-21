@@ -156,8 +156,8 @@ describe('referential integrity', () => {
       expect(entry, m.short).toBeDefined();
       expect(entry!.category).toBe('message');
     }
-    expect(GLOSSARY_MESSAGES.length).toBe(ISO_MESSAGES.length + 4);
-    for (const id of ['pain', 'pacs', 'camt', 'acmt']) {
+    expect(GLOSSARY_MESSAGES.length).toBe(ISO_MESSAGES.length + 6);
+    for (const id of ['pain', 'pacs', 'camt', 'acmt', 'mx', 'mt']) {
       expect(GLOSSARY_MESSAGES.some((e) => e.id === id), id).toBe(true);
     }
   });

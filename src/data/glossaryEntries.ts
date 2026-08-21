@@ -67,8 +67,8 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     en: 'EPC schemes for euro direct debits (SDD Core for consumers, SDD B2B for businesses). Customer-to-bank initiation is pain.008; R-transactions carry mandate and sequence-type rules.',
     fr: 'Schémas EPC de prélèvement euro (SDD Core pour les consommateurs, SDD B2B pour les entreprises). L’initiation client-banque est pain.008 ; les R-transactions suivent mandat et type de séquence.',
   }, {
-    aliases: { en: ['SEPA Direct Debit', 'SDD Core', 'SDD B2B', 'direct debit'], fr: ['prélèvement SEPA', 'SDD Core', 'SDD B2B'] },
-    seeAlso: ['sepa', 'sct', 'pain', 'epc'],
+    aliases: { en: ['SEPA Direct Debit', 'SDD Core', 'SDD B2B', 'B2B', 'direct debit'], fr: ['prélèvement SEPA', 'SDD Core', 'SDD B2B', 'B2B'] },
+    seeAlso: ['sepa', 'sct', 'pain', 'epc', 'b2b'],
     sources: ['konsentus'],
     links: [
       { label: 'Explorer', href: '/payment/sepa-direct-debit' },
@@ -199,7 +199,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       en: ['card network', 'card brand', 'four-party scheme', 'three-party scheme'],
       fr: ['réseau carte', 'schéma de cartes', 'schéma à quatre parties', 'schéma à trois parties'],
     },
-    seeAlso: ['visa', 'mastercard', 'amex', 'cartes-bancaires', 'unionpay', '3ds', 'cbpii'],
+    seeAlso: ['visa', 'mastercard', 'amex', 'cartes-bancaires', 'unionpay', '3ds', 'cbpii', 'pan', 'bin'],
     links: [{ label: 'Card payment', href: '/payment/card-payment' }],
   }),
   g('visa', 'Visa', 'scheme', { en: 'Visa', fr: 'Visa' }, {
@@ -354,7 +354,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     en: 'Brazilian instant payment scheme run by the central bank (BCB). Alias keys (CPF, phone, email, random) resolve to an account; settlement in seconds, 24/7. The scheme is the retail product — not an overlay on SCT Inst. Sample of Instant A2A alongside UPI.',
     fr: 'Schéma de paiement instantané brésilien opéré par la banque centrale (BCB). Des alias (CPF, téléphone, e-mail, clé aléatoire) résolvent vers un compte ; règlement en secondes, 24/7. Le schéma est le produit retail — pas un overlay sur SCT Inst. Exemple d’A2A instantané avec UPI.',
   }, {
-    aliases: { en: ['Pix', 'PIX'], fr: ['Pix', 'PIX'] },
+    aliases: { en: ['Pix', 'PIX', 'Pix SPI', 'SPI'], fr: ['Pix', 'PIX', 'Pix SPI', 'SPI'] },
     seeAlso: ['upi', 'ip', 'a2a', 'sct-inst', 'a2a-overlay', 'instant-a2a'],
     links: [{ label: 'Instant A2A explorer', href: '/payment/instant-a2a' }],
   }),
@@ -362,8 +362,8 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     en: 'Indian instant A2A scheme (NPCI). VPA aliases (name@bank) and QR via apps such as PhonePe, Google Pay India and Paytm. The scheme is the retail product — not an overlay on SCT Inst. Sample of Instant A2A alongside Pix.',
     fr: 'Schéma A2A instantané indien (NPCI). Alias VPA (nom@banque) et QR via des apps telles que PhonePe, Google Pay India et Paytm. Le schéma est le produit retail — pas un overlay sur SCT Inst. Exemple d’A2A instantané avec Pix.',
   }, {
-    aliases: { en: ['UPI', 'Unified Payments Interface', 'NPCI'], fr: ['UPI', 'Unified Payments Interface', 'NPCI'] },
-    seeAlso: ['pix', 'google-pay', 'ip', 'a2a', 'a2a-overlay', 'instant-a2a'],
+    aliases: { en: ['UPI', 'Unified Payments Interface', 'NPCI', 'VPA'], fr: ['UPI', 'Unified Payments Interface', 'NPCI', 'VPA'] },
+    seeAlso: ['pix', 'google-pay', 'ip', 'a2a', 'a2a-overlay', 'instant-a2a', 'vpa'],
     links: [{ label: 'Instant A2A explorer', href: '/payment/instant-a2a' }],
   }),
   g('instant-a2a', 'Instant A2A', 'scheme', { en: 'Instant A2A scheme', fr: 'Schéma A2A instantané' }, {
@@ -439,7 +439,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'PSP qui fournit et tient un compte de paiement pour le payeur — en pratique la banque. En Open Banking il publie des API Read/Write pour que les TPP, avec consentement, lisent les données et/ou initient des paiements. Sous FiDA, c’est un Data Holder.',
   }, {
     aliases: { en: ['Account Servicing Payment Service Provider', 'account servicing PSP', 'the bank'], fr: ['PSP gestionnaire de compte', 'ASPSP', 'la banque'] },
-    seeAlso: ['psp', 'tpp', 'psu', 'data-holder', 'xs2a'],
+    seeAlso: ['psp', 'tpp', 'psu', 'data-holder', 'xs2a', 'credit-institution', 'emi', 'neobank'],
     sources: ['ukob', 'konsentus'],
   }),
   g('tpp', 'TPP', 'concept', { en: 'Third Party Provider', fr: 'Prestataire tiers' }, {
@@ -458,7 +458,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Entité qui fournit des services de paiement réglementés — AISP, PISP, CBPII et ASPSP.',
   }, {
     aliases: { en: ['Payment Service Provider', 'Payment Services Provider'], fr: ['prestataire de services de paiement', 'PSP'] },
-    seeAlso: ['psu', 'aspsp', 'tpp', 'emi', 'psd2'],
+    seeAlso: ['psu', 'aspsp', 'tpp', 'emi', 'pi', 'credit-institution', 'psd2'],
     sources: ['ukob', 'konsentus', 'ravelin'],
   }),
   g('psu', 'PSU', 'concept', { en: 'Payment Service User', fr: 'Utilisateur de services de paiement' }, {
@@ -504,7 +504,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     en: 'PSD2-era data access to payment accounts via APIs, with PSU consent: AIS, PIS and funds confirmation. In the UK also the CMA Order / Open Banking Limited directory and standards. Open Finance extends the same idea beyond payment accounts.',
     fr: 'Accès PSD2 aux comptes de paiement via API, avec consentement du PSU : AIS, PIS et confirmation de fonds. Au Royaume-Uni, aussi l’ordre CMA / l’annuaire et les standards d’Open Banking Limited. L’Open Finance étend l’idée au-delà des comptes de paiement.',
   }, {
-    aliases: { en: ['open banking', 'Open Banking Ecosystem'], fr: ['open banking', 'écosystème Open Banking'] },
+    aliases: { en: ['open banking', 'Open Banking Ecosystem', 'OB'], fr: ['open banking', 'écosystème Open Banking', 'OB'] },
     seeAlso: ['open-finance', 'psd2', 'xs2a', 'obl', 'fida'],
     sources: ['ukob', 'konsentus'],
   }),
@@ -552,7 +552,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     en: 'Directive (EU) 2015/2366: current Open Banking regime — dedicated XS2A interfaces, TPP roles, SCA. UK implemented it via the Payment Services Regulations 2017. Successor stack is PSD3 + EU PSR.',
     fr: 'Directive (UE) 2015/2366 : régime Open Banking actuel — interfaces XS2A dédiées, rôles TPP, SCA. Le Royaume-Uni l’a transposée par les Payment Services Regulations 2017. La pile successeur est PSD3 + PSR UE.',
   }, {
-    aliases: { en: ['Revised Payment Services Directive', 'Payment Services Directive 2', '2015/2366'], fr: ['DSP2', 'directive services de paiement 2'] },
+    aliases: { en: ['Revised Payment Services Directive', 'Payment Services Directive 2', 'Payment Services Directive', 'PSD', '2015/2366'], fr: ['DSP2', 'DSP', 'directive services de paiement 2', 'directive services de paiement'] },
     seeAlso: ['psd3', 'psr-eu', 'psr-uk', 'rts', 'xs2a', 'open-banking'],
     sources: ['ukob', 'konsentus', 'bundesbank', 'ravelin'],
   }),
@@ -886,7 +886,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       en: ['correspondent bank', 'respondent bank', 'nested correspondent', 'cover payment'],
       fr: ['banque correspondante', 'banque répondante', 'correspondant imbriqué', 'cover payment', 'paiement de couverture'],
     },
-    seeAlso: ['nostro', 'vostro', 'cbpr-plus', 'aml', 'kyt', 'sanctions-screening'],
+    seeAlso: ['nostro', 'vostro', 'cbpr-plus', 'swift', 'aml', 'kyt', 'sanctions-screening'],
   }),
   g('nostro', 'Nostro', 'concept', { en: 'Nostro account', fr: 'Compte nostro' }, {
     en: '“Our” account: a bank’s account held with a correspondent, in the correspondent’s books, usually in foreign currency. Used to settle cross-border credits and debits (nostro reconciliation against camt.053/054 and the correspondent’s statements). The other side of the same relationship is a vostro.',
@@ -1076,36 +1076,113 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     sources: ['konsentus'],
   }),
   g('iso-20022', 'ISO 20022', 'concept', { en: 'ISO 20022', fr: 'ISO 20022' }, {
-    en: 'Methodology and XML/JSON financial messaging standard. Clearing uses business areas pain, pacs, camt, acmt. Version in the xmlns (pacs.008.001.08 vs .10) is a common rejection cause.',
-    fr: 'Méthodologie et standard de messagerie financière XML/JSON. La compensation utilise les domaines pain, pacs, camt, acmt. La version dans le xmlns (pacs.008.001.08 vs .10) est une cause fréquente de rejet.',
+    en: 'Methodology and XML/JSON financial messaging standard (often shortened to ISO in this catalog). Clearing uses business areas pain, pacs, camt, acmt. ISO and SWIFT publish successive XSD revisions of the same message (pacs.008.001.08 → .10 → .13); each market pins one via a usage guideline (EPC SEPA, CBPR+, Swiss SPS…). The Document xmlns must match that XSD. On SWIFT the ISO 20022 payloads are called MX (vs legacy MT).',
+    fr: 'Méthodologie et standard de messagerie financière XML/JSON (souvent abrégé ISO dans ce catalogue). La compensation utilise les domaines pain, pacs, camt, acmt. L’ISO et SWIFT publient des révisions XSD successives du même message (pacs.008.001.08 → .10 → .13) ; chaque marché en fige une via un guide d’usage (EPC SEPA, CBPR+, SPS suisse…). Le xmlns Document doit correspondre à ce XSD. Sur SWIFT les payloads ISO 20022 s’appellent MX (vs MT historiques).',
   }, {
-    aliases: { en: ['ISO20022', 'MX messages'], fr: ['ISO20022', 'messages MX'] },
-    seeAlso: ['pain', 'pacs', 'camt', 'acmt', 'sct'],
+    aliases: { en: ['ISO', 'ISO20022', 'MX messages', 'ISO standard'], fr: ['ISO', 'ISO20022', 'messages MX', 'norme ISO'] },
+    seeAlso: ['pain', 'pacs', 'camt', 'acmt', 'sct', 'swift', 'mx', 'mt', 'xsd', 'ig', 'cbpr-plus'],
     sources: ['konsentus'],
-    links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
+    links: [
+      { label: 'pacs.008 versions', href: '/messages/pacs.008' },
+      { label: 'ISO 20022 message definitions (XSD)', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+      { label: 'SWIFT ISO 20022', href: 'https://www.swift.com/standards/iso-20022' },
+    ],
+  }),
+  g('xsd', 'XSD', 'concept', { en: 'XML Schema Definition', fr: 'Définition de schéma XML' }, {
+    en: 'The formal schema for an ISO 20022 message revision. Catalogue ids such as pacs.008.001.08 or camt.053.001.08 map 1:1 to an XSD and to the Document xmlns (`urn:iso:std:iso:20022:tech:xsd:…`). Banks validate against that schema; a wrong version number is a structural reject, not a business one. Download XSDs from the ISO catalogue; CBPR+ and national IGs may ship a constrained copy on top.',
+    fr: 'Le schéma formel d’une révision de message ISO 20022. Les ids catalogue (pacs.008.001.08, camt.053.001.08…) correspondent 1:1 à un XSD et au xmlns Document (`urn:iso:std:iso:20022:tech:xsd:…`). Les banques valident contre ce schéma ; un mauvais numéro de version est un rejet structurel, pas métier. Téléchargez les XSD sur le catalogue ISO ; CBPR+ et les IG nationaux peuvent en publier une copie contrainte par-dessus.',
+  }, {
+    aliases: {
+      en: ['XML Schema', 'XML Schema Definition', 'schema', 'xmlns'],
+      fr: ['schéma XML', 'XML Schema Definition', 'schéma', 'xmlns'],
+    },
+    seeAlso: ['iso-20022', 'ig', 'pacs', 'camt', 'mx', 'swift'],
+    links: [
+      { label: 'ISO catalogue (schemas)', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+      { label: 'ISO message archive (older XSDs)', href: 'https://www.iso20022.org/catalogue-messages/iso-20022-messages-archive' },
+    ],
+  }),
+  g('ig', 'IG', 'concept', { en: 'Usage guideline', fr: 'Guide d’usage' }, {
+    en: 'Market practice layer on top of an ISO XSD: which fields are mandatory, which codes are allowed, which schema revision is in force. EPC SEPA IGs, SWIFT CBPR+, Swiss SPS and HVPS each pin a version (and sometimes a country suffix like .ch.02). The ISO catalogue alone is not enough — your CSM’s IG decides which pacs/camt XSD you must send.',
+    fr: 'Couche de pratique de marché au-dessus d’un XSD ISO : champs obligatoires, codes autorisés, révision de schéma en vigueur. Les IG EPC SEPA, SWIFT CBPR+, SPS suisse et HVPS figent chacun une version (parfois un suffixe pays comme .ch.02). Le catalogue ISO seul ne suffit pas — c’est l’IG de votre CSM qui décide quel XSD pacs/camt envoyer.',
+  }, {
+    aliases: {
+      en: ['usage guideline', 'implementation guideline', 'MUG', 'message usage guideline', 'CGI'],
+      fr: ['guide d’usage', 'ligne directrice', 'IG', 'MUG', 'guide d’implémentation'],
+    },
+    seeAlso: ['xsd', 'iso-20022', 'epc', 'cbpr-plus', 'sps', 'pacs', 'camt'],
+    links: [
+      { label: 'CBPR+', href: '/glossary?id=cbpr-plus' },
+      { label: 'SWIFT ISO standards / CBPR+', href: 'https://www.swift.com/standards/iso-20022/iso-20022-standards' },
+    ],
+  }),
+  g('swift', 'SWIFT', 'scheme', { en: 'SWIFT', fr: 'SWIFT' }, {
+    en: 'Cooperative that runs the interbank messaging network and, with ISO, the ISO 20022 catalogue process. Cross-border FI-to-FI payments and reporting on SWIFT use MX (ISO 20022) under CBPR+ usage guidelines — not the same schema baselines as SEPA. Version migrations (pacs.008.001.08 → .10 → .13, matching camt reporting packages) follow SWIFT Standards Releases / CBPR+ windows. Legacy FIN messages are MT.',
+    fr: 'Coopérative qui opère le réseau de messagerie interbancaire et, avec l’ISO, le processus catalogue ISO 20022. Les paiements et le reporting FI-to-FI transfrontaliers sur SWIFT utilisent du MX (ISO 20022) sous guides CBPR+ — pas les mêmes baselines de schéma que le SEPA. Les migrations de version (pacs.008.001.08 → .10 → .13, packages camt associés) suivent les Standards Releases SWIFT / fenêtres CBPR+. Les messages FIN historiques sont des MT.',
+  }, {
+    aliases: {
+      en: ['S.W.I.F.T.', 'Society for Worldwide Interbank Financial Telecommunication', 'Swift network', 'SWIFTNet'],
+      fr: ['S.W.I.F.T.', 'réseau SWIFT', 'Swift', 'SWIFTNet'],
+    },
+    seeAlso: ['cbpr-plus', 'mx', 'mt', 'iso-20022', 'xsd', 'ig', 'pacs', 'camt', 'correspondent-banking', 'hvps', 'bic'],
+    links: [
+      { label: 'SWIFT / CBPR+ explorer', href: '/payment/swift-credit-transfer' },
+      { label: 'SWIFT ISO 20022', href: 'https://www.swift.com/standards/iso-20022' },
+      { label: 'ISO message definitions (XSD)', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+    ],
+  }),
+  g('mx', 'MX', 'message', { en: 'MX (ISO 20022 on SWIFT)', fr: 'MX (ISO 20022 sur SWIFT)' }, {
+    en: 'SWIFT name for ISO 20022 XML messages on the network (FINplus), as opposed to legacy MT. Same business areas as everywhere else — pain, pacs, camt — but the mandated XSD revision and field rules come from CBPR+ (or the market IG), not from the EPC SEPA IG. Pair related messages on compatible catalogue versions (pacs.008 with its pacs.002 / camt.054).',
+    fr: 'Nom SWIFT des messages XML ISO 20022 sur le réseau (FINplus), par opposition aux MT historiques. Mêmes domaines métier qu’ailleurs — pain, pacs, camt — mais la révision XSD et les règles de champs viennent de CBPR+ (ou de l’IG du marché), pas de l’IG EPC SEPA. Alignez les messages liés sur des versions catalogue compatibles (pacs.008 avec son pacs.002 / camt.054).',
+  }, {
+    aliases: { en: ['MX message', 'ISO 20022 MX', 'FINplus'], fr: ['message MX', 'ISO 20022 MX', 'FINplus'] },
+    seeAlso: ['mt', 'swift', 'cbpr-plus', 'iso-20022', 'pacs', 'camt', 'xsd'],
+    links: [
+      { label: 'CBPR+', href: '/glossary?id=cbpr-plus' },
+      { label: 'pacs.008 versions', href: '/messages/pacs.008' },
+      { label: 'ISO catalogue (XSD)', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+    ],
+  }),
+  g('mt', 'MT', 'message', { en: 'MT (SWIFT FIN)', fr: 'MT (SWIFT FIN)' }, {
+    en: 'Legacy SWIFT FIN message types (MT103 customer transfer, MT202 cover, MT940 statement…). Being replaced on cross-border FI-to-FI payment instructions by MX equivalents under CBPR+ (e.g. MT103 → pacs.008, MT202 → pacs.009, MT940 → camt.053). Do not confuse MT status codes with ISO TxSts on pacs.002.',
+    fr: 'Types de messages SWIFT FIN historiques (MT103 virement client, MT202 cover, MT940 relevé…). Remplacés sur les instructions de paiement FI-to-FI transfrontalières par les équivalents MX sous CBPR+ (ex. MT103 → pacs.008, MT202 → pacs.009, MT940 → camt.053). Ne pas confondre les codes statut MT avec le TxSts ISO du pacs.002.',
+  }, {
+    aliases: { en: ['FIN message', 'MT103', 'MT202', 'SWIFT MT'], fr: ['message FIN', 'MT103', 'MT202', 'SWIFT MT'] },
+    seeAlso: ['mx', 'swift', 'cbpr-plus', 'pacs-008', 'pacs-009', 'camt-053'],
+    links: [
+      { label: 'SWIFT ISO 20022', href: 'https://www.swift.com/standards/iso-20022' },
+      { label: 'SWIFT credit transfer', href: '/payment/swift-credit-transfer' },
+    ],
   }),
   g('pain', 'pain', 'message', { en: 'Payments Initiation (pain)', fr: 'Initiation des paiements (pain)' }, {
-    en: 'ISO 20022 business area for customer-to-bank instructions: pain.001 credit, pain.008 direct debit, pain.013 request-to-pay.',
-    fr: 'Domaine ISO 20022 des instructions client-banque : pain.001 virement, pain.008 prélèvement, pain.013 request-to-pay.',
+    en: 'ISO 20022 business area for customer-to-bank instructions: pain.001 credit, pain.008 direct debit, pain.013 request-to-pay. Same versioning model as pacs/camt — the xmlns quotes a specific XSD revision.',
+    fr: 'Domaine ISO 20022 des instructions client-banque : pain.001 virement, pain.008 prélèvement, pain.013 request-to-pay. Même modèle de versionnement que pacs/camt — le xmlns cite une révision XSD précise.',
   }, {
     aliases: { en: ['Payments Initiation', 'pain.001'], fr: ['initiation des paiements', 'pain'] },
-    seeAlso: ['pacs', 'iso-20022', 'camt', 'acmt', 'pain-001', 'pain-008', 'pain-013'],
+    seeAlso: ['pacs', 'iso-20022', 'camt', 'acmt', 'pain-001', 'pain-008', 'pain-013', 'xsd'],
     links: [{ label: 'pain.001', href: '/messages/pain.001' }],
   }),
   g('pacs', 'pacs', 'message', { en: 'Payments Clearing & Settlement (pacs)', fr: 'Compensation et règlement (pacs)' }, {
-    en: 'ISO 20022 interbank clearing area. pacs.008 is the customer credit transfer; pacs.002 is the status/ack.',
-    fr: 'Domaine ISO 20022 de compensation interbancaire. pacs.008 est le virement client ; pacs.002 le statut/ack.',
+    en: 'ISO 20022 interbank clearing area. pacs.008 is the customer credit transfer; pacs.002 is the status/ack. Each id is versioned (pacs.008.001.08 vs .10 / .13) and bound to an XSD; SEPA, CBPR+ and national rails pin different revisions via their IGs — do not mix them.',
+    fr: 'Domaine ISO 20022 de compensation interbancaire. pacs.008 est le virement client ; pacs.002 le statut/ack. Chaque id est versionné (pacs.008.001.08 vs .10 / .13) et lié à un XSD ; SEPA, CBPR+ et les rails nationaux figent des révisions différentes via leurs IG — ne pas les mélanger.',
   }, {
     aliases: { en: ['Payments Clearing and Settlement'], fr: ['compensation et règlement'] },
-    seeAlso: ['pain', 'camt', 'csm', 'iso-20022', 'pacs-008', 'pacs-002'],
-    links: [{ label: 'pacs.008', href: '/messages/pacs.008' }],
+    seeAlso: ['pain', 'camt', 'csm', 'iso-20022', 'xsd', 'ig', 'pacs-008', 'pacs-002', 'swift'],
+    links: [
+      { label: 'pacs.008 versions', href: '/messages/pacs.008' },
+      { label: 'ISO pacs schemas', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+    ],
   }),
   g('camt', 'camt', 'message', { en: 'Cash Management (camt)', fr: 'Gestion de trésorerie (camt)' }, {
-    en: 'ISO 20022 cash-management area: statements (camt.053), notifications (camt.054), recalls (camt.056) and investigations.',
-    fr: 'Domaine ISO 20022 de cash management : relevés (camt.053), notifications (camt.054), rappels (camt.056) et investigations.',
+    en: 'ISO 20022 cash-management area: statements (camt.053), notifications (camt.054), recalls (camt.056) and investigations. Versioned like pacs — camt.053.001.08 is a different XSD from a later .10/.13 package; CBPR+ reporting migrations track the same SWIFT windows as the related pacs.',
+    fr: 'Domaine ISO 20022 de cash management : relevés (camt.053), notifications (camt.054), rappels (camt.056) et investigations. Versionné comme pacs — camt.053.001.08 est un autre XSD qu’un package .10/.13 ultérieur ; les migrations de reporting CBPR+ suivent les mêmes fenêtres SWIFT que les pacs associés.',
   }, {
     aliases: { en: ['Cash Management'], fr: ['gestion de trésorerie'] },
-    seeAlso: ['pacs', 'iso-20022', 'pain', 'camt-053', 'camt-054', 'camt-056'],
+    seeAlso: ['pacs', 'iso-20022', 'pain', 'xsd', 'ig', 'swift', 'camt-053', 'camt-054', 'camt-056'],
+    links: [
+      { label: 'camt.054', href: '/messages/camt.054' },
+      { label: 'ISO camt schemas', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+    ],
   }),
   g('acmt', 'acmt', 'message', { en: 'Account Management (acmt)', fr: 'Gestion de compte (acmt)' }, {
     en: 'ISO 20022 account-management area. VoP uses acmt.023 (request) and acmt.024 (report).',
@@ -1154,11 +1231,11 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     seeAlso: ['creditor', 'originator', 'debtor', 'sct', 'vop'],
   }),
   g('sic', 'SIC', 'scheme', { en: 'Swiss Interbank Clearing', fr: 'Swiss Interbank Clearing' }, {
-    en: 'SIX CHF high-value and retail clearing in central bank money. Fully ISO 20022. Instant CHF is SIC IP, not SCT Inst.',
-    fr: 'Compensation SIX en CHF, gros montants et retail, en monnaie banque centrale. Entièrement ISO 20022. L’instantané CHF est SIC IP, pas SCT Inst.',
+    en: 'SIX CHF high-value and retail clearing in central bank money (RTGS). Fully ISO 20022 under Swiss Payment Standards. The current platform is SIC5; instant CHF is SIC IP, not SCT Inst.',
+    fr: 'Compensation SIX en CHF, gros montants et retail, en monnaie banque centrale (RTGS). Entièrement ISO 20022 sous Swiss Payment Standards. La plateforme actuelle est SIC5 ; l’instantané CHF est SIC IP, pas SCT Inst.',
   }, {
-    aliases: { en: ['Swiss Interbank Clearing', 'SIC CHF'], fr: ['Swiss Interbank Clearing', 'SIC CHF'] },
-    seeAlso: ['eurosic', 'sic-ip', 'csm'],
+    aliases: { en: ['Swiss Interbank Clearing', 'SIC CHF', 'SIC5'], fr: ['Swiss Interbank Clearing', 'SIC CHF', 'SIC5'] },
+    seeAlso: ['eurosic', 'sic-ip', 'six', 'snb', 'sps', 'rtgs', 'csm', 'qr-bill'],
     links: [
       { label: 'Swiss SPS / SIC', href: '/standards/swiss-sps' },
       { label: 'Swiss credit transfer', href: '/payment/swiss-credit-transfer' },
@@ -1169,14 +1246,14 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Compensation SIX en EUR pour les participants suisses. Les jambes EUR du trafic suisse y sont souvent réglées plutôt que dans STEP2 SEPA.',
   }, {
     aliases: { en: ['euroSIC'], fr: ['euroSIC'] },
-    seeAlso: ['sic', 'sepa', 'csm'],
+    seeAlso: ['sic', 'sepa', 'csm', 'six', 'rtgs'],
   }),
   g('sic-ip', 'SIC IP', 'scheme', { en: 'SIC Instant Payments', fr: 'SIC Instant Payments' }, {
     en: 'SIX CHF instant rail, ~10 seconds in central bank money. Treat timeouts like SCT Inst (pacs.028), not like batch SIC.',
     fr: 'Rail instantané CHF de SIX, ~10 secondes en monnaie banque centrale. Traitez les timeouts comme du SCT Inst (pacs.028), pas comme du SIC de lot.',
   }, {
-    aliases: { en: ['SIC Instant Payment', 'SIC Instant'], fr: ['SIC Instant', 'paiements instantanés SIC'] },
-    seeAlso: ['sic', 'ip', 'sct-inst'],
+    aliases: { en: ['SIC Instant Payment', 'SIC Instant', 'SIC5 Instant', 'SIP'], fr: ['SIC Instant', 'paiements instantanés SIC', 'SIC5 Instant', 'SIP'] },
+    seeAlso: ['sic', 'ip', 'sct-inst', 'six', 'snb', 'rtgs'],
     links: [{ label: 'SIC IP flow', href: '/flows/sic-ip-instant' }],
   }),
   g('target2', 'T2', 'scheme', { en: 'TARGET2 / T2', fr: 'TARGET2 / T2' }, {
@@ -1184,15 +1261,22 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Règlement brut en temps réel de la BCE pour l’euro. TIPS est le service instantané de la même famille TARGET ; le gros montant non instantané reste en T2.',
   }, {
     aliases: { en: ['TARGET2', 'T2', 'TARGET'], fr: ['TARGET2', 'T2'] },
-    seeAlso: ['tips', 'ecb', 'csm'],
+    seeAlso: ['tips', 'ecb', 'csm', 'rtgs', 'hvps'],
   }),
   g('cbpr-plus', 'CBPR+', 'scheme', { en: 'CBPR+', fr: 'CBPR+' }, {
-    en: 'SWIFT Cross-Border Payments and Reporting Plus — ISO 20022 usage guidelines for correspondent banking. Schema versions (pacs.008.001.08 vs .13) follow CBPR+ windows, not SEPA IGs.',
-    fr: 'SWIFT Cross-Border Payments and Reporting Plus — lignes directrices ISO 20022 pour la banque correspondante. Les versions de schéma suivent les fenêtres CBPR+, pas les IG SEPA.',
+    en: 'SWIFT Cross-Border Payments and Reporting Plus — ISO 20022 usage guidelines for correspondent banking on the SWIFT network. Schema versions (pacs.008.001.08 vs .10 / .13) follow CBPR+ migration windows, not SEPA IGs.',
+    fr: 'SWIFT Cross-Border Payments and Reporting Plus — lignes directrices ISO 20022 pour la banque correspondante sur le réseau SWIFT. Les versions de schéma (pacs.008.001.08 vs .10 / .13) suivent les fenêtres CBPR+, pas les IG SEPA.',
   }, {
-    aliases: { en: ['CBPR+', 'Cross-Border Payments and Reporting Plus'], fr: ['CBPR+'] },
-    seeAlso: ['iso-20022', 'pacs', 'correspondent-banking', 'nostro'],
-    links: [{ label: 'SWIFT credit transfer', href: '/payment/swift-credit-transfer' }],
+    aliases: {
+      en: ['CBPR+', 'CBPR', 'Cross-Border Payments and Reporting Plus', 'Cross-Border Payments and Reporting'],
+      fr: ['CBPR+', 'CBPR', 'Cross-Border Payments and Reporting Plus'],
+    },
+    seeAlso: ['swift', 'iso-20022', 'mx', 'pacs', 'camt', 'correspondent-banking', 'nostro', 'hvps', 'ig', 'xsd'],
+    links: [
+      { label: 'SWIFT credit transfer', href: '/payment/swift-credit-transfer' },
+      { label: 'SWIFT CBPR+ / ISO standards', href: 'https://www.swift.com/standards/iso-20022/iso-20022-standards' },
+      { label: 'ISO message definitions (XSD)', href: 'https://www.iso20022.org/iso-20022-message-definitions' },
+    ],
   }),
   g('ach', 'ACH', 'scheme', { en: 'Automated Clearing House', fr: 'Chambre de compensation automatisée' }, {
     en: 'Batch retail clearing (US ACH, and loosely any next-batch credit). Instant payments are defined against this: seconds, not next window. Mastercard Partner Linked often fetches ACH routing for US payouts.',
@@ -1223,7 +1307,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Profil haute sécurité de l’OpenID Foundation (FAPI 2.0 : mTLS ou private_key_jwt, PAR, PKCE). Socle de sécurité de l’Open Banking UK.',
   }, {
     aliases: { en: ['Financial-Grade API', 'FAPI 2.0'], fr: ['Financial-grade API', 'FAPI 2.0'] },
-    seeAlso: ['oauth2', 'oidc', 'mtls', 'directory'],
+    seeAlso: ['oauth2', 'oidc', 'mtls', 'directory', 'par', 'pkce', 'jws'],
     sources: ['konsentus'],
   }),
   g('mtls', 'mTLS', 'concept', { en: 'Mutual TLS', fr: 'TLS mutuel' }, {
@@ -1271,12 +1355,43 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     sources: ['konsentus'],
   }),
   g('emi', 'EMI', 'concept', { en: 'Electronic Money Institution', fr: 'Établissement de monnaie électronique' }, {
-    en: 'Firm authorised to issue e-money and related payment services. Many AISPs/PISPs are licensed as EMI or PI rather than as a bank.',
-    fr: 'Établissement agréé pour émettre de la monnaie électronique et des services de paiement liés. Beaucoup d’AISP/PISP sont agréés EMI ou PI plutôt que banque.',
+    en: 'Firm authorised to issue e-money and related payment services. Many AISPs/PISPs are licensed as EMI or PI rather than as a bank. An EMI that holds payment accounts is still an ASPSP under PSD2.',
+    fr: 'Établissement agréé pour émettre de la monnaie électronique et des services de paiement liés. Beaucoup d’AISP/PISP sont agréés EMI ou PI plutôt que banque. Un EMI qui tient des comptes de paiement reste un ASPSP sous PSD2.',
   }, {
     aliases: { en: ['Electronic Money Institution', 'e-money institution'], fr: ['établissement de monnaie électronique', 'EME'] },
-    seeAlso: ['psp', 'tpp'],
+    seeAlso: ['psp', 'tpp', 'pi', 'credit-institution', 'aspsp', 'neobank'],
     sources: ['konsentus'],
+  }),
+  g('pi', 'PI', 'concept', { en: 'Payment Institution', fr: 'Établissement de paiement' }, {
+    en: 'Firm authorised under PSD2 to provide payment services (transfers, acquiring, remittance, etc.) without a full banking licence and without issuing e-money. Distinct from an EMI and from a credit institution. May be an AISP/PISP and, if it holds payment accounts, an ASPSP.',
+    fr: 'Établissement agréé PSD2 pour fournir des services de paiement (virements, acquiring, remises, etc.) sans licence bancaire complète et sans émettre de monnaie électronique. Distinct d’un EMI et d’un établissement de crédit. Peut être AISP/PISP et, s’il tient des comptes de paiement, ASPSP.',
+  }, {
+    aliases: {
+      en: ['Payment Institution', 'payment institution'],
+      fr: ['établissement de paiement', 'EP'],
+    },
+    seeAlso: ['emi', 'credit-institution', 'psp', 'aspsp', 'tpp', 'psd2', 'neobank'],
+    sources: ['konsentus'],
+  }),
+  g('credit-institution', 'Credit institution', 'concept', { en: 'Credit institution', fr: 'Établissement de crédit' }, {
+    en: 'Full bank under the Capital Requirements / CRD stack: takes deposits, can lend, and sits under deposit-guarantee and prudential rules. In Open Banking it is typically the ASPSP. Online banks (Boursorama, N26) are credit institutions; “neobank” alone does not mean this licence.',
+    fr: 'Banque au sens CRD / exigences de fonds propres : reçoit des dépôts, peut prêter, et relève de la garantie des dépôts et des règles prudentielles. En Open Banking c’est en général l’ASPSP. Les banques en ligne (Boursorama, N26) sont des établissements de crédit ; « néobanque » seul ne désigne pas cette licence.',
+  }, {
+    aliases: {
+      en: ['credit institution', 'bank', 'licensed bank', 'full bank'],
+      fr: ['établissement de crédit', 'banque', 'banque agréée'],
+    },
+    seeAlso: ['aspsp', 'emi', 'pi', 'psp', 'neobank', 'nca'],
+  }),
+  g('neobank', 'Neobank', 'concept', { en: 'Neobank', fr: 'Néobanque' }, {
+    en: 'Marketing label for a digital-first retail bank or bank-like app (Revolut, N26, Boursorama…). Not a PSD2 licence type. Map the brand to its legal entity: credit institution, EMI or PI — and, for Open Banking, whether it is an ASPSP holding the payment account. Groups often mix entities by country.',
+    fr: 'Label marketing pour une banque ou une app « bank-like » digital-first (Revolut, N26, Boursorama…). Ce n’est pas un type d’agrément PSD2. Rattachez la marque à l’entité légale : établissement de crédit, EMI ou PI — et, pour l’Open Banking, si elle est ASPSP teneur de compte. Les groupes mélangent souvent les entités selon le pays.',
+  }, {
+    aliases: {
+      en: ['neobank', 'neo-bank', 'digital bank', 'virtual bank', 'challenger bank', 'online bank'],
+      fr: ['néobanque', 'banque en ligne', 'banque digitale', 'banque virtuelle', 'challenger bank'],
+    },
+    seeAlso: ['credit-institution', 'emi', 'pi', 'aspsp', 'psp', 'passporting'],
   }),
   g('passporting', 'Passporting', 'concept', { en: 'Passporting', fr: 'Passeport européen' }, {
     en: 'Using a home-state PSP licence to provide services in other EEA states. Host NCAs still expect you on their register.',
@@ -1330,7 +1445,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Passerelle de sécurité et de connectivité assurant l’interface entre les réseaux externes (SWIFT, TIPS, RT1, STEP2) et le SI bancaire interne. Gère le mTLS, la vérification QWAC/QSealC, la validation de schéma et la conversion de protocole.',
   }, {
     aliases: { en: ['Access Gateway Interface', 'AGI gateway', 'payment gateway'], fr: ['passerelle AGI', 'passerelle de paiement', 'gateway'] },
-    seeAlso: ['payment-hub', 'csm', 'mtls', 'qwac'],
+    seeAlso: ['payment-hub', 'csm', 'mtls', 'qwac', 'swift'],
     links: [
       { label: 'Flow: IP via Hub & ILM', href: '/flows/hub-ip-transaction-flow' },
       { label: 'Flow: Batch via Hub & ILM', href: '/flows/hub-non-ip-transaction-flow' },
@@ -1341,7 +1456,7 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     fr: 'Prestataire de services de paiement ou établissement financier qui accède à un système de compensation et de règlement (CSM / RTGS) via une banque participante directe plutôt qu’en direct.',
   }, {
     aliases: { en: ['sub participant', 'indirect participant', 'sub-member', 'nested participant'], fr: ['sous-participant', 'participant indirect', 'sous-membre'] },
-    seeAlso: ['csm', 'aspsp', 'correspondent-banking', 'sct-inst'],
+    seeAlso: ['csm', 'aspsp', 'correspondent-banking', 'sct-inst', 'rtgs'],
   }),
   g('settlement', 'Settlement', 'concept', { en: 'Settlement', fr: 'Règlement' }, {
     en: 'The irrevocable and final discharge of a payment obligation through the transfer of funds or value between payment service providers, often in central bank money via a clearing and settlement mechanism (CSM).',
@@ -1406,5 +1521,193 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       { label: 'Standard: Wero', href: '/standards/wero' },
       { label: 'Flow: Wero A2A', href: '/flows/wero-a2a-payment' },
     ],
+  }),
+  g('rtgs', 'RTGS', 'concept', { en: 'Real-Time Gross Settlement', fr: 'Règlement brut en temps réel' }, {
+    en: 'Settlement of each payment individually and immediately in central bank money, with no netting delay. TARGET2/T2, SIC and euroSIC are RTGS rails; retail batch CSMs (STEP2) and instant CSMs (TIPS, RT1, SIC IP) are different settlement models.',
+    fr: 'Règlement de chaque paiement individuellement et immédiatement en monnaie banque centrale, sans compensation nette différée. TARGET2/T2, SIC et euroSIC sont des rails RTGS ; les CSM de lots (STEP2) et instantanés (TIPS, RT1, SIC IP) sont d’autres modèles de règlement.',
+  }, {
+    aliases: {
+      en: ['Real-Time Gross Settlement', 'real-time gross settlement', 'RTGS system'],
+      fr: ['règlement brut en temps réel', 'système RTGS', 'RTGS'],
+    },
+    seeAlso: ['target2', 'sic', 'eurosic', 'csm', 'settlement', 'hvps', 'tips'],
+  }),
+  g('hvps', 'HVPS', 'scheme', { en: 'High-Value Payment System', fr: 'Système de paiement de gros montants' }, {
+    en: 'Wholesale / high-value payment system, usually RTGS in central bank money (T2, SIC, Fedwire-class systems). CBPR+ and regional HVPS publish the ISO 20022 revision banks must use — not the raw ISO catalogue alone.',
+    fr: 'Système de paiement de gros montants, en général RTGS en monnaie banque centrale (T2, SIC, systèmes de type Fedwire). CBPR+ et les HVPS régionaux publient la révision ISO 20022 imposée — pas le catalogue ISO seul.',
+  }, {
+    aliases: {
+      en: ['High-Value Payment System', 'high-value payment system', 'wholesale RTGS'],
+      fr: ['système de paiement de gros montants', 'HVPS', 'RTGS de gros'],
+    },
+    seeAlso: ['rtgs', 'target2', 'sic', 'cbpr-plus', 'swift'],
+  }),
+  g('six', 'SIX', 'scheme', { en: 'SIX Group', fr: 'SIX Group' }, {
+    en: 'Swiss financial-market infrastructure group. Operates Swiss Interbank Clearing (SIC / euroSIC), Swiss Payment Standards and related securities services; SIC settles in SNB central bank money.',
+    fr: 'Groupe d’infrastructures de marché financier suisse. Opère Swiss Interbank Clearing (SIC / euroSIC), les Swiss Payment Standards et des services titres ; SIC règle en monnaie BNS.',
+  }, {
+    aliases: {
+      en: ['SIX Group', 'SIX Interbank Clearing', 'SIX SIC'],
+      fr: ['SIX Group', 'SIX Interbank Clearing', 'SIC SIX'],
+    },
+    seeAlso: ['sic', 'eurosic', 'sic-ip', 'sps', 'snb', 'qr-bill'],
+    links: [{ label: 'Swiss SPS / SIC', href: '/standards/swiss-sps' }],
+  }),
+  g('snb', 'SNB', 'regulation', { en: 'Swiss National Bank', fr: 'Banque nationale suisse' }, {
+    en: 'Switzerland’s central bank. SIC and SIC IP settle in SNB central bank money (CHF); euroSIC settles euro legs for Swiss participants.',
+    fr: 'Banque centrale de la Suisse. SIC et SIC IP règlent en monnaie BNS (CHF) ; euroSIC règle les jambes euro des participants suisses.',
+  }, {
+    aliases: {
+      en: ['Swiss National Bank', 'SNB', 'BNS'],
+      fr: ['Banque nationale suisse', 'BNS', 'SNB'],
+    },
+    seeAlso: ['sic', 'sic-ip', 'eurosic', 'six', 'rtgs'],
+  }),
+  g('sps', 'SPS', 'scheme', { en: 'Swiss Payment Standards', fr: 'Swiss Payment Standards' }, {
+    en: 'SIX customer-to-bank and interbank ISO 20022 usage guidelines for Switzerland (pain/pacs/camt with Swiss xmlns and CHF rules). QR-bill remittance (QRR/SCOR) lives here; do not send SEPA service-level codes on a SIC CHF payment.',
+    fr: 'Lignes directrices ISO 20022 client-banque et interbancaires SIX pour la Suisse (pain/pacs/camt avec xmlns suisse et règles CHF). La remittance QR-facture (QRR/SCOR) y vit ; n’envoyez pas de codes service-level SEPA sur un paiement SIC CHF.',
+  }, {
+    aliases: {
+      en: ['Swiss Payment Standards', 'SPS 2026', 'Swiss SPS'],
+      fr: ['Swiss Payment Standards', 'SPS 2026', 'SPS suisse'],
+    },
+    seeAlso: ['sic', 'six', 'qr-bill', 'ig', 'iso-20022'],
+    links: [{ label: 'Swiss SPS standard', href: '/standards/swiss-sps' }],
+  }),
+  g('qr-bill', 'QR-bill', 'concept', { en: 'Swiss QR-bill', fr: 'QR-facture suisse' }, {
+    en: 'Swiss retail credit-transfer remittance form: a QR code plus structured creditor reference (QRR) or SCOR. Under Swiss Payment Standards it replaced DTA; pain.001 for SIC CHF often carries QR-bill data.',
+    fr: 'Forme de remittance retail suisse pour virement : un QR code plus référence créancier structurée (QRR) ou SCOR. Sous Swiss Payment Standards elle a remplacé le DTA ; le pain.001 SIC CHF porte souvent des données QR-facture.',
+  }, {
+    aliases: {
+      en: ['QR-bill', 'Swiss QR-bill', 'QR bill', 'QRR', 'SCOR', 'QR'],
+      fr: ['QR-facture', 'QR-bill', 'facture QR', 'QRR', 'SCOR', 'QR'],
+    },
+    seeAlso: ['sps', 'sic', 'pain', 'iban'],
+  }),
+  g('ebics', 'EBICS', 'concept', {
+    en: 'Electronic Banking Internet Communication Standard',
+    fr: 'Electronic Banking Internet Communication Standard',
+  }, {
+    en: 'Bank-to-corporate file-transfer protocol widely used in DE/FR/CH for exchanging pain/camt (and legacy formats) over the internet. German DK / DFÜ-Abkommen ISO flavours are still common on EBICS contracts.',
+    fr: 'Protocole de transfert de fichiers banque-entreprise très utilisé en DE/FR/CH pour échanger pain/camt (et formats historiques) sur Internet. Les flavours ISO DK / DFÜ-Abkommen allemands restent courants sur les contrats EBICS.',
+  }, {
+    aliases: {
+      en: ['Electronic Banking Internet Communication Standard', 'EBICS protocol'],
+      fr: ['Electronic Banking Internet Communication Standard', 'protocole EBICS'],
+    },
+    seeAlso: ['pain', 'camt', 'iso-20022', 'stet'],
+  }),
+  g('sla', 'SLA', 'concept', { en: 'Service Level Agreement / Scheme SLA', fr: 'Engagement de service / SLA du schéma' }, {
+    en: 'Time and quality target a scheme or rail imposes. SCT Inst / IPR: funds available end-to-end in ≤10 seconds; SIC IP and TIPS have their own hop clocks. Missing the scheme SLA is a compliance failure, not just slow UX.',
+    fr: 'Objectif de délai et de qualité imposé par un schéma ou un rail. SCT Inst / IPR : fonds disponibles de bout en bout en ≤10 secondes ; SIC IP et TIPS ont leurs propres horloges de hop. Manquer le SLA du schéma est un écart de conformité, pas seulement une UX lente.',
+  }, {
+    aliases: {
+      en: ['Service Level Agreement', 'scheme SLA', 'service level', 'E2E SLA'],
+      fr: ['accord de niveau de service', 'SLA du schéma', 'niveau de service', 'SLA E2E'],
+    },
+    seeAlso: ['sct-inst', 'ipr', 'ip', 'tips', 'sic-ip'],
+  }),
+  g('p2p', 'P2P', 'concept', { en: 'Peer-to-peer payment', fr: 'Paiement de pair à pair' }, {
+    en: 'Person-to-person transfer (send/receive), often via phone or alias rather than typing an IBAN. Life scenes and A2A overlays (Wero, Bizum, Twint…) productise P2P on top of instant rails.',
+    fr: 'Virement de particulier à particulier (envoi/réception), souvent via téléphone ou alias plutôt qu’un IBAN saisi. Les scènes de vie et overlays A2A (Wero, Bizum, Twint…) industrialisent le P2P au-dessus de rails instantanés.',
+  }, {
+    aliases: {
+      en: ['peer-to-peer', 'person-to-person', 'P2P payment'],
+      fr: ['pair à pair', 'personne à personne', 'paiement P2P'],
+    },
+    seeAlso: ['a2a', 'a2a-overlay', 'wero', 'ip'],
+  }),
+  g('pan', 'PAN', 'concept', { en: 'Primary Account Number', fr: 'Numéro de compte primaire (PAN)' }, {
+    en: 'Card number printed or tokenised on the payment instrument. BIN (first digits) identifies the issuer/scheme range. Card overlays (e.g. Curve) present an overlay PAN to the merchant while funding from an underlying card.',
+    fr: 'Numéro de carte imprimé ou tokenisé sur l’instrument. Le BIN (premiers chiffres) identifie la plage émetteur/schéma. Les overlays carte (ex. Curve) présentent un PAN d’overlay au commerçant tout en finançant depuis une carte sous-jacente.',
+  }, {
+    aliases: {
+      en: ['Primary Account Number', 'card number', 'card PAN'],
+      fr: ['numéro de carte', 'PAN carte', 'Primary Account Number'],
+    },
+    seeAlso: ['bin', 'card-scheme', 'curve', '3ds'],
+  }),
+  g('bin', 'BIN', 'concept', { en: 'Bank Identification Number', fr: 'Bank Identification Number (BIN)' }, {
+    en: 'Leading digits of a card PAN that identify the issuer and scheme range for routing authorisations. Overlay issuers (Curve, Privacy.com) use their own BIN in front of the cardholder’s underlying cards.',
+    fr: 'Premiers chiffres d’un PAN carte qui identifient la plage émetteur et schéma pour le routage d’autorisation. Les émetteurs d’overlay (Curve, Privacy.com) utilisent leur propre BIN devant les cartes sous-jacentes du porteur.',
+  }, {
+    aliases: {
+      en: ['Bank Identification Number', 'IIN', 'Issuer Identification Number', 'BIN range'],
+      fr: ['Bank Identification Number', 'IIN', 'plage BIN'],
+    },
+    seeAlso: ['pan', 'card-scheme', 'curve'],
+  }),
+  g('jws', 'JWS', 'concept', { en: 'JSON Web Signature', fr: 'JSON Web Signature' }, {
+    en: 'Detached or attached signature over a JSON HTTP body (RFC 7515). UK Open Banking writes require a detached JWS in `x-jws-signature` with b64=false and OB header claims; consent and payment Initiation blocks must be byte-identical.',
+    fr: 'Signature détachée ou attachée sur un corps HTTP JSON (RFC 7515). Les écritures Open Banking UK exigent un JWS détaché dans `x-jws-signature` avec b64=false et claims OB en en-tête ; les blocs Initiation du consentement et du paiement doivent être octet-identiques.',
+  }, {
+    aliases: {
+      en: ['JSON Web Signature', 'detached JWS', 'x-jws-signature'],
+      fr: ['JSON Web Signature', 'JWS détaché', 'x-jws-signature'],
+    },
+    seeAlso: ['fapi', 'oauth2', 'open-banking', 'mtls'],
+  }),
+  g('pkce', 'PKCE', 'concept', {
+    en: 'Proof Key for Code Exchange',
+    fr: 'Proof Key for Code Exchange',
+  }, {
+    en: 'OAuth 2.0 extension (RFC 7636) that binds the authorisation code to the client via a code_verifier / code_challenge, mitigating interception on public clients. Required in FAPI / UK Open Banking alongside PAR.',
+    fr: 'Extension OAuth 2.0 (RFC 7636) qui lie le code d’autorisation au client via code_verifier / code_challenge, limitant l’interception sur clients publics. Exigée en FAPI / Open Banking UK avec PAR.',
+  }, {
+    aliases: {
+      en: ['Proof Key for Code Exchange', 'PKCE', 'code_challenge'],
+      fr: ['Proof Key for Code Exchange', 'PKCE', 'code_challenge'],
+    },
+    seeAlso: ['oauth2', 'fapi', 'par', 'oidc'],
+  }),
+  g('par', 'PAR', 'concept', { en: 'Pushed Authorization Request', fr: 'Pushed Authorization Request' }, {
+    en: 'OAuth 2.0 / FAPI pattern where the client POSTs the authorisation request parameters to the AS and receives a request_uri, instead of putting them on the front-channel redirect. UK Open Banking pairs PAR with PKCE and a signed request object.',
+    fr: 'Modèle OAuth 2.0 / FAPI où le client POST les paramètres d’autorisation à l’AS et reçoit un request_uri, au lieu de les mettre sur la redirection front-channel. L’Open Banking UK associe PAR à PKCE et à un request object signé.',
+  }, {
+    aliases: {
+      en: ['Pushed Authorization Request', 'PAR', 'request_uri'],
+      fr: ['Pushed Authorization Request', 'PAR', 'request_uri'],
+    },
+    seeAlso: ['oauth2', 'fapi', 'pkce', 'oidc'],
+  }),
+  g('eea', 'EEA', 'regulation', { en: 'European Economic Area', fr: 'Espace économique européen' }, {
+    en: 'EU member states plus Iceland, Liechtenstein and Norway. PSD2 passporting, AdSense consent (Funding Choices) and many Open Banking reachability rules refer to the EEA rather than the EU alone.',
+    fr: 'États membres de l’UE plus Islande, Liechtenstein et Norvège. Le passeport PSD2, le consentement AdSense (Funding Choices) et de nombreuses règles de joignabilité Open Banking parlent d’EEE plutôt que de la seule UE.',
+  }, {
+    aliases: {
+      en: ['European Economic Area', 'EEA', 'E.E.A.'],
+      fr: ['Espace économique européen', 'EEE', 'EEA'],
+    },
+    seeAlso: ['psd2', 'passporting', 'sepa'],
+  }),
+  g('b2b', 'B2B', 'concept', { en: 'Business-to-business', fr: 'Business-to-business' }, {
+    en: 'Business-to-business payments or mandates. In SEPA, SDD B2B is the corporate direct-debit scheme (no unconditional refund right like SDD Core). Also used loosely for any corporate A2A credit.',
+    fr: 'Paiements ou mandats entre entreprises. En SEPA, le SDD B2B est le schéma de prélèvement entreprises (sans droit de remboursement inconditionnel du SDD Core). Aussi utilisé au sens large pour tout virement A2A corporate.',
+  }, {
+    aliases: {
+      en: ['business-to-business', 'B2B', 'business to business'],
+      fr: ['business-to-business', 'B2B', 'interentreprises'],
+    },
+    seeAlso: ['sdd', 'sct', 'a2a'],
+  }),
+  g('eod', 'EOD', 'concept', { en: 'End of day', fr: 'Fin de journée' }, {
+    en: 'Cut-off or batch window at the end of a clearing day. Regular RTGS and batch CSMs (STEP2, SIC non-instant) organise cycles around EOD; instant rails (TIPS, SCT Inst, SIC IP) have no EOD — they run 24/7.',
+    fr: 'Cut-off ou fenêtre de lot en fin de journée de compensation. Les RTGS classiques et CSM de lots (STEP2, SIC non instantané) s’organisent autour de l’EOD ; les rails instantanés (TIPS, SCT Inst, SIC IP) n’ont pas d’EOD — ils tournent 24/7.',
+  }, {
+    aliases: {
+      en: ['end of day', 'end-of-day', 'EOD cut-off', 'day cut-off'],
+      fr: ['fin de journée', 'cut-off EOD', 'clôture journalière'],
+    },
+    seeAlso: ['rtgs', 'csm', 'step2', 'sic', 'ip'],
+  }),
+  g('vpa', 'VPA', 'concept', { en: 'Virtual Payment Address', fr: 'Virtual Payment Address' }, {
+    en: 'UPI alias of the form name@bank (or similar) that resolves to a payment account without exposing the underlying account number. Analogous to Pix keys or phone proxies on European A2A overlays.',
+    fr: 'Alias UPI de la forme nom@banque (ou similaire) qui résout vers un compte de paiement sans exposer le numéro sous-jacent. Analogue aux clés Pix ou aux proxies téléphone des overlays A2A européens.',
+  }, {
+    aliases: {
+      en: ['Virtual Payment Address', 'VPA', 'UPI ID'],
+      fr: ['Virtual Payment Address', 'VPA', 'identifiant UPI'],
+    },
+    seeAlso: ['upi', 'pix', 'a2a-overlay'],
   }),
 ];

@@ -426,7 +426,10 @@ export const en: MessageTree = {
     guideline: 'Usage guideline',
     versions: 'Schema versions',
     versionsLead:
-      'SWIFT and ISO publish successive revisions of the same message (e.g. pacs.008.001.08 → .10 → .13). Markets can also mandate a country usage-guideline suffix (pacs.008.001.08.ch.02) — the xmlns must match.',
+      'SWIFT and ISO publish successive XSD revisions of the same business message (e.g. pacs.008.001.08 → .10 → .13; same pattern for camt and pain). Markets pin one via a usage guideline (EPC SEPA, CBPR+, Swiss SPS…) and may add a country suffix (pacs.008.001.08.ch.02) — the Document xmlns must match that XSD.',
+    versionsXsd: 'ISO catalogue (XSD)',
+    versionsSwift: 'SWIFT / CBPR+',
+    versionsGlossary: 'SWIFT & versioning glossary',
     markets: 'Markets / rails',
     versionCurrent: 'current',
     versionLegacy: 'legacy',

@@ -429,7 +429,10 @@ export const fr: MessageTree = {
     guideline: 'Guide d’usage',
     versions: 'Versions de schéma',
     versionsLead:
-      'SWIFT et l’ISO publient des révisions successives du même message (ex. pacs.008.001.08 → .10 → .13). Les marchés peuvent aussi imposer un suffixe de guide d’usage national (pacs.008.001.08.ch.02) — le xmlns doit correspondre.',
+      'SWIFT et l’ISO publient des révisions XSD successives du même message métier (ex. pacs.008.001.08 → .10 → .13 ; même logique pour camt et pain). Les marchés en figent une via un guide d’usage (EPC SEPA, CBPR+, SPS suisse…) et peuvent ajouter un suffixe pays (pacs.008.001.08.ch.02) — le xmlns Document doit correspondre à ce XSD.',
+    versionsXsd: 'Catalogue ISO (XSD)',
+    versionsSwift: 'SWIFT / CBPR+',
+    versionsGlossary: 'Glossaire SWIFT & versionnement',
     markets: 'Marchés / rails',
     versionCurrent: 'courante',
     versionLegacy: 'héritée',
