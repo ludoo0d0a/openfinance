@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { JargonText } from '@/components/JargonText';
 import { LiveAppFrame } from '@/components/LiveAppFrame';
 import { LiveExplainer } from '@/components/LiveExplainer';
 import { OutcomeChip } from '@/components/live/OutcomeChip';
@@ -56,8 +57,12 @@ export function LivePlayer({ sceneId, scenarioId }: { sceneId: LifeSceneId; scen
       </div>
 
       <header className="mt-4 max-w-3xl">
-        <h1 className="text-2xl font-bold sm:text-3xl">{scenario.title[locale]}</h1>
-        <p className="mt-2 text-[14px] text-muted">{scenario.blurb[locale]}</p>
+        <h1 className="text-2xl font-bold sm:text-3xl">
+          <JargonText text={scenario.title[locale]} />
+        </h1>
+        <p className="mt-2 text-[14px] text-muted">
+          <JargonText text={scenario.blurb[locale]} />
+        </p>
       </header>
 
       {siblings.length > 1 && (

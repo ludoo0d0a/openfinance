@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { JargonText } from '@/components/JargonText';
 import { OutcomeChip } from '@/components/live/OutcomeChip';
 import { lifeSceneById, scenariosForScene } from '@/data/lifeScenes';
 import { useI18n, useT } from '@/i18n';
@@ -19,8 +20,12 @@ export function LiveScenePicker({ sceneId }: { sceneId: LifeSceneId }) {
       </p>
       <header className="mt-4 max-w-3xl">
         <p className="eyebrow">{scene.brand[locale]}</p>
-        <h1 className="mt-2 text-3xl font-bold">{scene.title[locale]}</h1>
-        <p className="mt-3 text-[15px] text-muted">{scene.blurb[locale]}</p>
+        <h1 className="mt-2 text-3xl font-bold">
+          <JargonText text={scene.title[locale]} />
+        </h1>
+        <p className="mt-3 text-[15px] text-muted">
+          <JargonText text={scene.blurb[locale]} />
+        </p>
       </header>
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-2">
