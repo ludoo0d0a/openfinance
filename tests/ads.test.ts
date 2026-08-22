@@ -38,6 +38,7 @@ describe('ads', () => {
     expect(adsDisabledForPath('/quiz/debug-reject')).toBe(true);
     expect(adsDisabledForPath('/privacy')).toBe(true);
     expect(adsDisabledForPath('/contact')).toBe(true);
+    expect(adsDisabledForPath('/about')).toBe(true);
     expect(adsDisabledForPath('/this-path-does-not-exist')).toBe(true);
     expect(isContentPath('/')).toBe(true);
     expect(isContentPath('/about')).toBe(true);

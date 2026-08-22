@@ -958,6 +958,16 @@ export const PAYMENTS: Payment[] = [
         'How does €100 travel from France to Germany?',
         'Comment 100 € voyagent-ils de la France vers l’Allemagne ?',
       ),
+      body: [
+        L(
+          'SEPA Instant Credit Transfer (SCT Inst) is the scheme rulebook for euro credit transfers that must settle in seconds, not on the next TARGET clearing cycle. The payer’s bank (or a PISP initiating on their behalf) builds a pacs.008 with Local Instrument INST and submits it to an instant CSM such as TIPS or RT1. The creditor PSP must accept or reject inside the scheme SLA — typically within a few seconds — so the debtor can be told the money has arrived.',
+          'Le SCT Inst (SEPA Instant Credit Transfer) est le rulebook des virements euro qui doivent se régler en secondes, pas au prochain cycle TARGET. La banque du payeur (ou un PISP) construit un pacs.008 avec Local Instrument INST et le soumet à un CSM instantané (TIPS ou RT1). Le PSP créancier doit accepter ou rejeter dans le SLA du schéma — en pratique quelques secondes — pour que le débiteur sache que les fonds sont arrivés.',
+        ),
+        L(
+          'Before the pacs.008 leaves, many corridors now run Verification of Payee (VoP / Confirmation of Payee): the debtor name is checked against the creditor IBAN so a mistyped beneficiary is caught early. After settlement, both sides may see camt.054 notifications; recalls use camt.056 and may end in pacs.004. OpenFinance walks that path hop by hop with sample ISO 20022 payloads — educational only, not a live rail.',
+          'Avant le départ du pacs.008, beaucoup de corridors enchaînent une Verification of Payee (VoP) : le nom du débiteur est contrôlé contre l’IBAN créancier pour éviter un mauvais bénéficiaire. Après règlement, les deux côtés peuvent recevoir des camt.054 ; les rappels passent par camt.056 et peuvent finir en pacs.004. OpenFinance déroule ce chemin hop par hop avec des payloads ISO 20022 d’exemple — purement pédagogique, pas un rail réel.',
+        ),
+      ],
     },
     countryIds: ['FR', 'DE', 'CH'],
     defaultCountryId: 'FR',
@@ -989,6 +999,16 @@ export const PAYMENTS: Payment[] = [
         'How does €100 move on an A2A overlay (e.g. Wero) from France to Germany?',
         'Comment 100 € circulent-ils sur un overlay A2A (ex. Wero) de la France vers l’Allemagne ?',
       ),
+      body: [
+        L(
+          'An account-to-account overlay such as Wero (EPI), Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay or TWINT sits in front of an instant settlement rail. The consumer experience is a proxy or wallet intent — phone number, alias, or in-app confirmation — while the interbank money movement remains a SCT Inst-style pacs.008 (or the local instant equivalent) between debtor and creditor PSPs.',
+          'Un overlay compte-à-compte comme Wero (EPI), Bizum, Payconiq, iDEAL, BLIK, Swish, Vipps MobilePay ou TWINT se place devant un rail de règlement instantané. L’expérience utilisateur est une intention proxy / wallet — téléphone, alias, confirmation in-app — tandis que le mouvement interbancaire reste un pacs.008 style SCT Inst (ou l’équivalent local) entre PSP débiteur et créancier.',
+        ),
+        L(
+          'That is different from paying with SCT Inst at a merchant checkout with no overlay, from a PISP initiating over XS2A (TrueLayer-style), and from digital wallets or card overlays that never look like A2A to the merchant. Use this explorer to see which hops belong to the scheme platform versus the CSM, and open the related Wero flow for the full sequence.',
+          'Ce n’est ni un checkout SCT Inst commerçant sans overlay, ni un PISP sur XS2A (style TrueLayer), ni un wallet / overlay carte que le commerçant ne voit pas comme de l’A2A. Cet explorateur montre quels hops appartiennent à la plateforme de schéma versus le CSM ; le flux Wero détaille la séquence complète.',
+        ),
+      ],
     },
     countryIds: ['FR', 'DE'],
     defaultCountryId: 'FR',

@@ -288,6 +288,8 @@ export interface PaymentStory {
   fromCountry: CountryId;
   toCountry: CountryId;
   headline: LocalizedText;
+  /** Longer editorial paragraphs for AdSense / SEO article depth. */
+  body?: LocalizedText[];
 }
 
 export interface Payment {

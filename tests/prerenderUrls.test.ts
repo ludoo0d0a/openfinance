@@ -24,6 +24,7 @@ describe('prerenderUrls', () => {
     expect(paths).toContain('/map');
     expect(paths).toContain('/live');
     expect(paths).toContain('/quiz/debug-reject');
+    expect(paths.some((p) => p.startsWith('/live/shop'))).toBe(true);
     expect(paths.some((p) => p.startsWith('/scheme/'))).toBe(false);
   });
 
@@ -34,6 +35,7 @@ describe('prerenderUrls', () => {
     expect(sitemap).not.toContain('/map');
     expect(sitemap).not.toContain('/live');
     expect(sitemap).not.toContain('/quiz/debug-reject');
+    expect(sitemap.every((p) => !p.startsWith('/live/'))).toBe(true);
   });
 
   it('builds a sitemap from the same inventory', () => {
@@ -51,7 +53,10 @@ describe('pageSeo', () => {
     expect(pageSeo('/messages/pacs.008').title).toContain('pacs.008');
     expect(pageSeo('/privacy').title).toMatch(/Privacy/i);
     expect(pageSeo('/try').title).toMatch(/Try/i);
+    expect(pageSeo('/try').robots).toMatch(/noindex/i);
     expect(pageSeo('/map').title).toMatch(/Interop map/i);
     expect(pageSeo('/live').title).toMatch(/Live/i);
+    expect(pageSeo('/live/shop').robots).toMatch(/noindex/i);
+    expect(pageSeo('/payment/sepa-instant').robots).toBeUndefined();
   });
 });

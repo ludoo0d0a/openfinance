@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
+import { PublisherEmail } from '@/components/PublisherEmail';
+import { PUBLISHER_EMAIL } from '@/lib/publisher';
 import { useT } from '@/i18n';
 
-export const PUBLISHER_EMAIL = 'contact@geoking.fr';
-
+export { PUBLISHER_EMAIL };
 export function PrivacyView() {
   const t = useT();
   return (
@@ -32,11 +33,7 @@ export function PrivacyView() {
         <p>{t('privacy.cookies')}</p>
         <h2 className="text-xl font-semibold text-ink">{t('privacy.contactTitle')}</h2>
         <p>
-          {t('privacy.contact')}{' '}
-          <a className="text-signal hover:underline" href={`mailto:${PUBLISHER_EMAIL}`}>
-            {PUBLISHER_EMAIL}
-          </a>
-          .
+          {t('privacy.contact')} <PublisherEmail className="text-signal hover:underline" />.
         </p>
       </div>
     </article>
@@ -54,10 +51,7 @@ export function ContactView() {
       </header>
       <div className="mt-8 space-y-4 text-[15px] leading-relaxed text-muted">
         <p>
-          {t('contact.emailLabel')}{' '}
-          <a className="text-signal hover:underline" href={`mailto:${PUBLISHER_EMAIL}`}>
-            {PUBLISHER_EMAIL}
-          </a>
+          {t('contact.emailLabel')} <PublisherEmail className="text-signal hover:underline" />
         </p>
         <p>{t('contact.publisher')}</p>
         <p>

@@ -15,6 +15,18 @@ export function DocumentMeta() {
     if (ogTitle) ogTitle.setAttribute('content', seo.title);
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', seo.description);
+
+    let robots = document.querySelector('meta[name="robots"]');
+    if (seo.robots) {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.setAttribute('name', 'robots');
+        document.head.appendChild(robots);
+      }
+      robots.setAttribute('content', seo.robots);
+    } else if (robots) {
+      robots.remove();
+    }
   }, [pathname]);
 
   return null;

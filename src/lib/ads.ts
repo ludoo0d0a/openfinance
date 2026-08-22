@@ -40,7 +40,7 @@ export function adsTxtBody(client: string): string | undefined {
  * Paths where Google would see ads without publisher article content
  * (editor, graph, quiz, legal, or any unmatched / 404 URL).
  */
-const AD_DISABLED_PREFIXES = ['/try', '/live', '/map', '/quiz', '/privacy', '/contact'];
+const AD_DISABLED_PREFIXES = ['/try', '/live', '/map', '/quiz', '/privacy', '/contact', '/about'];
 
 export function adsDisabledForPath(pathname: string): boolean {
   if (ADSENSE_PAUSED) return true;

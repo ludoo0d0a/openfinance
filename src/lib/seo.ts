@@ -10,6 +10,8 @@ export type PageSeo = {
   title: string;
   description: string;
   canonicalPath: string;
+  /** When set, injected as `<meta name="robots">` (e.g. noindex on tools). */
+  robots?: string;
 };
 
 const DEFAULT: PageSeo = {
@@ -67,6 +69,7 @@ export function pageSeo(pathname: string): PageSeo {
       title: 'Try editor — OpenFinance',
       description: clip('Build and inspect synthetic ISO 20022 pacs messages in the OpenFinance try editor.'),
       canonicalPath: path,
+      robots: 'noindex, follow',
     };
   }
   if (path === '/map') {
@@ -74,6 +77,7 @@ export function pageSeo(pathname: string): PageSeo {
       title: 'Interop map — OpenFinance',
       description: clip('Interactive map of how payment standards, messages and rails connect.'),
       canonicalPath: path,
+      robots: 'noindex, follow',
     };
   }
   if (path === '/live' || path.startsWith('/live/')) {
@@ -81,6 +85,7 @@ export function pageSeo(pathname: string): PageSeo {
       title: 'Live showcase — OpenFinance',
       description: clip('Replay consumer payment journeys as screen flows — educational showcase, no real money.'),
       canonicalPath: path === '/live' ? '/live' : path,
+      robots: 'noindex, follow',
     };
   }
   if (path === '/quiz/debug-reject' || path.startsWith('/quiz/')) {
@@ -88,6 +93,7 @@ export function pageSeo(pathname: string): PageSeo {
       title: 'Debug quiz — OpenFinance',
       description: clip('Practice reading ISO 20022 rejects and status codes on sample payment journeys.'),
       canonicalPath: path,
+      robots: 'noindex, follow',
     };
   }
 

@@ -46,7 +46,7 @@ function replaceRootInner(html: string, inner: string): string {
   throw new Error('dist/index.html has an unclosed #root');
 }
 
-function applySeo(template: string, seo: { title: string; description: string }, canonical: string): string {
+function applySeo(template: string, seo: { title: string; description: string; robots?: string }, canonical: string): string {
   let html = template;
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(seo.title)}</title>`);
   html = html.replace(
@@ -68,6 +68,19 @@ function applySeo(template: string, seo: { title: string; description: string },
     );
   } else {
     html = html.replace('</head>', `    <link rel="canonical" href="${escapeHtml(canonical)}" />\n  </head>`);
+  }
+  const robots = seo.robots?.trim();
+  if (robots) {
+    if (/<meta\s+name="robots"/i.test(html)) {
+      html = html.replace(
+        /<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i,
+        `<meta name="robots" content="${escapeHtml(robots)}" />`,
+      );
+    } else {
+      html = html.replace('</head>', `    <meta name="robots" content="${escapeHtml(robots)}" />\n  </head>`);
+    }
+  } else {
+    html = html.replace(/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>\s*/i, '');
   }
   return html;
 }

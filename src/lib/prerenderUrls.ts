@@ -4,6 +4,7 @@ import { ISO_MESSAGES } from '@/data/iso20022';
 import { ALL_SAMPLES } from '@/data/samples';
 import { STANDARDS } from '@/data/standards';
 import { INFRASTRUCTURES } from '@/data/infrastructures';
+import { LIFE_SCENARIOS, LIFE_SCENES } from '@/data/lifeScenes';
 
 const SITE_ORIGIN = 'https://openfinance.geoking.fr';
 
@@ -12,6 +13,13 @@ const SITE_ORIGIN = 'https://openfinance.geoking.fr';
  * without ads). Kept out of the sitemap — thin SPA shells, not articles.
  */
 export const TOOL_PRERENDER_PATHS = ['/try', '/map', '/live', '/quiz/debug-reject'] as const;
+
+export function isToolPath(path: string): boolean {
+  if ((TOOL_PRERENDER_PATHS as readonly string[]).includes(path)) return true;
+  if (path === '/live' || path.startsWith('/live/')) return true;
+  if (path.startsWith('/quiz/')) return true;
+  return path === '/try' || path === '/map';
+}
 
 /** Catalog + tool entry paths that get a static `dist/<path>/index.html`. */
 export function listPrerenderPaths(): string[] {
@@ -27,14 +35,19 @@ export function listPrerenderPaths(): string[] {
   for (const s of STANDARDS) paths.add(`/standards/${s.id}`);
   for (const i of INFRASTRUCTURES) paths.add(`/infrastructure/${i.id}`);
   for (const t of TOOL_PRERENDER_PATHS) paths.add(t);
+  for (const scene of LIFE_SCENES) {
+    paths.add(`/live/${scene.id}`);
+  }
+  for (const scenario of LIFE_SCENARIOS) {
+    paths.add(`/live/${scenario.sceneId}/${scenario.id}`);
+  }
 
   return [...paths].sort((a, b) => a.localeCompare(b));
 }
 
 /** Indexable article URLs only (no tool shells). */
 export function listSitemapPaths(): string[] {
-  const tools = new Set<string>(TOOL_PRERENDER_PATHS);
-  return listPrerenderPaths().filter((path) => !tools.has(path));
+  return listPrerenderPaths().filter((path) => !isToolPath(path));
 }
 
 export function sitemapXml(paths: string[] = listSitemapPaths()): string {

@@ -116,6 +116,11 @@ export function PaymentExplorerView() {
           </p>
         )}
         <p className="mt-3 text-[15px] leading-relaxed text-muted">{payment.summary[locale]}</p>
+        {payment.story?.body?.map((paragraph, i) => (
+          <p key={i} className="mt-3 text-[15px] leading-relaxed text-muted">
+            {paragraph[locale]}
+          </p>
+        ))}
         {scheme && (
           <p className="mt-2 text-[13px] text-muted">
             {t('explorer.scheme')}{' '}
