@@ -30,23 +30,8 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript>
-      <main>
-        <h1>OpenFinance — Payment Explorer</h1>
-        <p>
-          Explore European payment flows, ISO 20022 messages, SEPA schemes and infrastructures.
-          Understand every actor, system, message and standard involved. This catalog is published
-          by GeoKing for education. It is not a bank or a payment service.
-        </p>
-        <p>
-          Enable JavaScript to browse the explorer, or read
-          <a href="/about">About</a>,
-          <a href="/privacy">Privacy</a>
-          and
-          <a href="/contact">Contact</a>.
-        </p>
-      </main>
-    </noscript>
+    <!-- No noscript <h1>: prerender fills #root with article HTML for View Source / AdSense.
+         A shell h1 here duplicated every deep link and looked like empty inventory. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -93,7 +93,19 @@ jobs:
             echo "Prerendered HTML must not contain AdSense markup (client-only slots)"
             exit 1
           fi
-
+          # Shell noscript h1 must not leak onto catalog pages (AdSense View Source).
+          if grep -F '<h1>OpenFinance — Payment Explorer</h1>' dist/payment/sepa-instant/index.html dist/payment/wero/index.html dist/privacy/index.html; then
+            echo "Catalog HTML still contains the SPA shell h1 — strip noscript from index.html / prerender"
+            exit 1
+          fi
+          grep -q '<h1[^>]*>SEPA Instant' dist/payment/sepa-instant/index.html || {
+            echo "dist/payment/sepa-instant/index.html missing article h1"
+            exit 1
+          }
+          grep -q '<h1[^>]*>A2A Overlay' dist/payment/wero/index.html || {
+            echo "dist/payment/wero/index.html missing article h1"
+            exit 1
+          }
       - uses: actions/upload-artifact@v7
         with:
           name: dist

@@ -86,7 +86,9 @@ function applySeo(template: string, seo: { title: string; description: string; r
 }
 
 function injectRoot(template: string, appHtml: string): string {
-  return replaceRootInner(template, appHtml);
+  // Drop any leftover noscript shell so View Source only shows the article h1.
+  const withoutNoscript = template.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '');
+  return replaceRootInner(withoutNoscript, appHtml);
 }
 
 async function writePage(relPath: string, html: string): Promise<void> {
