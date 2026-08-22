@@ -59,4 +59,11 @@ describe('adConsent', () => {
     expect(window.adsbygoogle?.requestNonPersonalizedAds).toBe(1);
     expect(getAdConsent()).toBeNull();
   });
+
+  it('treats Funding Choices debug query as personalized consent for ad load', async () => {
+    const { isFundingChoicesDebug, resolveAdConsentForAds } = await import('../src/lib/adConsent');
+    expect(isFundingChoicesDebug('?fc=alwaysshow&fctype=gdpr')).toBe(true);
+    expect(resolveAdConsentForAds('?fc=alwaysshow&fctype=gdpr')).toBe('personalized');
+    expect(resolveAdConsentForAds('')).toBeNull();
+  });
 });

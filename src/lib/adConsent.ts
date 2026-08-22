@@ -4,6 +4,14 @@ export type AdConsentChoice = 'personalized' | 'non-personalized';
 const STORAGE_KEY = 'openfinance.adConsent';
 const listeners = new Set<() => void>();
 
+/** Google Privacy & messaging debug (`?fc=alwaysshow&fctype=gdpr`). */
+export function isFundingChoicesDebug(
+  search = typeof window !== 'undefined' ? window.location.search : '',
+): boolean {
+  const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
+  return params.get('fc') === 'alwaysshow';
+}
+
 export function getAdConsent(): AdConsentChoice | null {
   if (typeof localStorage === 'undefined') return null;
   try {
@@ -32,6 +40,15 @@ export function subscribeAdConsent(listener: () => void): () => void {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/**
+ * Consent required before Display units, except FC debug preview where Google
+ * must load immediately so `?fc=alwaysshow` can render the CMP UI.
+ */
+export function resolveAdConsentForAds(search?: string): AdConsentChoice | null {
+  if (isFundingChoicesDebug(search)) return 'personalized';
+  return getAdConsent();
 }
 
 /** Must run before the first `adsbygoogle.push`. */

@@ -1,21 +1,34 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { adsenseClient } from '@/lib/ads';
-import { getAdConsent, setAdConsent, type AdConsentChoice } from '@/lib/adConsent';
+import { Link, useLocation } from 'react-router-dom';
+import { adsenseClient, ensureAdsScript } from '@/lib/ads';
+import {
+  getAdConsent,
+  isFundingChoicesDebug,
+  setAdConsent,
+  type AdConsentChoice,
+} from '@/lib/adConsent';
 import { useT } from '@/i18n';
 
 export function CookieConsent() {
   const t = useT();
+  const { search } = useLocation();
   const client = adsenseClient();
   const [choice, setChoice] = useState<AdConsentChoice | null>(() => getAdConsent());
   const [ready, setReady] = useState(false);
+  const fcDebug = isFundingChoicesDebug(search);
 
   useEffect(() => {
     setChoice(getAdConsent());
     setReady(true);
   }, []);
 
-  if (!ready || !client || choice) return null;
+  // Let Google CMP load without our banner when previewing Funding Choices.
+  useEffect(() => {
+    if (!fcDebug || !client) return;
+    ensureAdsScript(client);
+  }, [fcDebug, client]);
+
+  if (!ready || !client || choice || fcDebug) return null;
 
   function decide(next: AdConsentChoice) {
     setAdConsent(next);

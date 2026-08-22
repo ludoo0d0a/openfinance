@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   applyAdsPersonalizationFlag,
-  getAdConsent,
+  resolveAdConsentForAds,
   subscribeAdConsent,
   type AdConsentChoice,
 } from '@/lib/adConsent';
@@ -23,6 +24,7 @@ export function AdSlot({
   className?: string;
 }) {
   const t = useT();
+  const { search } = useLocation();
   const insRef = useRef<HTMLModElement>(null);
   const client = adsenseClient();
   const [filled, setFilled] = useState(false);
@@ -30,13 +32,13 @@ export function AdSlot({
   // hitting /try (or any unmatched path that falls back to /) must not see ad
   // tags beside the wrong page shell.
   const [mounted, setMounted] = useState(false);
-  const [consent, setConsent] = useState<AdConsentChoice | null>(() => getAdConsent());
+  const [consent, setConsent] = useState<AdConsentChoice | null>(() => resolveAdConsentForAds(search));
 
   useEffect(() => {
     setMounted(true);
-    setConsent(getAdConsent());
-    return subscribeAdConsent(() => setConsent(getAdConsent()));
-  }, []);
+    setConsent(resolveAdConsentForAds(search));
+    return subscribeAdConsent(() => setConsent(resolveAdConsentForAds(search)));
+  }, [search]);
 
   useEffect(() => {
     const ins = insRef.current;
