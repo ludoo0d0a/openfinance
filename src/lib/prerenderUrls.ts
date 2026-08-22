@@ -7,7 +7,13 @@ import { INFRASTRUCTURES } from '@/data/infrastructures';
 
 const SITE_ORIGIN = 'https://openfinance.geoking.fr';
 
-/** Catalog paths that get a static `dist/<path>/index.html` at build time. */
+/**
+ * Interactive tools: prerender so View Source is not the homepage (with or
+ * without ads). Kept out of the sitemap — thin SPA shells, not articles.
+ */
+export const TOOL_PRERENDER_PATHS = ['/try', '/map', '/live', '/quiz/debug-reject'] as const;
+
+/** Catalog + tool entry paths that get a static `dist/<path>/index.html`. */
 export function listPrerenderPaths(): string[] {
   const paths = new Set<string>(['/', '/about', '/privacy', '/contact', '/glossary']);
 
@@ -20,11 +26,18 @@ export function listPrerenderPaths(): string[] {
   for (const s of ALL_SAMPLES) paths.add(`/samples/${s.id}`);
   for (const s of STANDARDS) paths.add(`/standards/${s.id}`);
   for (const i of INFRASTRUCTURES) paths.add(`/infrastructure/${i.id}`);
+  for (const t of TOOL_PRERENDER_PATHS) paths.add(t);
 
   return [...paths].sort((a, b) => a.localeCompare(b));
 }
 
-export function sitemapXml(paths: string[] = listPrerenderPaths()): string {
+/** Indexable article URLs only (no tool shells). */
+export function listSitemapPaths(): string[] {
+  const tools = new Set<string>(TOOL_PRERENDER_PATHS);
+  return listPrerenderPaths().filter((path) => !tools.has(path));
+}
+
+export function sitemapXml(paths: string[] = listSitemapPaths()): string {
   const urls = paths
     .map((path) => {
       const loc = path === '/' ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${path}`;

@@ -26,10 +26,18 @@ export function AdSlot({
   const insRef = useRef<HTMLModElement>(null);
   const client = adsenseClient();
   const [filled, setFilled] = useState(false);
+  // Client-only: never emit <ins> in prerender / SPA-fallback HTML. Crawlers
+  // hitting /try (or any unmatched path that falls back to /) must not see ad
+  // tags beside the wrong page shell.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const ins = insRef.current;
-    if (!client || !slot || !ins) return;
+    if (!mounted || !client || !slot || !ins) return;
 
     const syncFilled = () => {
       setFilled(ins.getAttribute('data-ad-status') === 'filled');
@@ -49,9 +57,9 @@ export function AdSlot({
     }
 
     return () => observer.disconnect();
-  }, [client, slot, refreshKey]);
+  }, [mounted, client, slot, refreshKey]);
 
-  if (!client || !slot) return null;
+  if (!mounted || !client || !slot) return null;
 
   return (
     <aside

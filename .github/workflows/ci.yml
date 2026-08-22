@@ -73,9 +73,24 @@ jobs:
             echo "payment page title equals homepage — prerender or _redirects bug"
             exit 1
           }
-          # Catch-all /* → / must never return: it overrides static HTML on Pages.
-          if grep -E '^\s*/\*\s+/' public/_redirects dist/_redirects 2>/dev/null; then
+          # Catch-all `/* /` (exact path /*) must never return: it overrides static HTML on Pages.
+          # Do not match `/api/*` or comments that mention the forbidden pattern.
+          if grep -E '^/\*[[:space:]]+/' public/_redirects dist/_redirects 2>/dev/null; then
             echo "Forbidden SPA catch-all in _redirects (overrides prerendered pages)"
+            exit 1
+          fi
+          try_title=$(grep -oE '<title>[^<]+</title>' dist/try/index.html | head -1)
+          echo "try=$try_title"
+          echo "$try_title" | grep -q 'Try' || {
+            echo "dist/try/index.html missing Try title"
+            exit 1
+          }
+          [ "$try_title" != "$home_title" ] || {
+            echo "try page title equals homepage"
+            exit 1
+          }
+          if grep -q 'adsbygoogle\|data-ad-client' dist/try/index.html dist/map/index.html dist/index.html; then
+            echo "Prerendered HTML must not contain AdSense markup (client-only slots)"
             exit 1
           fi
 
@@ -144,11 +159,12 @@ jobs:
           [ -n "$catalog_ok" ] || { echo "Catalog function did not return JSON (last status $catalog_code)"; exit 1; }
 
           # Deep links must serve unique prerendered HTML (not the homepage rewrite).
-          deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
+          # Follow redirects: Pages may 308 directory URLs to a trailing slash.
+          deep=$(curl -sL -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
           [ "$deep" = "200" ] || { echo "Catalog deep link returned $deep"; exit 1; }
 
-          home_title=$(curl -s "$URL/" | grep -oE '<title>[^<]+</title>' | head -1)
-          prose=$(curl -s "$URL/flows/sct-inst-happy-path" || true)
+          home_title=$(curl -sL "$URL/" | grep -oE '<title>[^<]+</title>' | head -1)
+          prose=$(curl -sL "$URL/flows/sct-inst-happy-path" || true)
           echo "$prose" | grep -q '<title>SCT Inst' || {
             echo "Prerendered flow page is missing unique title (got homepage rewrite?)"
             echo "$prose" | grep -oE '<title>[^<]+</title>' | head -1
@@ -156,7 +172,7 @@ jobs:
             exit 1
           }
 
-          payment_html=$(curl -s "$URL/payment/sepa-instant" || true)
+          payment_html=$(curl -sL "$URL/payment/sepa-instant" || true)
           payment_title=$(echo "$payment_html" | grep -oE '<title>[^<]+</title>' | head -1)
           echo "$payment_title" | grep -q 'SEPA Instant' || {
             echo "Prerendered payment page missing SEPA Instant title: $payment_title"
@@ -168,7 +184,7 @@ jobs:
             exit 1
           }
 
-          privacy_html=$(curl -s "$URL/privacy" || true)
+          privacy_html=$(curl -sL "$URL/privacy" || true)
           privacy_title=$(echo "$privacy_html" | grep -oE '<title>[^<]+</title>' | head -1)
           echo "$privacy_title" | grep -q 'Privacy' || {
             echo "Prerendered privacy page missing Privacy title: $privacy_title"
@@ -185,11 +201,22 @@ jobs:
             exit 1
           }
 
-          # Tool routes stay SPA (no prerender); must still resolve without a hard 404.
-          try_code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/try" || true)
-          [ "$try_code" = "200" ] || { echo "/try SPA fallback returned $try_code"; exit 1; }
+          try_html=$(curl -sL "$URL/try" || true)
+          try_title=$(echo "$try_html" | grep -oE '<title>[^<]+</title>' | head -1)
+          echo "$try_title" | grep -q 'Try' || {
+            echo "/try missing Try title (SPA fell back to homepage?): $try_title"
+            exit 1
+          }
+          [ "$try_title" != "$home_title" ] || {
+            echo "/try still serves homepage title"
+            exit 1
+          }
+          echo "$try_html" | grep -q 'adsbygoogle\|data-ad-client' && {
+            echo "/try View Source must not contain AdSense markup"
+            exit 1
+          }
 
-          ads_body=$(curl -s "$URL/ads.txt" || true)
+          ads_body=$(curl -sL "$URL/ads.txt" || true)
           echo "$ads_body" | grep -q 'google.com, pub-' || {
             echo "ads.txt is missing or is the SPA shell"
             echo "$ads_body" | head -c 200

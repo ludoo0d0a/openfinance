@@ -62,6 +62,34 @@ export function pageSeo(pathname: string): PageSeo {
       canonicalPath: path,
     };
   }
+  if (path === '/try') {
+    return {
+      title: 'Try editor — OpenFinance',
+      description: clip('Build and inspect synthetic ISO 20022 pacs messages in the OpenFinance try editor.'),
+      canonicalPath: path,
+    };
+  }
+  if (path === '/map') {
+    return {
+      title: 'Interop map — OpenFinance',
+      description: clip('Interactive map of how payment standards, messages and rails connect.'),
+      canonicalPath: path,
+    };
+  }
+  if (path === '/live' || path.startsWith('/live/')) {
+    return {
+      title: 'Live showcase — OpenFinance',
+      description: clip('Replay consumer payment journeys as screen flows — educational showcase, no real money.'),
+      canonicalPath: path === '/live' ? '/live' : path,
+    };
+  }
+  if (path === '/quiz/debug-reject' || path.startsWith('/quiz/')) {
+    return {
+      title: 'Debug quiz — OpenFinance',
+      description: clip('Practice reading ISO 20022 rejects and status codes on sample payment journeys.'),
+      canonicalPath: path,
+    };
+  }
 
   const paymentMatch = path.match(/^\/payment\/([^/]+)$/);
   if (paymentMatch) {

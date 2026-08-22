@@ -36,7 +36,7 @@ written down.
 | A code | `src/data/codes.ts` | Unique within its family; merged into the glossary as `category: 'code'` |
 | A standard | `src/data/standards.ts` | Endpoints are indexed individually and become searchable |
 
-No UI changes are needed for any of these. Views are derived from the data. New catalog ids are picked up automatically by `listPrerenderPaths()` on the next `npm run build` (static HTML for AdSense / SEO). Tools (`/try`, `/map`, `/live`, `/quiz`) stay SPA-only and must not get display ads — see [AdSense](README.md#adsense) in the README.
+No UI changes are needed for any of these. Views are derived from the data. New catalog ids are picked up automatically by `listPrerenderPaths()` on the next `npm run build` (static HTML for AdSense / SEO). Tools (`/try`, `/map`, `/live`, `/quiz`) are prerendered as ad-free shells (not in the sitemap) and must not get display ads — see [AdSense](README.md#adsense) in the README.
 
 ## Before you open a PR
 

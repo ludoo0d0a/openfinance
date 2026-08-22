@@ -1,8 +1,9 @@
 /**
  * Kill switch for display units. Policy: Auto ads stay OFF in the AdSense
  * console for `geoking.fr` — never turn them on. This app only loads
- * `adsbygoogle.js` after a catalog page mounts and only pushes Display units.
- * Env `VITE_ADSENSE_CLIENT` / slots are still required.
+ * `adsbygoogle.js` after a catalog page mounts and only pushes Display units
+ * from the client (AdSlot does not SSR). Env `VITE_ADSENSE_CLIENT` / slots
+ * are still required.
  */
 export const ADSENSE_PAUSED = false;
 

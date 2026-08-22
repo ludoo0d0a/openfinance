@@ -98,11 +98,14 @@ async function main(): Promise<void> {
   });
 
   try {
-    const { listPrerenderPaths, sitemapXml } = await vite.ssrLoadModule('/src/lib/prerenderUrls.ts');
+    const { listPrerenderPaths, listSitemapPaths, sitemapXml } = await vite.ssrLoadModule(
+      '/src/lib/prerenderUrls.ts',
+    );
     const { render } = await vite.ssrLoadModule('/src/entry-server.tsx');
 
     const paths = listPrerenderPaths() as string[];
-    console.log(`Prerendering ${paths.length} catalog pages…`);
+    const sitemapPaths = listSitemapPaths() as string[];
+    console.log(`Prerendering ${paths.length} pages (${sitemapPaths.length} in sitemap)…`);
 
     for (const url of paths) {
       const { html, seo, canonical } = render(url) as {
@@ -113,12 +116,16 @@ async function main(): Promise<void> {
       if (!html || html.length < 80) {
         throw new Error(`Prerender produced thin HTML for ${url} (${html.length} chars)`);
       }
+      if (html.includes('adsbygoogle') || html.includes('data-ad-client')) {
+        throw new Error(`Prerender leaked AdSense markup into ${url}`);
+      }
       const page = injectRoot(applySeo(template, seo, canonical), html);
       await writePage(url, page);
     }
 
-    await writeFile(path.join(dist, 'sitemap.xml'), sitemapXml(paths), 'utf8');
-    await writeFile(path.join(root, 'public', 'sitemap.xml'), sitemapXml(paths), 'utf8');
+    const sitemap = sitemapXml(sitemapPaths);
+    await writeFile(path.join(dist, 'sitemap.xml'), sitemap, 'utf8');
+    await writeFile(path.join(root, 'public', 'sitemap.xml'), sitemap, 'utf8');
     console.log(`Wrote ${paths.length} pages + sitemap.xml`);
   } finally {
     await vite.close();
