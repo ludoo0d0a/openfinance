@@ -133,7 +133,7 @@ Manual: `npm run deploy`.
 
 ## AdSense
 
-Covered by parent site **`geoking.fr`**. **Auto ads stay OFF** on that site (console only — this app never enables them). Monetization is **Display units only** on OpenFinance catalog pages (`PageAd`: intro + end), injected **client-side** after mount (never in prerendered HTML). Tools and trust pages (`/try`, `/map`, `/live`, `/quiz`, `/privacy`, `/contact`, `/about`, 404s) get no ads. Tool URLs are prerendered as ad-free `noindex` shells so View Source is not the homepage.
+Covered by parent site **`geoking.fr`**. **Auto ads stay OFF** on that site (console only — this app never enables them). Monetization is **Display units only** on OpenFinance catalog pages (`PageAd`: intro + end), injected **client-side** after mount (never in prerendered HTML) and **only after** the cookie/ad consent banner choice (personalized vs `requestNonPersonalizedAds`). Tools and trust pages (`/try`, `/map`, `/live`, `/quiz`, `/privacy`, `/contact`, `/about`, 404s) get no ads. Tool URLs are prerendered as ad-free `noindex` shells so View Source is not the homepage.
 
 `npm run build` prerenders every catalog URL so View Source is article HTML, not an empty SPA shell. **Never** add a `/* → /` rewrite in [`public/_redirects`](public/_redirects): Cloudflare applies redirects even when static HTML exists, which made every deep link look like the homepage to AdSense. Unmatched SPA routes still fall back via Pages’ default (no top-level `404.html`). `/ads.txt` is emitted from `VITE_ADSENSE_CLIENT`. Kill switch: `ADSENSE_PAUSED` in [`src/lib/ads.ts`](src/lib/ads.ts).
 

@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import {
+  applyAdsPersonalizationFlag,
+  getAdConsent,
+  subscribeAdConsent,
+  type AdConsentChoice,
+} from '@/lib/adConsent';
 import { adsenseClient, ensureAdsScript } from '@/lib/ads';
 import { cn } from '@/lib/cn';
 import { useT } from '@/i18n';
 
 type AdFormat = 'horizontal' | 'rectangle';
-
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-  }
-}
 
 export function AdSlot({
   slot,
@@ -30,14 +30,17 @@ export function AdSlot({
   // hitting /try (or any unmatched path that falls back to /) must not see ad
   // tags beside the wrong page shell.
   const [mounted, setMounted] = useState(false);
+  const [consent, setConsent] = useState<AdConsentChoice | null>(() => getAdConsent());
 
   useEffect(() => {
     setMounted(true);
+    setConsent(getAdConsent());
+    return subscribeAdConsent(() => setConsent(getAdConsent()));
   }, []);
 
   useEffect(() => {
     const ins = insRef.current;
-    if (!mounted || !client || !slot || !ins) return;
+    if (!mounted || !consent || !client || !slot || !ins) return;
 
     const syncFilled = () => {
       setFilled(ins.getAttribute('data-ad-status') === 'filled');
@@ -47,6 +50,7 @@ export function AdSlot({
     observer.observe(ins, { attributes: true, attributeFilter: ['data-ad-status'] });
 
     if (!ins.getAttribute('data-adsbygoogle-status')) {
+      applyAdsPersonalizationFlag(consent);
       ensureAdsScript(client);
       window.adsbygoogle = window.adsbygoogle ?? [];
       try {
@@ -57,9 +61,9 @@ export function AdSlot({
     }
 
     return () => observer.disconnect();
-  }, [mounted, client, slot, refreshKey]);
+  }, [mounted, consent, client, slot, refreshKey]);
 
-  if (!mounted || !client || !slot) return null;
+  if (!mounted || !consent || !client || !slot) return null;
 
   return (
     <aside

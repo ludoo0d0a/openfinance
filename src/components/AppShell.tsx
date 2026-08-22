@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Menu, Moon, Search, Sun, X } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
+import { CookieConsent } from './CookieConsent';
 import { DocumentMeta } from './DocumentMeta';
 import { PageAd } from './PageAd';
 import { useSearchQuery } from '@/hooks/searchQuery';
@@ -336,6 +337,7 @@ export function AppShell() {
       )}
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <CookieConsent />
     </div>
   );
 }
