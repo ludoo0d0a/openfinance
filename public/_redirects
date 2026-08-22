@@ -1,12 +1,9 @@
-# SPA fallback for BrowserRouter deep links (refresh on /flows/…).
-# Rewrite to `/` — not `/index.html` (Cloudflare flags that as an infinite loop).
-# `/assets/*` MUST come before the catch-all or JS/CSS are rewritten to HTML
-# (white screen + MIME errors).
+# Do NOT add `/* / 200` here.
+# Cloudflare Pages always applies _redirects, even when a static file exists —
+# that catch-all was rewriting every prerendered page to the homepage and
+# AdSense crawled one shell for all URLs.
+#
+# Unmatched tool routes (/try, /map, /live, /quiz, …) still SPA-fallback to /
+# because there is no top-level 404.html (Pages default SPA behaviour).
+# Prerendered catalog paths (dist/<path>/index.html) are served as-is.
 /api/*        /api/:splat     200
-/assets/*     /assets/:splat  200
-/ads.txt      /ads.txt        200
-/robots.txt   /robots.txt     200
-/sitemap.xml  /sitemap.xml    200
-/favicon.svg  /favicon.svg    200
-/logo.png     /logo.png       200
-/*            /               200

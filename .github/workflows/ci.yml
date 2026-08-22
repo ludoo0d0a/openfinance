@@ -47,6 +47,38 @@ jobs:
       - run: npm run test -- --reporter=verbose
       - run: npm run build
 
+      - name: Assert prerendered pages are distinct
+        run: |
+          # Guard against SPA catch-all / thin shells: each catalog URL must
+          # ship its own title in dist/, not the homepage default.
+          privacy_title=$(grep -oE '<title>[^<]+</title>' dist/privacy/index.html | head -1)
+          payment_title=$(grep -oE '<title>[^<]+</title>' dist/payment/sepa-instant/index.html | head -1)
+          home_title=$(grep -oE '<title>[^<]+</title>' dist/index.html | head -1)
+          echo "home=$home_title"
+          echo "privacy=$privacy_title"
+          echo "payment=$payment_title"
+          echo "$privacy_title" | grep -q 'Privacy' || {
+            echo "dist/privacy/index.html missing Privacy title"
+            exit 1
+          }
+          echo "$payment_title" | grep -q 'SEPA Instant' || {
+            echo "dist/payment/sepa-instant/index.html missing SEPA Instant title"
+            exit 1
+          }
+          [ "$privacy_title" != "$home_title" ] || {
+            echo "privacy page title equals homepage — prerender or _redirects bug"
+            exit 1
+          }
+          [ "$payment_title" != "$home_title" ] || {
+            echo "payment page title equals homepage — prerender or _redirects bug"
+            exit 1
+          }
+          # Catch-all /* → / must never return: it overrides static HTML on Pages.
+          if grep -E '^\s*/\*\s+/' public/_redirects dist/_redirects 2>/dev/null; then
+            echo "Forbidden SPA catch-all in _redirects (overrides prerendered pages)"
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
         with:
           name: dist
@@ -111,30 +143,51 @@ jobs:
           done
           [ -n "$catalog_ok" ] || { echo "Catalog function did not return JSON (last status $catalog_code)"; exit 1; }
 
-          # Deep-link refresh must serve prerendered article HTML (not a bare 404).
+          # Deep links must serve unique prerendered HTML (not the homepage rewrite).
           deep=$(curl -s -o /dev/null -w '%{http_code}' "$URL/flows/sct-inst-happy-path" || true)
           [ "$deep" = "200" ] || { echo "Catalog deep link returned $deep"; exit 1; }
 
+          home_title=$(curl -s "$URL/" | grep -oE '<title>[^<]+</title>' | head -1)
           prose=$(curl -s "$URL/flows/sct-inst-happy-path" || true)
-          echo "$prose" | grep -qi 'sct inst\|instant\|payment' || {
-            echo "Prerendered flow page is missing article prose"
+          echo "$prose" | grep -q '<title>SCT Inst' || {
+            echo "Prerendered flow page is missing unique title (got homepage rewrite?)"
+            echo "$prose" | grep -oE '<title>[^<]+</title>' | head -1
             echo "$prose" | head -c 400
             exit 1
           }
 
           payment_html=$(curl -s "$URL/payment/sepa-instant" || true)
-          echo "$payment_html" | grep -qi 'sepa instant\|instant' || {
-            echo "Prerendered payment page is missing article prose"
+          payment_title=$(echo "$payment_html" | grep -oE '<title>[^<]+</title>' | head -1)
+          echo "$payment_title" | grep -q 'SEPA Instant' || {
+            echo "Prerendered payment page missing SEPA Instant title: $payment_title"
             echo "$payment_html" | head -c 400
+            exit 1
+          }
+          [ "$payment_title" != "$home_title" ] || {
+            echo "payment URL still serves homepage title — _redirects catch-all?"
             exit 1
           }
 
           privacy_html=$(curl -s "$URL/privacy" || true)
-          echo "$privacy_html" | grep -qi 'privacy\|AdSense\|cookie' || {
+          privacy_title=$(echo "$privacy_html" | grep -oE '<title>[^<]+</title>' | head -1)
+          echo "$privacy_title" | grep -q 'Privacy' || {
+            echo "Prerendered privacy page missing Privacy title: $privacy_title"
+            echo "$privacy_html" | head -c 400
+            exit 1
+          }
+          echo "$privacy_html" | grep -qi 'AdSense\|cookie' || {
             echo "Prerendered privacy page is missing legal prose"
             echo "$privacy_html" | head -c 400
             exit 1
           }
+          [ "$privacy_title" != "$home_title" ] || {
+            echo "privacy URL still serves homepage title — _redirects catch-all?"
+            exit 1
+          }
+
+          # Tool routes stay SPA (no prerender); must still resolve without a hard 404.
+          try_code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/try" || true)
+          [ "$try_code" = "200" ] || { echo "/try SPA fallback returned $try_code"; exit 1; }
 
           ads_body=$(curl -s "$URL/ads.txt" || true)
           echo "$ads_body" | grep -q 'google.com, pub-' || {

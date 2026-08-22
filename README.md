@@ -133,9 +133,9 @@ Manual: `npm run deploy`.
 
 ## AdSense
 
-Covered by parent site **`geoking.fr`**. Keep **Auto ads OFF** there. This app only loads `adsbygoogle.js` after a catalog page mounts, and only places two **Display** units (`PageAd`: intro + end). Tools and legal pages (`/try`, `/map`, `/live`, `/quiz`, `/privacy`, `/contact`, 404s) get no ads.
+Covered by parent site **`geoking.fr`**. **Auto ads stay OFF** on that site (console only — this app never enables them). Monetization is **Display units only** on OpenFinance catalog pages (`PageAd`: intro + end). Tools and legal pages (`/try`, `/map`, `/live`, `/quiz`, `/privacy`, `/contact`, 404s) get no ads.
 
-`npm run build` prerenders every catalog URL so View Source is article HTML, not an empty SPA shell. `/ads.txt` is emitted from `VITE_ADSENSE_CLIENT`. Kill switch: `ADSENSE_PAUSED` in [`src/lib/ads.ts`](src/lib/ads.ts).
+`npm run build` prerenders every catalog URL so View Source is article HTML, not an empty SPA shell. **Never** add a `/* → /` rewrite in [`public/_redirects`](public/_redirects): Cloudflare applies redirects even when static HTML exists, which made every deep link look like the homepage to AdSense. Unmatched SPA routes still fall back via Pages’ default (no top-level `404.html`). `/ads.txt` is emitted from `VITE_ADSENSE_CLIENT`. Kill switch: `ADSENSE_PAUSED` in [`src/lib/ads.ts`](src/lib/ads.ts).
 
 GitHub variables (mapped to `VITE_*` at build): `ADSENSE_CLIENT` (`ca-pub-…`), `ADSENSE_SLOT` (fallback), `ADSENSE_SLOT_INTRO`, `ADSENSE_SLOT_END`. Local: `VITE_ADSENSE_CLIENT=ca-pub-… VITE_ADSENSE_SLOT=… npm run build`. Enable Privacy & messaging for the EEA.
 
