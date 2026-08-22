@@ -1,0 +1,7 @@
+{
+  "adsense_id": "pub-8119706384361352",
+  "client": "ca-pub-8119706384361352",
+  "privacy_messaging_url": "https://adsense.google.com/adsense/u/0/pub-8119706384361352/privacymessaging",
+  "sites": ["geoking.fr", "openfinance.geoking.fr"],
+  "notes": "Publisher id is public (ads.txt / page source). Slot ids stay in GitHub Actions vars ADSENSE_SLOT* mapped to VITE_*. Auto ads stay OFF on geoking.fr; Privacy & messaging covers EEA/UK/CH."
+}
